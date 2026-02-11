@@ -11,6 +11,9 @@ export const createDebtSchema = z.object({
 
   // Description is optional
   description: z.string().optional(),
+
+  // Deadline is optional
+  deadline: z.coerce.date().optional(),
 });
 
 // Same shape as createDebtSchema, partial() makes all fields optional
