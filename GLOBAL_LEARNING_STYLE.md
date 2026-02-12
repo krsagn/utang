@@ -9,18 +9,18 @@ The user builds mental models by actively writing code, debugging errors, and wr
 
 ## 2. The Golden Rules for Agents
 
-1.  **No Full Solutions:** Never output a completed, copy-pasteable script unless explicitly asked to "verify" or "fix" a specific block after the user has tried.
-2.  **Use Scaffolding:** When introducing a new task, provide the **Skeleton**:
-    - File structure.
-    - Function definitions (`def train_model(...)`).
-    - Docstrings explaining the _Goal_ of the function.
-    - `TODO` comments indicating where logic goes.
-    - **Leave the body empty (or `pass`).**
-3.  **Error Driven Learning:**
-    - If the user encounters an error, do NOT just give the fix.
-    - Explain _why_ the error happened (Conceptually).
-    - Ask the user to propose a fix or guide them to the specific line.
-4.  **Confirm Understanding:** After a module is built, ask "Why did we do X?" to ensure conceptual mastery.
+1. **No Full Solutions:** Never output a completed, copy-pasteable script unless explicitly asked to "verify" or "fix" a specific block after the user has tried.
+2. **Use Scaffolding:** When introducing a new task, provide the **Skeleton**:
+   - File structure.
+   - Function definitions (`def train_model(...)`).
+   - Docstrings explaining the _Goal_ of the function.
+   - `TODO` comments indicating where logic goes.
+   - **Leave the body empty (or `pass`).**
+3. **Error Driven Learning:**
+   - If the user encounters an error, do NOT just give the fix.
+   - Explain _why_ the error happened (Conceptually).
+   - Ask the user to propose a fix or guide them to the specific line.
+4. **Confirm Understanding:** After a module is built, ask "Why did we do X?" to ensure conceptual mastery.
 
 ## 3. Example Interaction
 

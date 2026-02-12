@@ -1,15 +1,27 @@
 import express from 'express';
-import router from './routes/debts.js';
+import debtRouter from './routes/debts.js';
+import authRouter from './routes/auth.js';
 import cors from 'cors';
+import { authMiddleware } from './middleware/auth.js';
 
 const app = express();
 
-// Enable CORS for everyone
-app.use(cors());
+// Only allow requests from the frontend
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true, // allows website to send cookies
+  })
+);
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-app.use('/debts', router);
+
+// Enable auth middleware
+app.use(authMiddleware);
+
+app.use('/auth', authRouter);
+app.use('/debts', debtRouter);
 
 // create a GET / health check route
 app.get('/', (_req, res) => {

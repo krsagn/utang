@@ -4,7 +4,7 @@ import type { Request, Response } from 'express';
 // 2. Import your database client and schema
 import { db } from '../db/index.js';
 import { debts } from '../db/schema.js';
-import { eq, type InferInsertModel } from 'drizzle-orm';
+import { and, eq, type InferInsertModel } from 'drizzle-orm';
 
 // 3. Zod imports for validation
 import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
@@ -16,8 +16,14 @@ import { z } from 'zod';
  */
 export const getDebts = async (_req: Request, res: Response) => {
   try {
-    const result = await db.select().from(debts);
-    res.json(result);
+    const userId = res.locals.user!.id;
+
+    const userDebts = await db
+      .select()
+      .from(debts)
+      .where(eq(debts.userId, userId));
+
+    res.json(userDebts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
@@ -31,21 +37,24 @@ export const getDebts = async (_req: Request, res: Response) => {
 export const getDebtById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = res.locals.user!.id;
+
+    if (!id) return res.status(400).json({ error: 'Missing ID' });
 
     // Use eq() to filter by ID. Drizzle returns an array, so we check if it's empty.
     const result = await db
       .select()
       .from(debts)
-      .where(eq(debts.id, Number(id)));
+      .where(and(eq(debts.id, id as string), eq(debts.userId, userId)));
 
     if (result.length === 0) {
-      res.status(404).json({ error: 'Debt not found' });
+      return res.status(404).json({ error: 'Debt not found' });
     } else {
-      res.json(result[0]);
+      return res.json(result[0]);
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -57,12 +66,13 @@ export const createDebt = async (req: Request, res: Response) => {
   try {
     // 1. Validate the incoming request body using Zod
     const body = createDebtSchema.parse(req.body);
+    const userId = res.locals.user!.id;
 
     // 2. Insert into database using Drizzle.
     // We convert amount to string to satisfy the Decimal column requirements.
     const result = await db
       .insert(debts)
-      .values({ ...body, amount: body.amount.toString() })
+      .values({ ...body, amount: body.amount.toString(), userId: userId })
       .returning();
 
     // 3. Send back the newly created record
@@ -86,6 +96,7 @@ export const createDebt = async (req: Request, res: Response) => {
 export const updateDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = res.locals.user!.id;
 
     // 1. Zod schema validation (all fields are optional in update schema)
     const body = updateDebtSchema.parse(req.body);
@@ -98,13 +109,14 @@ export const updateDebt = async (req: Request, res: Response) => {
       ...body,
       // Only convert to string if amount was actually provided
       amount: body.amount?.toString(),
+      userId: userId,
     };
 
     // 3. Perform the update. Drizzle ignores undefined values in the .set() object.
     const result = await db
       .update(debts)
       .set(updateData)
-      .where(eq(debts.id, Number(id)))
+      .where(and(eq(debts.id, id as string), eq(debts.userId, userId)))
       .returning();
 
     // If no row found (ID doesn't exist)
@@ -132,11 +144,12 @@ export const updateDebt = async (req: Request, res: Response) => {
 export const deleteDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = res.locals.user!.id;
 
     // .returning() tells Drizzle to return the deleted row so we can check if it existed
     const result = await db
       .delete(debts)
-      .where(eq(debts.id, Number(id)))
+      .where(and(eq(debts.id, id as string), eq(debts.userId, userId)))
       .returning();
 
     if (result.length === 0) {

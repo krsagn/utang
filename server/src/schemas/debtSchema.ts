@@ -7,7 +7,7 @@ export const createDebtSchema = z.object({
   lendee: z.string().min(1, 'Lendee name is required'),
 
   // Lent amount must be positive
-  amount: z.number().positive(),
+  amount: z.coerce.number().positive(),
 
   // Description is optional
   description: z.string().optional(),

@@ -7,14 +7,18 @@ import {
   updateDebt,
   deleteDebt,
 } from '../controllers/debtController.js';
+import { requireAuth } from '../middleware/auth.js';
 
-const router = Router();
+const debtRouter = Router();
+
+// Guard entire router
+debtRouter.use(requireAuth);
 
 // Route definitions
-router.get('/', getDebts);
-router.post('/', createDebt);
-router.patch('/:id', updateDebt);
-router.delete('/:id', deleteDebt);
-router.get('/:id', getDebtById);
+debtRouter.get('/', getDebts);
+debtRouter.post('/', createDebt);
+debtRouter.patch('/:id', updateDebt);
+debtRouter.delete('/:id', deleteDebt);
+debtRouter.get('/:id', getDebtById);
 
-export default router;
+export default debtRouter;
