@@ -36,6 +36,7 @@ export const signUp = async (req: Request, res: Response) => {
         .status(400)
         .json({ error: error.issues[0]?.message || 'Validation error' });
     }
+
     if (error.code === '23505') {
       return res.status(400).json({ error: 'Email already in use' });
     }

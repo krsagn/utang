@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "dev": "nodemon --exec tsx -r dotenv/config src/server.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
@@ -29,11 +29,16 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.2.2",
     "@types/pg": "^8.16.0",
+    "@types/supertest": "^6.0.3",
     "drizzle-kit": "^0.31.9",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.11",
     "prettier": "^3.8.1",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

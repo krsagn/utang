@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
-      const { data } = await api.get<{ user: User }>("/auth/get-me");
+      const { data } = await api.get<{ user: User }>("/auth/users/me");
       return data.user;
     },
     retry: false,
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (creds: LoginCredentials) =>
-      api.post("/auth/login", creds),
+      api.post("/auth/sessions", creds),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["me"] });
       navigate("/home");
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signupMutation = useMutation({
     mutationFn: async (creds: SignupCredentials) =>
-      api.post("/auth/signup", creds),
+      api.post("/auth/users", creds),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["me"] });
       navigate("/home");
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const logoutMutation = useMutation({
-    mutationFn: async () => api.delete("/auth/logout"),
+    mutationFn: async () => api.delete("/auth/sessions/current"),
     onSuccess: () => {
       queryClient.setQueryData(["me"], null);
       navigate("/login");

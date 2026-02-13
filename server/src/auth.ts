@@ -1,5 +1,6 @@
 import { Lucia } from 'lucia';
 import { DrizzlePostgreSQLAdapter } from '@lucia-auth/adapter-drizzle';
+import type { InferSelectModel } from 'drizzle-orm';
 import { db } from './db/index.js';
 import { sessions, users } from './db/schema.js';
 
@@ -23,13 +24,12 @@ export const lucia = new Lucia(adapter, {
   },
 });
 
+type User = InferSelectModel<typeof users>;
+
 // type definitions for email & name (for TypeScript's sake)
 declare module 'lucia' {
   interface Register {
     Lucia: typeof lucia;
-    DatabaseUserAttributes: {
-      email: string;
-      name: string;
-    };
+    DatabaseUserAttributes: Omit<User, 'passwordHash' | 'createdAt'>; // only get email and name
   }
 }
