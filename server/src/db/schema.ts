@@ -12,7 +12,7 @@ export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at', {
     withTimezone: true,
     mode: 'date',
@@ -32,5 +32,5 @@ export const debts = pgTable('debts', {
   status: text('status').default('PENDING'),
   userId: text('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
 });
