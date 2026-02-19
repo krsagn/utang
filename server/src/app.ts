@@ -1,6 +1,7 @@
 import express from 'express';
 import debtRouter from './routes/debts.js';
 import authRouter from './routes/auth.js';
+import friendshipRouter from './routes/friendships.js';
 import cors from 'cors';
 import { authMiddleware } from './middleware/auth.js';
 
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use(authMiddleware);
 
 app.use('/auth', authRouter);
+app.use('/friendships', friendshipRouter);
 app.use('/debts', debtRouter);
 
 // create a GET / health check route

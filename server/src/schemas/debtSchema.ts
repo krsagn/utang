@@ -2,14 +2,18 @@ import { z } from 'zod';
 
 // Define the shape of the incoming request body (POST)
 export const createDebtSchema = z.object({
-  // Required fields: lender and lendee
-  lender: z.string().min(1, 'Lender name is required'),
-  lendee: z.string().min(1, 'Lendee name is required'),
+  // parties involved
+  lenderId: z.string().uuid().optional(),
+  lendeeId: z.string().uuid().optional(),
+  lenderName: z.string().min(1, 'Lender name is required'),
+  lendeeName: z.string().min(1, 'Lendee name is required'),
 
   // Lent amount must be positive
+  currency: z.string().length(3).toUpperCase(),
   amount: z.coerce.number().positive(),
 
   // Description is optional
+  title: z.string().max(30, 'Title too long'),
   description: z.string().optional(),
 
   // Deadline is optional

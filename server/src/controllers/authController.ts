@@ -7,28 +7,34 @@ import { lucia } from '../auth.js';
 import * as argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
 
-// SIGNUP: Create a New User
+/**
+ * POST /auth/signup
+ * Creates a new user account, hashes the password, and starts a session.
+ * Rejects duplicate emails/usernames.
+ */
 export const signUp = async (req: Request, res: Response) => {
   try {
-    const { email, password, name } = signUpSchema.parse(req.body);
+    // 1. Validate input and strip password from return object
+    const { password, ...userData } = signUpSchema.parse(req.body);
 
     const passwordHash = await argon2.hash(password);
     const userId = crypto.randomUUID();
 
+    // 2. Create User
     await db.insert(users).values({
+      ...userData,
       id: userId,
-      email: email,
-      name: name,
       passwordHash: passwordHash,
     });
 
+    // 3. Create Session
     const session = await lucia.createSession(userId, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
     res.appendHeader('Set-Cookie', sessionCookie.serialize());
 
     return res.status(201).json({
       message: 'User created',
-      user: { id: userId, email: email, name: name },
+      user: { id: userId, ...userData },
     });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
@@ -37,38 +43,55 @@ export const signUp = async (req: Request, res: Response) => {
         .json({ error: error.issues[0]?.message || 'Validation error' });
     }
 
+    // Handle Unique Key violations (Postgres Error 23505)
     if (error.code === '23505') {
-      return res.status(400).json({ error: 'Email already in use' });
+      return res
+        .status(409)
+        .json({ error: 'Email or username already exists' });
     }
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// LOGIN: Verify & Create Session
+/**
+ * POST /auth/login
+ * Verifies credentials and starts a new session.
+ */
 export const logIn = async (req: Request, res: Response) => {
   try {
     const { email, password } = logInSchema.parse(req.body);
 
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    // 1. Find User by Email
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
 
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
 
+    // 2. Verify Password
     const validPassword = await argon2.verify(user.passwordHash, password);
 
     if (!validPassword) {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
 
+    // 3. Create Session
     const session = await lucia.createSession(user.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
     res.appendHeader('Set-Cookie', sessionCookie.serialize());
 
-    return res
-      .status(200)
-      .json({ user: { id: user.id, name: user.name, email: user.email } });
+    return res.status(200).json({
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.issues[0]?.message });
@@ -78,7 +101,10 @@ export const logIn = async (req: Request, res: Response) => {
   }
 };
 
-// LOGOUT: Destroy Session
+/**
+ * POST /auth/logout
+ * Invalidates the current session and clears the session cookie.
+ */
 export const logOut = async (_req: Request, res: Response) => {
   const session = res.locals.session;
   if (!session) {
@@ -92,7 +118,11 @@ export const logOut = async (_req: Request, res: Response) => {
   return res.status(200).json({ message: 'Logged out' });
 };
 
-// GET ME: Check who is currently logged in
+/**
+ * GET /auth/me
+ * Returns the currently authenticated user's profile.
+ * Used by the frontend to restore session state on page load.
+ */
 export const getMe = async (_req: Request, res: Response) => {
   const user = res.locals.user;
   if (!user) {

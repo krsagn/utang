@@ -1,31 +1,34 @@
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+// Debts
 
 export interface Debt {
   id: string;
-  lender: string;
-  lendee: string;
+  lenderName: string;
+  lendeeName: string;
+  currency: string;
   amount: string;
+  title: string;
   description?: string;
   deadline?: string;
-  status: "PENDING" | "PAID";
+  status: "PENDING" | "PAID" | "VOID";
   createdAt: string;
 }
 
+export type DebtType = "pay" | "receive";
+
 export type NewDebt = Omit<Debt, "id" | "createdAt" | "status">;
 
-export type UpdateDebt = Partial<Debt>;
+export type UpdateDebt = Partial<Omit<Debt, "id" | "createdAt">>;
 
-export interface LoginCredentials {
+// Authentication
+
+export interface User {
+  id: string;
+  username: string;
   email: string;
-  password: string;
+  firstName: string;
+  lastName: string;
 }
 
-export interface SignupCredentials {
-  email: string;
-  password: string;
-  name: string;
-}
+export type LoginCredentials = Pick<User, "email"> & { password: string };
+
+export type SignupCredentials = Omit<User, "id"> & { password: string };

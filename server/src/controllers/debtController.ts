@@ -1,38 +1,46 @@
-// 1. Import 'Request' and 'Response' from express
 import type { Request, Response } from 'express';
-
-// 2. Import your database client and schema
 import { db } from '../db/index.js';
-import { debts } from '../db/schema.js';
-import { and, eq, type InferInsertModel } from 'drizzle-orm';
-
-// 3. Zod imports for validation
+import { users, debts } from '../db/schema.js';
+import { or, and, eq, type InferInsertModel } from 'drizzle-orm';
 import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
 import { z } from 'zod';
 
 /**
  * GET /debts
- * Returns all debt records from the database.
+ * Retrieves a list of debts associated with the authenticated user.
+ * Supports filtering by 'pay' (outgoing) or 'receive' (incoming) debts via query params.
+ * Defaults to returning all debts where the user is either the lender or the lendee.
  */
-export const getDebts = async (_req: Request, res: Response) => {
+export const getDebts = async (req: Request, res: Response) => {
   try {
     const userId = res.locals.user!.id;
+    const type = req.query.type as string | undefined;
 
-    const userDebts = await db
-      .select()
-      .from(debts)
-      .where(eq(debts.userId, userId));
+    let query = db.select().from(debts).limit(100);
 
-    res.json(userDebts);
+    if (type === 'pay') {
+      // User is the borrower (Lendee)
+      query.where(eq(debts.lendeeId, userId));
+    } else if (type === 'receive') {
+      // User is the lender (Lender)
+      query.where(eq(debts.lenderId, userId));
+    } else {
+      // User is involved as either party
+      query.where(or(eq(debts.lendeeId, userId), eq(debts.lenderId, userId)));
+    }
+
+    const userDebts = await query;
+    return res.json(userDebts);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
 /**
  * GET /debts/:id
- * Returns a single debt record by its ID.
+ * Retrieves a single debt record by ID.
+ * Access Control: The user must be the Creator, Lender, or Lendee to view the record.
  */
 export const getDebtById = async (req: Request, res: Response) => {
   try {
@@ -41,16 +49,21 @@ export const getDebtById = async (req: Request, res: Response) => {
 
     if (!id) return res.status(400).json({ error: 'Missing ID' });
 
-    // Use eq() to filter by ID. Drizzle returns an array, so we check if it's empty.
-    const result = await db
-      .select()
-      .from(debts)
-      .where(and(eq(debts.id, id as string), eq(debts.userId, userId)));
+    const debt = await db.query.debts.findFirst({
+      where: and(
+        eq(debts.id, id as string),
+        or(
+          eq(debts.lenderId, userId),
+          eq(debts.lendeeId, userId),
+          eq(debts.createdBy, userId)
+        )
+      ),
+    });
 
-    if (result.length === 0) {
+    if (!debt) {
       return res.status(404).json({ error: 'Debt not found' });
     } else {
-      return res.json(result[0]);
+      return res.json(debt);
     }
   } catch (error) {
     console.error(error);
@@ -60,105 +73,147 @@ export const getDebtById = async (req: Request, res: Response) => {
 
 /**
  * POST /debts
- * Validates the request body and creates a new debt record.
+ * Creates a new debt record.
+ * Automatically derives lender/lendee names if valid User IDs are provided.
  */
 export const createDebt = async (req: Request, res: Response) => {
   try {
-    // 1. Validate the incoming request body using Zod
     const body = createDebtSchema.parse(req.body);
     const userId = res.locals.user!.id;
 
-    // 2. Insert into database using Drizzle.
-    // We convert amount to string to satisfy the Decimal column requirements.
-    const result = await db
-      .insert(debts)
-      .values({ ...body, amount: body.amount.toString(), userId: userId })
-      .returning();
+    let finalLenderName = body.lenderName;
+    let finalLendeeName = body.lendeeName;
 
-    // 3. Send back the newly created record
-    res.status(201).json(result[0]);
+    // If lenderId is provided, fetch the user's real name from the DB
+    if (body.lenderId) {
+      const lenderUser = await db.query.users.findFirst({
+        where: eq(users.id, body.lenderId),
+      });
+      if (lenderUser) {
+        finalLenderName = lenderUser.firstName;
+      }
+    }
+
+    // If lendeeId is provided, fetch the user's real name from the DB
+    if (body.lendeeId) {
+      const lendeeUser = await db.query.users.findFirst({
+        where: eq(users.id, body.lendeeId),
+      });
+      if (lendeeUser) {
+        finalLendeeName = lendeeUser.firstName;
+      }
+    }
+
+    const newDebt = {
+      ...body,
+      amount: body.amount.toString(),
+      createdBy: userId,
+      lenderName: finalLenderName,
+      lendeeName: finalLendeeName,
+    };
+
+    const result = await db.insert(debts).values(newDebt).returning();
+
+    return res.status(201).json(result[0]);
   } catch (error) {
-    // Specifically handle Zod validation errors
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.issues });
-      return;
+      return res.status(400).json({ errors: error.issues });
     }
 
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
 /**
  * PATCH /debts/:id
- * Partially updates a debt record. Handles dynamic fields using Drizzle.
+ * Updates an existing debt record.
+ * Access Control: Only the properties' Creator can update the record.
+ * Automatically updates names if IDs are changed.
  */
 export const updateDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = res.locals.user!.id;
 
-    // 1. Zod schema validation (all fields are optional in update schema)
     const body = updateDebtSchema.parse(req.body);
 
-    // 2. Prepare the update data.
-    // InferInsertModel gives us the correct shape for the DB operation.
+    let finalLenderName = body.lenderName;
+    let finalLendeeName = body.lendeeName;
+
+    // Refresh names if IDs are being updated
+    if (body.lenderId) {
+      const lenderUser = await db.query.users.findFirst({
+        where: eq(users.id, body.lenderId),
+      });
+      if (lenderUser) {
+        finalLenderName = lenderUser.firstName;
+      }
+    }
+
+    if (body.lendeeId) {
+      const lendeeUser = await db.query.users.findFirst({
+        where: eq(users.id, body.lendeeId),
+      });
+      if (lendeeUser) {
+        finalLendeeName = lendeeUser.firstName;
+      }
+    }
+
     type NewDebt = InferInsertModel<typeof debts>;
 
     const updateData: Partial<NewDebt> = {
       ...body,
-      // Only convert to string if amount was actually provided
       amount: body.amount?.toString(),
-      userId: userId,
+      updatedAt: new Date(),
+      lenderName: finalLenderName,
+      lendeeName: finalLendeeName,
     };
 
-    // 3. Perform the update. Drizzle ignores undefined values in the .set() object.
+    // Drizzle ignores undefined values in .set()
     const result = await db
       .update(debts)
       .set(updateData)
-      .where(and(eq(debts.id, id as string), eq(debts.userId, userId)))
+      .where(and(eq(debts.id, id as string), eq(debts.createdBy, userId)))
       .returning();
 
-    // If no row found (ID doesn't exist)
     if (result.length === 0) {
-      res.status(404).json({ error: 'Debt not found' });
-      return;
+      return res.status(404).json({ error: 'Debt not found or unauthorized' });
     }
 
-    res.json(result[0]);
+    return res.json(result[0]);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.issues });
-      return;
+      return res.status(400).json({ errors: error.issues });
     }
 
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
 /**
  * DELETE /debts/:id
- * Removes a debt record from the database.
+ * Deletes a debt record.
+ * Access Control: Only the Creator can delete the record.
  */
 export const deleteDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = res.locals.user!.id;
 
-    // .returning() tells Drizzle to return the deleted row so we can check if it existed
     const result = await db
       .delete(debts)
-      .where(and(eq(debts.id, id as string), eq(debts.userId, userId)))
+      .where(and(eq(debts.id, id as string), eq(debts.createdBy, userId)))
       .returning();
 
     if (result.length === 0) {
-      res.status(404).json({ error: 'Debt not found' });
+      return res.status(404).json({ error: 'Debt not found or unauthorized' });
     } else {
-      res.status(204).send();
+      return res.status(204).send();
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
