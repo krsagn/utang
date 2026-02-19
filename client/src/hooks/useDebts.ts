@@ -2,11 +2,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { Debt, NewDebt, UpdateDebt } from "@/types";
 
-export function useDebts() {
+export function useDebts(type?: "pay" | "receive") {
   return useQuery({
-    queryKey: ["debts"],
+    queryKey: ["debts", type],
     queryFn: async () => {
-      const { data } = await api.get<Debt[]>("/debts");
+      const url = type ? `/debts?type=${type}` : "/debts";
+      const { data } = await api.get<Debt[]>(url);
       return data;
     },
   });
