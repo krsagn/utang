@@ -121,16 +121,33 @@
 html {
   scrollbar-gutter: stable;
 }
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
+
+    /* Firefox Scrollbar Support */
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted-foreground) transparent;
   }
   body {
     @apply bg-background text-foreground selection:bg-black/10;
 
     font-family: var(--font-sans);
   }
+}
+
+/* Custom Webkit Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 9999px;
 }
 
 @font-face {
