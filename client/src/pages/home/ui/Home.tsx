@@ -1,4 +1,4 @@
-export default function Home() {
+export function Home() {
   return (
     <div className="flex flex-col">
       <div className="mb-6 flex items-center justify-between">

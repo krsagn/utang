@@ -2,35 +2,40 @@
 import { useState, type SyntheticEvent } from "react";
 
 // Types
-import type { SignupCredentials, LoginCredentials } from "@/entities/user";
+import type { SignupCredentials, LoginCredentials } from "@/features/auth";
 
 // External libraries
 import { AxiosError } from "axios";
 
 // UI shared
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+  Checkbox,
+  Field,
+  Input,
+  Label,
+  Spinner,
+} from "@/shared/ui";
 
 // Icons
 import { Eye, EyeClosed, DangerCircle } from "@solar-icons/react";
 
-// Contexts
-import { useAuth } from "@/app/providers/AuthContext";
-import { Spinner } from "@/shared/ui/spinner";
+import { useLogin, useSignup } from "@/features/auth";
 
 export function LoginForm() {
   const {
-    login: performLogin,
-    signup: performSignup,
-    isLoggingIn,
-    isSigningUp,
-    loginError,
-    signupError,
-  } = useAuth();
+    mutate: performLogin,
+    isPending: isLoggingIn,
+    error: loginError,
+  } = useLogin();
+  const {
+    mutate: performSignup,
+    isPending: isSigningUp,
+    error: signupError,
+  } = useSignup();
 
   const [signupDetails, setSignupDetails] = useState<SignupCredentials>({
     email: "",

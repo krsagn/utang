@@ -1,6 +1,6 @@
 import { LoginForm } from "@/features/auth";
 
-export default function Login() {
+export function Login() {
   return (
     <main className="flex h-screen w-full items-stretch gap-10 overflow-hidden overscroll-none p-3">
       <LoginForm />

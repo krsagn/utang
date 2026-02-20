@@ -3,7 +3,7 @@ import { users, sessions, debts } from '../src/db/schema.js';
 import { sql } from 'drizzle-orm';
 
 async function reset() {
-  console.log('🗑️  Deleting all data...');
+  console.log('Deleting all data...');
 
   // Delete in order to respect foreign key constraints
   try {

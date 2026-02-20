@@ -11,7 +11,8 @@ import {
 } from "@solar-icons/react";
 
 import type { Icon } from "@solar-icons/react/lib/types";
-import { useAuth } from "@/app/providers/AuthContext";
+import { useSession } from "@/entities/user";
+import { useLogout } from "@/features/auth";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -53,7 +54,8 @@ function SidebarButton({
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { logout: performLogout, user } = useAuth();
+  const { data: user } = useSession();
+  const { mutate: performLogout } = useLogout();
 
   const buttonClasses = cn(
     "flex font-bold items-center rounded-xl bg-sidebar transition-all duration-300 hover:scale-98 group opacity-40 hover:opacity-100",

@@ -1,1 +1,1 @@
-export { DebtList } from "./DebtList";
+export { DebtList } from "./ui/DebtList";

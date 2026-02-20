@@ -1,6 +1,6 @@
-import { DebtList } from "@/features/debt";
+import { DebtList } from "@/features/debt/list";
 
-export default function Incoming() {
+export function Incoming() {
   return (
     <div className="flex flex-col">
       <div className="mb-6 flex items-center justify-between">

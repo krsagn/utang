@@ -1,8 +1,8 @@
-import { useAuth } from "@/app/providers/AuthContext";
+import { useSession } from "@/entities/user";
 import { Navigate, Outlet } from "react-router-dom";
 
 export default function ProtectedRoute() {
-  const { user, isLoading } = useAuth();
+  const { data: user, isLoading } = useSession();
 
   if (isLoading) {
     return (

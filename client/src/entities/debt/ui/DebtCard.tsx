@@ -1,12 +1,12 @@
 // Types
-import type { Debt, DebtType } from "../model";
+import type { Debt, DebtType } from "../";
 
 // React
 import { useId } from "react";
 
 // Utils
-import { cn } from "@/shared/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { formatCurrency, cn } from "@/shared/lib";
 
 type DebtCardProps = Pick<
   Debt,
@@ -74,11 +74,7 @@ export function DebtCard({
                 : "to-primary from-[#6A7D13]",
             )}
           >
-            {new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: currency,
-              currencyDisplay: "narrowSymbol",
-            }).format(parseFloat(amount))}
+            {formatCurrency(amount, currency)}
           </h3>
         </header>
         <div className={cn("flex flex-col", !isOutgoing && "items-end")}>
