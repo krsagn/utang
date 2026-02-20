@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/shared/lib";
 import {
   HomeAngle,
   CardSend,

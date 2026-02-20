@@ -2,7 +2,7 @@
 import { useState, type SyntheticEvent } from "react";
 
 // Types
-import type { SignupCredentials, LoginCredentials } from "@/features/auth";
+import type { SignupCredentials, LoginCredentials } from "../model/types";
 
 // External libraries
 import { AxiosError } from "axios";
@@ -23,7 +23,8 @@ import {
 // Icons
 import { Eye, EyeClosed, DangerCircle } from "@solar-icons/react";
 
-import { useLogin, useSignup } from "@/features/auth";
+import { useLogin } from "../model/useLogin";
+import { useSignup } from "../model/useSignup";
 
 export function LoginForm() {
   const {

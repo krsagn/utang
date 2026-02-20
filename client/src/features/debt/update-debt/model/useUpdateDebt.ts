@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/shared/lib/api";
+import { api } from "@/shared/lib";
 import type { Debt, UpdateDebt } from "@/entities/debt";
 
 export function useUpdateDebt() {

@@ -1,5 +1,5 @@
 // Types
-import type { Debt, DebtType } from "../";
+import type { Debt, DebtType } from "../model/types";
 
 // React
 import { useId } from "react";
