@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/shared/lib";
-import type { Debt, UpdateDebt } from "@/entities/debt";
+import type { Debt } from "@/entities/debt";
+import type { UpdateDebt } from "./types";
 
 export function useUpdateDebt() {
   const queryClient = useQueryClient();

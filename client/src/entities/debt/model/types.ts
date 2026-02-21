@@ -12,7 +12,3 @@ export interface Debt {
 }
 
 export type DebtType = "pay" | "receive";
-
-export type NewDebt = Omit<Debt, "id" | "createdAt" | "status">;
-
-export type UpdateDebt = Partial<Omit<Debt, "id" | "createdAt">>;

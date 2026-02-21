@@ -1,6 +1,7 @@
 import { DebtList } from "@/features/debt/list";
 import { useModal } from "@/shared/lib";
-import { Button, Modal } from "@/shared/ui";
+import { Button } from "@/shared/ui";
+import { CreateDebtModal } from "@/features/debt/create-debt";
 
 export function Outgoing() {
   const modal = useModal();
@@ -14,10 +15,9 @@ export function Outgoing() {
         </Button>
       </div>
       <DebtList type="pay" />
-      <Modal
+      <CreateDebtModal
         isOpen={modal.isOpen("create-debt")}
         onClose={modal.close}
-        custom={false}
       />
     </div>
   );

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 interface ModalProps {
   isOpen: boolean;
-  onClose?: () => void;
+  onClose: () => void;
   custom: boolean;
   children?: React.ReactNode;
 }
@@ -42,6 +42,7 @@ function Modal({ isOpen, onClose, custom, children }: ModalProps) {
             exit={{ opacity: 0, y: 15 }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             onClick={(e) => e.stopPropagation()}
+            className="drop-shadow-xl"
           >
             {custom ? (
               children
