@@ -3,7 +3,7 @@ import { users, debts } from '../src/db/schema.js';
 import * as argon2 from 'argon2';
 
 async function seed() {
-  console.log('🌱 Seeding database...');
+  console.log('Seeding database...');
 
   try {
     // 1. Create Users
