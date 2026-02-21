@@ -1,11 +1,10 @@
 import { DebtList } from "@/features/debt/list";
+import { Navbar } from "@/widgets/navbar";
 
 export function Incoming() {
   return (
     <div className="flex flex-col">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-extrabold">To Receive</h1>
-      </div>
+      <Navbar title="To Receive" />
       <DebtList type="receive" />
     </div>
   );

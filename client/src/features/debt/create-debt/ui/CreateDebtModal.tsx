@@ -89,8 +89,8 @@ function CreateDebtForm({
     currency: "AUD",
     amount: "",
     title: "",
-    description: "",
-    deadline: "",
+    description: undefined,
+    deadline: undefined,
   });
 
   return (
