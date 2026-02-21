@@ -91,7 +91,17 @@ function CreateDebtForm({ onClose }: { onClose: () => void }) {
           </div>
           <div className="w-px shrink-0 self-stretch bg-black/10" />
           <div className="min-w-0 flex-1">
-            <DatePicker />
+            <DatePicker
+              value={
+                formData.deadline ? new Date(formData.deadline) : undefined
+              }
+              onChange={(date) =>
+                setFormData({
+                  ...formData,
+                  deadline: date ? date.toISOString() : undefined,
+                })
+              }
+            />
           </div>
         </div>
 
@@ -108,7 +118,7 @@ function CreateDebtForm({ onClose }: { onClose: () => void }) {
           />
           <div className="mx-3 h-px bg-black/10" />
           <textarea
-            value={formData.description}
+            value={formData.description ?? ""}
             onChange={(e) => {
               setFormData({ ...formData, description: e.target.value });
             }}
@@ -346,9 +356,13 @@ function FriendsCombobox() {
   );
 }
 
-function DatePicker() {
-  const [date, setDate] = useState<Date>();
-
+function DatePicker({
+  value,
+  onChange,
+}: {
+  value?: Date;
+  onChange: (date?: Date) => void;
+}) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -356,7 +370,7 @@ function DatePicker() {
           type="button"
           className={cn(
             "flex h-10 w-full min-w-0 items-center gap-2 bg-transparent px-3 text-center text-base text-black transition-all outline-none hover:bg-black/10 focus-visible:bg-black/5 md:text-sm",
-            !date && "text-black/50",
+            !value && "text-black/50",
           )}
         >
           <CalendarAdd
@@ -364,8 +378,8 @@ function DatePicker() {
             color="black"
             className="size-5 opacity-50 md:size-4"
           />
-          {date ? (
-            date.toLocaleDateString("en-US", {
+          {value ? (
+            value.toLocaleDateString("en-US", {
               month: "long",
               day: "numeric",
               year: "numeric",
@@ -378,8 +392,8 @@ function DatePicker() {
       <PopoverContent className="w-auto p-0" align="start" side="top">
         <Calendar
           mode="single"
-          selected={date}
-          onSelect={setDate}
+          selected={value}
+          onSelect={onChange}
           disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
           autoFocus
         />

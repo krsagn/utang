@@ -22,5 +22,5 @@ export const createDebtSchema = z.object({
 
 // Same shape as createDebtSchema, partial() makes all fields optional
 export const updateDebtSchema = createDebtSchema.partial().extend({
-  status: z.enum(['PENDING', 'PAID', 'VOID']).optional(),
+  status: z.enum(['pending', 'paid', 'void']).optional(),
 });
