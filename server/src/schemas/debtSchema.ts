@@ -14,7 +14,7 @@ export const createDebtSchema = z.object({
 
   // Description is optional
   title: z.string().max(30, 'Title too long'),
-  description: z.string().optional(),
+  description: z.string().max(100, 'Description too long').optional(),
 
   // Deadline is optional
   deadline: z.coerce.date().optional(),
@@ -22,5 +22,5 @@ export const createDebtSchema = z.object({
 
 // Same shape as createDebtSchema, partial() makes all fields optional
 export const updateDebtSchema = createDebtSchema.partial().extend({
-  status: z.enum(['PENDING', 'PAID', 'VOID']).optional(),
+  status: z.enum(['pending', 'paid', 'void']).optional(),
 });

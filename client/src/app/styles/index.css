@@ -118,19 +118,45 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
-html {
-  scrollbar-gutter: stable;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
+
+    /* Firefox Scrollbar Support */
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted-foreground) transparent;
   }
   body {
     @apply bg-background text-foreground selection:bg-black/10;
 
     font-family: var(--font-sans);
   }
+
+  /* Force hide number spinners globally */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+}
+
+/* Custom Webkit Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 9999px;
 }
 
 @font-face {

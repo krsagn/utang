@@ -1,0 +1,482 @@
+import {
+  Modal,
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxList,
+  Calendar,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Button,
+} from "@/shared/ui";
+import { InputGroupAddon } from "@/shared/ui/input-group";
+import { useState, useId } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CalendarAdd, User } from "@solar-icons/react";
+import {
+  ChevronDownIcon,
+  ArrowUpRight,
+  ArrowDownLeft,
+  X,
+  Plus,
+} from "lucide-react";
+import { cn } from "@/shared/lib";
+import type { NewDebt } from "../model/types";
+import { NumericFormat } from "react-number-format";
+
+interface CreateDebtModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function CreateDebtModal({ isOpen, onClose }: CreateDebtModalProps) {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} custom={true}>
+      <div className="isolate flex w-[calc(100vw-2rem)] flex-col overflow-clip rounded-4xl sm:w-md">
+        <CreateDebtForm onClose={onClose} />
+      </div>
+    </Modal>
+  );
+}
+
+function CreateDebtForm({ onClose }: { onClose: () => void }) {
+  const [type, setType] = useState<"pay" | "receive">("pay");
+
+  const [formData, setFormData] = useState<NewDebt>({
+    lenderName: "",
+    lendeeName: "",
+    currency: "AUD",
+    amount: "",
+    title: "",
+    description: "",
+    deadline: "",
+  });
+
+  return (
+    <form
+      className="flex w-full flex-col"
+      onKeyDown={(e) => {
+        if (
+          e.key === "Enter" &&
+          (e.target as HTMLElement).tagName.toLowerCase() !== "textarea"
+        ) {
+          e.preventDefault();
+        }
+      }}
+    >
+      {/* Top Ticket Section */}
+      <div className="flex w-full flex-col items-center justify-center gap-5 rounded-t-[36px] bg-white p-6 pb-0 sm:p-8 sm:pb-0">
+        <TypeToggle type={type} setType={setType} />
+        <AmountInput
+          value={formData.amount}
+          onChange={(val) => setFormData({ ...formData, amount: val })}
+          currency={formData.currency}
+          onCurrencyChange={(val) =>
+            setFormData({ ...formData, currency: val })
+          }
+          type={type}
+        />
+      </div>
+
+      {/* Punched Divider */}
+      <HorizontalDashedDivider punched />
+
+      {/* Bottom Form Section */}
+      <div className="flex w-full flex-col items-center justify-center gap-5 rounded-b-[36px] bg-white p-6 pt-0 sm:p-8 sm:pt-0">
+        <div className="flex w-full items-center overflow-hidden rounded-xl bg-black/5 transition-all">
+          <div className="min-w-0 flex-1">
+            <FriendsCombobox />
+          </div>
+          <div className="w-px shrink-0 self-stretch bg-black/10" />
+          <div className="min-w-0 flex-1">
+            <DatePicker
+              value={
+                formData.deadline ? new Date(formData.deadline) : undefined
+              }
+              onChange={(date) =>
+                setFormData({
+                  ...formData,
+                  deadline: date ? date.toISOString() : undefined,
+                })
+              }
+            />
+          </div>
+        </div>
+
+        <div className="flex w-full flex-col overflow-hidden rounded-xl bg-black/5 transition-all focus-within:bg-black/10">
+          <input
+            type="text"
+            maxLength={30}
+            value={formData.title}
+            onChange={(e) => {
+              setFormData({ ...formData, title: e.target.value });
+            }}
+            placeholder="Title"
+            className="h-10 w-full bg-transparent px-4 text-sm text-black outline-none placeholder:text-black/50"
+          />
+          <div className="mx-3 h-px bg-black/10" />
+          <textarea
+            value={formData.description ?? ""}
+            onChange={(e) => {
+              setFormData({ ...formData, description: e.target.value });
+            }}
+            maxLength={100}
+            placeholder="Description (Optional)"
+            className="h-20 w-full resize-none bg-transparent px-4 py-2.5 text-sm text-black outline-none placeholder:text-black/50"
+          />
+        </div>
+
+        <HorizontalDashedDivider />
+
+        <div className="flex w-full items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            className="h-14 flex-1 gap-1.5 rounded-2xl bg-black/5 text-sm font-semibold tracking-wide text-black hover:bg-black/10 active:bg-black/15"
+          >
+            <X className="size-4 shrink-0" />
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            className="h-14 flex-1 gap-1.5 rounded-2xl text-sm font-semibold tracking-wide"
+          >
+            <Plus className="size-4 shrink-0" />
+            Create
+          </Button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+function TypeToggle({
+  type,
+  setType,
+}: {
+  type: "pay" | "receive";
+  setType: (val: "pay" | "receive") => void;
+}) {
+  return (
+    <div className="flex w-fit justify-center gap-2 rounded-3xl bg-black/5 p-2 text-sm">
+      <button
+        type="button"
+        onClick={() => setType("pay")}
+        className={cn(
+          "relative flex w-44 items-center justify-center gap-1.5 rounded-2xl py-3 font-semibold transition-colors outline-none",
+          type === "pay" ? "text-[#AF1D1D]" : "text-foreground",
+        )}
+      >
+        <ArrowUpRight className="relative z-10 size-4 shrink-0" />
+        <span className="relative z-10">To Pay</span>
+        {type === "pay" && (
+          <motion.div
+            layoutId="activeTab"
+            className="absolute inset-0 rounded-2xl bg-white"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={() => setType("receive")}
+        className={cn(
+          "relative flex w-44 items-center justify-center gap-1.5 rounded-2xl py-3 font-semibold transition-colors outline-none",
+          type === "receive" ? "text-primary" : "text-foreground",
+        )}
+      >
+        <ArrowDownLeft className="relative z-10 size-4 shrink-0" />
+        <span className="relative z-10">To Receive</span>
+        {type === "receive" && (
+          <motion.div
+            layoutId="activeTab"
+            className="absolute inset-0 rounded-2xl bg-white"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          />
+        )}
+      </button>
+    </div>
+  );
+}
+
+const CURRENCIES: Record<string, string> = {
+  AUD: "$",
+  PHP: "₱",
+};
+
+function AmountInput({
+  value,
+  onChange,
+  currency,
+  onCurrencyChange,
+  type,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  currency: string;
+  onCurrencyChange: (val: string) => void;
+  type: "pay" | "receive";
+}) {
+  return (
+    <div className="mt-5 flex w-full flex-col items-center justify-center">
+      <div className="relative flex w-full max-w-full items-center justify-center gap-3 mask-[linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)]">
+        <Popover>
+          <PopoverTrigger asChild>
+            <motion.button
+              layout="position"
+              type="button"
+              className={cn(
+                "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-colors outline-none hover:bg-black/5 active:bg-black/10",
+                type === "pay" ? "text-[#7D1313]/50" : "text-[#6A7D13]/50",
+              )}
+            >
+              <div className="relative flex shrink-0 flex-col items-center justify-center">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  <motion.span
+                    key={currency}
+                    className="font-heading text-5xl font-extrabold"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  >
+                    {CURRENCIES[currency] || "$"}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+              <motion.div layout="position">
+                <ChevronDownIcon className="size-5 opacity-75" />
+              </motion.div>
+            </motion.button>
+          </PopoverTrigger>
+          <PopoverContent className="w-32 p-1" align="center" side="bottom">
+            <div className="flex flex-col gap-1">
+              {Object.entries(CURRENCIES).map(([code, symbol]) => (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => onCurrencyChange(code)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors outline-none hover:bg-black/5",
+                    currency === code ? "bg-black/5" : "bg-transparent",
+                  )}
+                >
+                  <span className="w-4 text-center">{symbol}</span>
+                  {code}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+        <motion.div
+          layout="position"
+          className="flex max-w-full min-w-0 shrink items-center"
+        >
+          <NumericFormat
+            id="amount"
+            value={value}
+            onValueChange={(val) => onChange(val.value)}
+            thousandSeparator=","
+            decimalScale={2}
+            fixedDecimalScale
+            allowNegative={false}
+            allowLeadingZeros={false}
+            isAllowed={(values) => {
+              const { floatValue, value } = values;
+
+              if (/^00/.test(value)) return false;
+
+              const [integerPart] = value.split(".");
+              if (integerPart !== undefined && integerPart.length > 8)
+                return false;
+
+              return floatValue === undefined || floatValue <= 99999999.99;
+            }}
+            placeholder="0.00"
+            className={cn(
+              "font-heading field-sizing-content max-w-full min-w-0 shrink bg-transparent text-6xl font-extrabold outline-none",
+              value
+                ? cn(
+                    "bg-linear-to-tr bg-clip-text text-transparent transition-colors",
+                    type === "pay"
+                      ? "from-[#7D1313] to-[#AF1D1D]"
+                      : "to-primary from-[#6A7D13]",
+                  )
+                : type === "pay"
+                  ? "text-[#7D1313]/30 placeholder:text-[#7D1313]/30"
+                  : "text-[#6A7D13]/30 placeholder:text-[#6A7D13]/30",
+            )}
+          />
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function FriendsCombobox() {
+  const [inputValue, setInputValue] = useState("");
+  const friends: string[] = []; // TODO: Wire up to friends API
+
+  const filtered = friends.filter((f) =>
+    f.toLowerCase().includes(inputValue.toLowerCase()),
+  );
+
+  const options =
+    filtered.length === 0 && inputValue.trim() ? [inputValue.trim()] : filtered;
+
+  return (
+    <Combobox>
+      <ComboboxInput
+        placeholder="With Whom?"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        className="h-10 rounded-r-none bg-transparent text-black focus-visible:bg-black/5 md:text-sm"
+      >
+        <InputGroupAddon align="inline-start">
+          <User
+            weight="BoldDuotone"
+            color="black"
+            className="size-5 opacity-50 md:size-4"
+          />
+        </InputGroupAddon>
+      </ComboboxInput>
+      <ComboboxContent>
+        <ComboboxList>
+          {options.map((item) => (
+            <ComboboxItem key={item} value={item}>
+              {item}
+            </ComboboxItem>
+          ))}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  );
+}
+
+function DatePicker({
+  value,
+  onChange,
+}: {
+  value?: Date;
+  onChange: (date?: Date) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "flex h-10 w-full min-w-0 items-center gap-2 bg-transparent px-3 text-center text-base text-black transition-all outline-none hover:bg-black/10 focus-visible:bg-black/5 md:text-sm",
+            !value && "text-black/50",
+          )}
+        >
+          <CalendarAdd
+            weight="BoldDuotone"
+            color="black"
+            className="size-5 opacity-50 md:size-4"
+          />
+          {value ? (
+            value.toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })
+          ) : (
+            <span>Deadline (Optional)</span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start" side="top">
+        <Calendar
+          mode="single"
+          selected={value}
+          onSelect={onChange}
+          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+          autoFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function HorizontalDashedDivider({ punched = false }: { punched?: boolean }) {
+  const gradientId = useId();
+
+  if (!punched) {
+    return (
+      <div className="relative -mx-6 flex w-[calc(100%+48px)] shrink-0 items-center justify-center py-5 sm:-mx-8 sm:w-[calc(100%+64px)]">
+        <svg
+          className="h-0.5 w-full"
+          viewBox="0 0 100 2"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient
+              id={gradientId}
+              x1="0"
+              y1="0"
+              x2="100"
+              y2="0"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0%" stopColor="black" stopOpacity="0" />
+              <stop offset="50%" stopColor="black" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="black" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <line
+            x1="0"
+            y1="1"
+            x2="100"
+            y2="1"
+            stroke={`url(#${gradientId})`}
+            strokeWidth="2"
+            strokeDasharray="4 8"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative flex w-full shrink-0 items-center justify-center py-10">
+      <div className="absolute inset-x-0 -inset-y-px bg-white mask-[radial-gradient(circle_16px_at_0%_50%,transparent_16px,black_16.5px),radial-gradient(circle_16px_at_100%_50%,transparent_16px,black_16.5px)] mask-[51%_100%,51%_100%] mask-position-[left,right] mask-no-repeat" />
+      <svg
+        className="relative z-10 h-0.5 w-[calc(100%-32px)]"
+        viewBox="0 0 100 2"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient
+            id={gradientId}
+            x1="0"
+            y1="0"
+            x2="100"
+            y2="0"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="black" stopOpacity="0" />
+            <stop offset="50%" stopColor="black" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="black" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <line
+          x1="0"
+          y1="1"
+          x2="100"
+          y2="1"
+          stroke={`url(#${gradientId})`}
+          strokeWidth="2"
+          strokeDasharray="4 8"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
+  );
+}
