@@ -14,7 +14,7 @@ export const createDebtSchema = z.object({
 
   // Description is optional
   title: z.string().max(30, 'Title too long'),
-  description: z.string().optional(),
+  description: z.string().max(100, 'Description too long').optional(),
 
   // Deadline is optional
   deadline: z.coerce.date().optional(),

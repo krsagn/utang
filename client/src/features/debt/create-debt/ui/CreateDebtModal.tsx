@@ -1,6 +1,5 @@
 import {
   Modal,
-  Input,
   Combobox,
   ComboboxInput,
   ComboboxContent,
@@ -12,10 +11,17 @@ import {
   PopoverContent,
   Button,
 } from "@/shared/ui";
+import { InputGroupAddon } from "@/shared/ui/input-group";
 import { useState, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarAdd } from "@solar-icons/react";
-import { ChevronDownIcon } from "lucide-react";
+import { CalendarAdd, User } from "@solar-icons/react";
+import {
+  ChevronDownIcon,
+  ArrowUpRight,
+  ArrowDownLeft,
+  X,
+  Plus,
+} from "lucide-react";
 import { cn } from "@/shared/lib";
 import type { NewDebt } from "../model/types";
 import { NumericFormat } from "react-number-format";
@@ -28,7 +34,7 @@ interface CreateDebtModalProps {
 export function CreateDebtModal({ isOpen, onClose }: CreateDebtModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} custom={true}>
-      <div className="isolate w-[calc(100vw-2rem)] rounded-4xl bg-white p-6 sm:w-125 sm:p-8">
+      <div className="isolate flex w-[calc(100vw-2rem)] flex-col overflow-clip rounded-4xl sm:w-md">
         <CreateDebtForm onClose={onClose} />
       </div>
     </Modal>
@@ -49,43 +55,89 @@ function CreateDebtForm({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <form className="flex w-full flex-col items-center justify-center gap-5">
-      <TypeToggle type={type} setType={setType} />
-      <AmountInput
-        value={formData.amount}
-        onChange={(val) => setFormData({ ...formData, amount: val })}
-        currency={formData.currency}
-        onCurrencyChange={(val) => setFormData({ ...formData, currency: val })}
-        label={type === "pay" ? "I Owe" : "I Lent"}
-      />
+    <form
+      className="flex w-full flex-col"
+      onKeyDown={(e) => {
+        if (
+          e.key === "Enter" &&
+          (e.target as HTMLElement).tagName.toLowerCase() !== "textarea"
+        ) {
+          e.preventDefault();
+        }
+      }}
+    >
+      {/* Top Ticket Section */}
+      <div className="flex w-full flex-col items-center justify-center gap-5 rounded-t-[36px] bg-white p-6 pb-0 sm:p-8 sm:pb-0">
+        <TypeToggle type={type} setType={setType} />
+        <AmountInput
+          value={formData.amount}
+          onChange={(val) => setFormData({ ...formData, amount: val })}
+          currency={formData.currency}
+          onCurrencyChange={(val) =>
+            setFormData({ ...formData, currency: val })
+          }
+          type={type}
+        />
+      </div>
 
-      <HorizontalDashedDivider />
+      {/* Punched Divider */}
+      <HorizontalDashedDivider punched />
 
-      <FriendsCombobox />
-      <Input placeholder="Title" className="h-10" />
-      <textarea
-        placeholder="Description (Optional)"
-        className="h-20 w-full min-w-0 resize-none rounded-xl bg-black/5 px-4 py-3 text-base text-black shadow-none transition-all outline-none placeholder:text-black/50 focus-visible:bg-black/10 md:text-sm"
-      />
-      <DatePicker />
+      {/* Bottom Form Section */}
+      <div className="flex w-full flex-col items-center justify-center gap-5 rounded-b-[36px] bg-white p-6 pt-0 sm:p-8 sm:pt-0">
+        <div className="flex w-full items-center overflow-hidden rounded-xl bg-black/5 transition-all">
+          <div className="min-w-0 flex-1">
+            <FriendsCombobox />
+          </div>
+          <div className="w-px shrink-0 self-stretch bg-black/10" />
+          <div className="min-w-0 flex-1">
+            <DatePicker />
+          </div>
+        </div>
 
-      <HorizontalDashedDivider />
+        <div className="flex w-full flex-col overflow-hidden rounded-xl bg-black/5 transition-all focus-within:bg-black/10">
+          <input
+            type="text"
+            maxLength={30}
+            value={formData.title}
+            onChange={(e) => {
+              setFormData({ ...formData, title: e.target.value });
+            }}
+            placeholder="Title"
+            className="h-10 w-full bg-transparent px-4 text-sm text-black outline-none placeholder:text-black/50"
+          />
+          <div className="mx-3 h-px bg-black/10" />
+          <textarea
+            value={formData.description}
+            onChange={(e) => {
+              setFormData({ ...formData, description: e.target.value });
+            }}
+            maxLength={100}
+            placeholder="Description (Optional)"
+            className="h-20 w-full resize-none bg-transparent px-4 py-2.5 text-sm text-black outline-none placeholder:text-black/50"
+          />
+        </div>
 
-      <div className="flex w-full items-center justify-between gap-3">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onClose}
-          className="h-14 flex-1 rounded-2xl bg-black/5 text-sm font-semibold tracking-wide text-black hover:bg-black/10 active:bg-black/15"
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          className="h-14 flex-1 rounded-2xl text-sm font-semibold tracking-wide"
-        >
-          Create
-        </Button>
+        <HorizontalDashedDivider />
+
+        <div className="flex w-full items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            className="h-14 flex-1 gap-1.5 rounded-2xl bg-black/5 text-sm font-semibold tracking-wide text-black hover:bg-black/10 active:bg-black/15"
+          >
+            <X className="size-4 shrink-0" />
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            className="h-14 flex-1 gap-1.5 rounded-2xl text-sm font-semibold tracking-wide"
+          >
+            <Plus className="size-4 shrink-0" />
+            Create
+          </Button>
+        </div>
       </div>
     </form>
   );
@@ -99,35 +151,42 @@ function TypeToggle({
   setType: (val: "pay" | "receive") => void;
 }) {
   return (
-    <div className="bg-secondary flex w-fit justify-center gap-2 rounded-3xl p-2 text-sm">
+    <div className="flex w-fit justify-center gap-2 rounded-3xl bg-black/5 p-2 text-sm">
       <button
         type="button"
         onClick={() => setType("pay")}
-        className="relative flex w-50 justify-center rounded-2xl py-3"
+        className={cn(
+          "relative flex w-44 items-center justify-center gap-1.5 rounded-2xl py-3 font-semibold transition-colors outline-none",
+          type === "pay" ? "text-[#AF1D1D]" : "text-foreground",
+        )}
       >
+        <ArrowUpRight className="relative z-10 size-4 shrink-0" />
+        <span className="relative z-10">To Pay</span>
         {type === "pay" && (
           <motion.div
-            layoutId="active-pill"
+            layoutId="activeTab"
             className="absolute inset-0 rounded-2xl bg-white"
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           />
         )}
-        <span className="relative z-10 font-medium">To Pay</span>
       </button>
-
       <button
         type="button"
         onClick={() => setType("receive")}
-        className="relative flex w-50 justify-center rounded-2xl py-3"
+        className={cn(
+          "relative flex w-44 items-center justify-center gap-1.5 rounded-2xl py-3 font-semibold transition-colors outline-none",
+          type === "receive" ? "text-primary" : "text-foreground",
+        )}
       >
+        <ArrowDownLeft className="relative z-10 size-4 shrink-0" />
+        <span className="relative z-10">To Receive</span>
         {type === "receive" && (
           <motion.div
-            layoutId="active-pill"
+            layoutId="activeTab"
             className="absolute inset-0 rounded-2xl bg-white"
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           />
         )}
-        <span className="relative z-10 font-medium">To Receive</span>
       </button>
     </div>
   );
@@ -143,47 +202,32 @@ function AmountInput({
   onChange,
   currency,
   onCurrencyChange,
-  label,
+  type,
 }: {
   value: string;
   onChange: (val: string) => void;
   currency: string;
   onCurrencyChange: (val: string) => void;
-  label: string;
+  type: "pay" | "receive";
 }) {
   return (
-    <div className="flex w-full flex-col items-center justify-center pt-2">
-      <div className="relative mb-2 flex h-5 w-full items-center justify-center">
-        <AnimatePresence initial={false}>
-          <motion.label
-            key={label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            htmlFor="amount"
-            className="text-muted-foreground absolute text-sm font-medium"
-          >
-            {label}
-          </motion.label>
-        </AnimatePresence>
-      </div>
-      <motion.div
-        layout
-        className="relative flex w-full max-w-full items-center justify-center gap-3"
-      >
+    <div className="mt-5 flex w-full flex-col items-center justify-center">
+      <div className="relative flex w-full max-w-full items-center justify-center gap-3 mask-[linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)]">
         <Popover>
           <PopoverTrigger asChild>
             <motion.button
-              layout
+              layout="position"
               type="button"
-              className="text-foreground/50 flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-colors outline-none hover:bg-black/5 active:bg-black/10"
+              className={cn(
+                "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-colors outline-none hover:bg-black/5 active:bg-black/10",
+                type === "pay" ? "text-[#7D1313]/50" : "text-[#6A7D13]/50",
+              )}
             >
               <div className="relative flex shrink-0 flex-col items-center justify-center">
                 <AnimatePresence mode="popLayout" initial={false}>
                   <motion.span
                     key={currency}
-                    className="font-heading text-4xl font-extrabold"
+                    className="font-heading text-5xl font-extrabold"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -193,8 +237,8 @@ function AmountInput({
                   </motion.span>
                 </AnimatePresence>
               </div>
-              <motion.div layout>
-                <ChevronDownIcon className="size-5 opacity-40" />
+              <motion.div layout="position">
+                <ChevronDownIcon className="size-5 opacity-75" />
               </motion.div>
             </motion.button>
           </PopoverTrigger>
@@ -210,9 +254,7 @@ function AmountInput({
                     currency === code ? "bg-black/5" : "bg-transparent",
                   )}
                 >
-                  <span className="text-muted-foreground w-4 text-center">
-                    {symbol}
-                  </span>
+                  <span className="w-4 text-center">{symbol}</span>
                   {code}
                 </button>
               ))}
@@ -220,7 +262,7 @@ function AmountInput({
           </PopoverContent>
         </Popover>
         <motion.div
-          layout
+          layout="position"
           className="flex max-w-full min-w-0 shrink items-center"
         >
           <NumericFormat
@@ -231,11 +273,35 @@ function AmountInput({
             decimalScale={2}
             fixedDecimalScale
             allowNegative={false}
+            allowLeadingZeros={false}
+            isAllowed={(values) => {
+              const { floatValue, value } = values;
+
+              if (/^00/.test(value)) return false;
+
+              const [integerPart] = value.split(".");
+              if (integerPart !== undefined && integerPart.length > 8)
+                return false;
+
+              return floatValue === undefined || floatValue <= 99999999.99;
+            }}
             placeholder="0.00"
-            className="text-foreground placeholder:text-foreground/20 font-heading field-sizing-content max-w-full min-w-0 shrink bg-transparent text-5xl font-extrabold outline-none"
+            className={cn(
+              "font-heading field-sizing-content max-w-full min-w-0 shrink bg-transparent text-6xl font-extrabold outline-none",
+              value
+                ? cn(
+                    "bg-linear-to-tr bg-clip-text text-transparent transition-colors",
+                    type === "pay"
+                      ? "from-[#7D1313] to-[#AF1D1D]"
+                      : "to-primary from-[#6A7D13]",
+                  )
+                : type === "pay"
+                  ? "text-[#7D1313]/30 placeholder:text-[#7D1313]/30"
+                  : "text-[#6A7D13]/30 placeholder:text-[#6A7D13]/30",
+            )}
           />
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -257,8 +323,16 @@ function FriendsCombobox() {
         placeholder="With Whom?"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        className="h-10 md:text-sm"
-      />
+        className="h-10 rounded-r-none bg-transparent text-black focus-visible:bg-black/5 md:text-sm"
+      >
+        <InputGroupAddon align="inline-start">
+          <User
+            weight="BoldDuotone"
+            color="black"
+            className="size-5 opacity-50 md:size-4"
+          />
+        </InputGroupAddon>
+      </ComboboxInput>
       <ComboboxContent>
         <ComboboxList>
           {options.map((item) => (
@@ -281,7 +355,7 @@ function DatePicker() {
         <button
           type="button"
           className={cn(
-            "flex h-10 w-full min-w-0 items-center gap-2 rounded-xl bg-black/5 px-4 text-left text-base text-black transition-all outline-none focus-visible:bg-black/10 md:text-sm",
+            "flex h-10 w-full min-w-0 items-center gap-2 bg-transparent px-3 text-center text-base text-black transition-all outline-none hover:bg-black/10 focus-visible:bg-black/5 md:text-sm",
             !date && "text-black/50",
           )}
         >
@@ -297,7 +371,7 @@ function DatePicker() {
               year: "numeric",
             })
           ) : (
-            <span>Pick a deadline (Optional)</span>
+            <span>Deadline (Optional)</span>
           )}
         </button>
       </PopoverTrigger>
@@ -307,20 +381,59 @@ function DatePicker() {
           selected={date}
           onSelect={setDate}
           disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-          initialFocus
+          autoFocus
         />
       </PopoverContent>
     </Popover>
   );
 }
 
-function HorizontalDashedDivider() {
+function HorizontalDashedDivider({ punched = false }: { punched?: boolean }) {
   const gradientId = useId();
 
+  if (!punched) {
+    return (
+      <div className="relative -mx-6 flex w-[calc(100%+48px)] shrink-0 items-center justify-center py-5 sm:-mx-8 sm:w-[calc(100%+64px)]">
+        <svg
+          className="h-0.5 w-full"
+          viewBox="0 0 100 2"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient
+              id={gradientId}
+              x1="0"
+              y1="0"
+              x2="100"
+              y2="0"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0%" stopColor="black" stopOpacity="0" />
+              <stop offset="50%" stopColor="black" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="black" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <line
+            x1="0"
+            y1="1"
+            x2="100"
+            y2="1"
+            stroke={`url(#${gradientId})`}
+            strokeWidth="2"
+            strokeDasharray="4 8"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative -mx-10 flex w-[calc(100%+80px)] shrink-0 items-center justify-center py-2">
+    <div className="relative flex w-full shrink-0 items-center justify-center py-10">
+      <div className="absolute inset-x-0 -inset-y-px bg-white mask-[radial-gradient(circle_16px_at_0%_50%,transparent_16px,black_16.5px),radial-gradient(circle_16px_at_100%_50%,transparent_16px,black_16.5px)] mask-[51%_100%,51%_100%] mask-position-[left,right] mask-no-repeat" />
       <svg
-        className="h-0.5 w-full"
+        className="relative z-10 h-0.5 w-[calc(100%-32px)]"
         viewBox="0 0 100 2"
         preserveAspectRatio="none"
       >
