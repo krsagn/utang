@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { users, debts } from '../db/schema.js';
-import { or, and, eq, type InferInsertModel } from 'drizzle-orm';
+import { or, and, eq, desc, type InferInsertModel } from 'drizzle-orm';
 import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
 import { z } from 'zod';
 
@@ -28,6 +28,9 @@ export const getDebts = async (req: Request, res: Response) => {
       // User is involved as either party
       query.where(or(eq(debts.lendeeId, userId), eq(debts.lenderId, userId)));
     }
+
+    // Newest debts at the top!
+    query.orderBy(desc(debts.createdAt));
 
     const userDebts = await query;
     return res.json(userDebts);
@@ -79,7 +82,13 @@ export const getDebtById = async (req: Request, res: Response) => {
 export const createDebt = async (req: Request, res: Response) => {
   try {
     const body = createDebtSchema.parse(req.body);
-    const userId = res.locals.user!.id;
+    const sessionUserId = res.locals.user!.id;
+
+    if (body.lenderId !== sessionUserId && body.lendeeId !== sessionUserId) {
+      return res
+        .status(403)
+        .json({ error: 'You cannot create a debt between two other people.' });
+    }
 
     let finalLenderName = body.lenderName;
     let finalLendeeName = body.lendeeName;
@@ -107,7 +116,7 @@ export const createDebt = async (req: Request, res: Response) => {
     const newDebt = {
       ...body,
       amount: body.amount.toString(),
-      createdBy: userId,
+      createdBy: sessionUserId,
       lenderName: finalLenderName,
       lendeeName: finalLendeeName,
     };

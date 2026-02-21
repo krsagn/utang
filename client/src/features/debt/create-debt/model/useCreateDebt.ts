@@ -8,7 +8,15 @@ export function useCreateDebt() {
 
   return useMutation({
     mutationFn: async (newDebt: NewDebt) => {
-      const { data } = await api.post<Debt>("/debts", newDebt);
+      const payload = {
+        ...newDebt,
+        lendeeId: newDebt.lendeeId || undefined,
+        lenderId: newDebt.lenderId || undefined,
+        description: newDebt.description || undefined,
+        deadline: newDebt.deadline || undefined,
+      };
+
+      const { data } = await api.post<Debt>("/debts", payload);
       return data;
     },
     onSuccess: () => {

@@ -1,3 +1,4 @@
+export * from "./input-group";
 export * from "./popover";
 export * from "./textarea";
 export * from "./combobox";

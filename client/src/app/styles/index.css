@@ -124,7 +124,7 @@
 
     /* Firefox Scrollbar Support */
     scrollbar-width: thin;
-    scrollbar-color: var(--muted-foreground) transparent;
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
   }
   body {
     @apply bg-background text-foreground selection:bg-black/10;
@@ -155,7 +155,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--muted-foreground);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 9999px;
 }
 

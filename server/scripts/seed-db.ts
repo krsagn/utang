@@ -1,5 +1,5 @@
 import { db } from '../src/db/index.js';
-import { users, debts } from '../src/db/schema.js';
+import { users, debts, friendships } from '../src/db/schema.js';
 import * as argon2 from 'argon2';
 
 async function seed() {
@@ -67,6 +67,16 @@ async function seed() {
       lendeeName: 'Kristian',
       createdBy: user2Id, // Romina created this one
     });
+
+    console.log('Creating friendship...');
+    const [userId1, userId2] = [user1Id, user2Id].sort();
+    await db.insert(friendships).values({
+      userId1,
+      userId2,
+      requesterId: user1Id,
+      status: 'accepted',
+    });
+    console.log('Created Friendships');
 
     console.log('✅ Database seeded successfully!');
     console.log(`User 1 (Kristian): ${user1Id}`);

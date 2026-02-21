@@ -5,13 +5,14 @@ import {
   ComboboxContent,
   ComboboxItem,
   ComboboxList,
+  useComboboxAnchor,
   Calendar,
   Popover,
   PopoverTrigger,
   PopoverContent,
   Button,
+  InputGroupAddon,
 } from "@/shared/ui";
-import { InputGroupAddon } from "@/shared/ui/input-group";
 import { useState, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CalendarAdd, User } from "@solar-icons/react";
@@ -25,6 +26,9 @@ import {
 import { cn } from "@/shared/lib";
 import type { NewDebt } from "../model/types";
 import { NumericFormat } from "react-number-format";
+import { useFriends } from "@/entities/friendship";
+import { useSession } from "@/entities/user";
+import { useCreateDebt } from "../model/useCreateDebt";
 
 interface CreateDebtModalProps {
   isOpen: boolean;
@@ -32,16 +36,51 @@ interface CreateDebtModalProps {
 }
 
 export function CreateDebtModal({ isOpen, onClose }: CreateDebtModalProps) {
+  const { data: user } = useSession();
+  const { mutate: createDebt, isPending } = useCreateDebt();
+
+  const handleSubmit = (formData: NewDebt, type: "pay" | "receive") => {
+    if (!user) return;
+
+    const payload = { ...formData };
+
+    if (type === "pay") {
+      payload.lendeeId = user.id;
+      payload.lendeeName = `${user.firstName} ${user.lastName}`;
+    } else {
+      payload.lenderId = user.id;
+      payload.lenderName = `${user.firstName} ${user.lastName}`;
+    }
+
+    createDebt(payload, {
+      onSuccess: () => {
+        onClose();
+      },
+    });
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} custom={true}>
       <div className="isolate flex w-[calc(100vw-2rem)] flex-col overflow-clip rounded-4xl sm:w-md">
-        <CreateDebtForm onClose={onClose} />
+        <CreateDebtForm
+          onClose={onClose}
+          onSubmit={handleSubmit}
+          isPending={isPending}
+        />
       </div>
     </Modal>
   );
 }
 
-function CreateDebtForm({ onClose }: { onClose: () => void }) {
+function CreateDebtForm({
+  onClose,
+  onSubmit,
+  isPending,
+}: {
+  onClose: () => void;
+  onSubmit: (formData: NewDebt, type: "pay" | "receive") => void;
+  isPending: boolean;
+}) {
   const [type, setType] = useState<"pay" | "receive">("pay");
 
   const [formData, setFormData] = useState<NewDebt>({
@@ -65,10 +104,38 @@ function CreateDebtForm({ onClose }: { onClose: () => void }) {
           e.preventDefault();
         }
       }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(formData, type);
+      }}
     >
       {/* Top Ticket Section */}
       <div className="flex w-full flex-col items-center justify-center gap-5 rounded-t-[36px] bg-white p-6 pb-0 sm:p-8 sm:pb-0">
-        <TypeToggle type={type} setType={setType} />
+        <TypeToggle
+          type={type}
+          setType={setType}
+          onToggle={(newType) => {
+            if (newType === "pay") {
+              // "To Pay": I owe them. The friend is the LENDER.
+              setFormData((prev) => ({
+                ...prev,
+                lenderName: prev.lendeeName || prev.lenderName,
+                lenderId: prev.lendeeId || prev.lenderId,
+                lendeeName: "",
+                lendeeId: null,
+              }));
+            } else {
+              // "To Receive": They owe me. The friend is the LENDEE.
+              setFormData((prev) => ({
+                ...prev,
+                lendeeName: prev.lenderName || prev.lendeeName,
+                lendeeId: prev.lenderId || prev.lenderId,
+                lenderName: "",
+                lenderId: null,
+              }));
+            }
+          }}
+        />
         <AmountInput
           value={formData.amount}
           onChange={(val) => setFormData({ ...formData, amount: val })}
@@ -85,12 +152,27 @@ function CreateDebtForm({ onClose }: { onClose: () => void }) {
 
       {/* Bottom Form Section */}
       <div className="flex w-full flex-col items-center justify-center gap-5 rounded-b-[36px] bg-white p-6 pt-0 sm:p-8 sm:pt-0">
-        <div className="flex w-full items-center overflow-hidden rounded-xl bg-black/5 transition-all">
-          <div className="min-w-0 flex-1">
-            <FriendsCombobox />
+        <div className="mt-0.5 flex h-10 w-full items-center overflow-hidden rounded-xl bg-black/5 transition-all focus-within:bg-black/10 hover:bg-black/10">
+          <div className="h-full min-w-0 flex-1">
+            <FriendsCombobox
+              value={{
+                name:
+                  type === "pay" ? formData.lenderName : formData.lendeeName,
+                id:
+                  (type === "pay" ? formData.lenderId : formData.lendeeId) ??
+                  undefined,
+              }}
+              onChange={({ name, id }) => {
+                if (type === "pay") {
+                  setFormData({ ...formData, lenderName: name, lenderId: id });
+                } else {
+                  setFormData({ ...formData, lendeeName: name, lendeeId: id });
+                }
+              }}
+            />
           </div>
           <div className="w-px shrink-0 self-stretch bg-black/10" />
-          <div className="min-w-0 flex-1">
+          <div className="h-full min-w-0 flex-1">
             <DatePicker
               value={
                 formData.deadline ? new Date(formData.deadline) : undefined
@@ -143,6 +225,7 @@ function CreateDebtForm({ onClose }: { onClose: () => void }) {
           <Button
             type="submit"
             className="h-14 flex-1 gap-1.5 rounded-2xl text-sm font-semibold tracking-wide"
+            disabled={isPending}
           >
             <Plus className="size-4 shrink-0" />
             Create
@@ -156,15 +239,20 @@ function CreateDebtForm({ onClose }: { onClose: () => void }) {
 function TypeToggle({
   type,
   setType,
+  onToggle,
 }: {
   type: "pay" | "receive";
   setType: (val: "pay" | "receive") => void;
+  onToggle: (type: "pay" | "receive") => void;
 }) {
   return (
     <div className="flex w-fit justify-center gap-2 rounded-3xl bg-black/5 p-2 text-sm">
       <button
         type="button"
-        onClick={() => setType("pay")}
+        onClick={() => {
+          setType("pay");
+          onToggle("pay");
+        }}
         className={cn(
           "relative flex w-44 items-center justify-center gap-1.5 rounded-2xl py-3 font-semibold transition-colors outline-none",
           type === "pay" ? "text-[#AF1D1D]" : "text-foreground",
@@ -182,7 +270,10 @@ function TypeToggle({
       </button>
       <button
         type="button"
-        onClick={() => setType("receive")}
+        onClick={() => {
+          setType("receive");
+          onToggle("receive");
+        }}
         className={cn(
           "relative flex w-44 items-center justify-center gap-1.5 rounded-2xl py-3 font-semibold transition-colors outline-none",
           type === "receive" ? "text-primary" : "text-foreground",
@@ -230,7 +321,13 @@ function AmountInput({
               type="button"
               className={cn(
                 "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-colors outline-none hover:bg-black/5 active:bg-black/10",
-                type === "pay" ? "text-[#7D1313]/50" : "text-[#6A7D13]/50",
+                value
+                  ? type === "pay"
+                    ? "text-[#7D1313]"
+                    : "text-[#6A7D13]"
+                  : type === "pay"
+                    ? "text-[#7D1313] opacity-50"
+                    : "text-[#6A7D13] opacity-50",
               )}
             >
               <div className="relative flex shrink-0 flex-col items-center justify-center">
@@ -316,42 +413,104 @@ function AmountInput({
   );
 }
 
-function FriendsCombobox() {
-  const [inputValue, setInputValue] = useState("");
-  const friends: string[] = []; // TODO: Wire up to friends API
+function FriendsCombobox({
+  value,
+  onChange,
+}: {
+  value: { name: string; id?: string };
+  onChange: (val: { name: string; id?: string }) => void;
+}) {
+  const { data: friends, isLoading } = useFriends("accepted");
+  const anchorRef = useComboboxAnchor();
 
-  const filtered = friends.filter((f) =>
-    f.toLowerCase().includes(inputValue.toLowerCase()),
-  );
+  // Keep a local state just for what the user is currently typing
+  const [inputValue, setInputValue] = useState(value.name);
 
-  const options =
-    filtered.length === 0 && inputValue.trim() ? [inputValue.trim()] : filtered;
+  const safeFriends = friends ?? [];
+  const filteredFriends = safeFriends.filter((friend) => {
+    const friendFullName =
+      `${friend.friendFirstName} ${friend.friendLastName}`.toLowerCase();
+
+    const processedValue = value.name.toLowerCase();
+
+    return friendFullName.includes(processedValue) ? friend : null;
+  });
 
   return (
-    <Combobox>
-      <ComboboxInput
-        placeholder="With Whom?"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        className="h-10 rounded-r-none bg-transparent text-black focus-visible:bg-black/5 md:text-sm"
-      >
-        <InputGroupAddon align="inline-start">
-          <User
-            weight="BoldDuotone"
-            color="black"
-            className="size-5 opacity-50 md:size-4"
-          />
-        </InputGroupAddon>
-      </ComboboxInput>
-      <ComboboxContent>
-        <ComboboxList>
-          {options.map((item) => (
-            <ComboboxItem key={item} value={item}>
-              {item}
-            </ComboboxItem>
-          ))}
-        </ComboboxList>
-      </ComboboxContent>
+    <Combobox
+      // The `value` is the ID of the friend if they picked one from the list.
+      // If it's a custom name, `value` is null/undefined in the Combobox's eyes.
+      value={value.id ?? null}
+      // When a user specifically CLICKS a friend from the dropdown list
+      onValueChange={(selectedId) => {
+        if (!selectedId) return;
+
+        // Find the full friend object using the ID
+        const selectedFriend = safeFriends.find(
+          (f) => f.friendId === selectedId,
+        );
+        if (selectedFriend) {
+          const fullName = `${selectedFriend.friendFirstName} ${selectedFriend.friendLastName}`;
+
+          // Update the input box text visually
+          setInputValue(fullName);
+
+          // Bubble up both the Full Name AND the ID to our overall Form State
+          onChange({
+            name: fullName,
+            id: selectedId,
+          });
+        }
+      }}
+    >
+      <div ref={anchorRef} className="h-full w-full">
+        <ComboboxInput
+          placeholder={isLoading ? "Loading Friends..." : "With Whom?"}
+          value={inputValue}
+          onChange={(e) => {
+            const newName = e.target.value;
+            setInputValue(newName);
+
+            // If they are explicitly typing, we assume it's a completely new, unregistered person
+            // So we wipe out the ID, and just pass the name up to the Form State
+            onChange({
+              name: newName,
+              id: undefined,
+            });
+          }}
+          className="h-full rounded-r-none bg-transparent! text-black md:text-sm"
+        >
+          <InputGroupAddon align="inline-start">
+            <User
+              weight="BoldDuotone"
+              color="black"
+              className="size-5 opacity-50 md:size-4"
+            />
+          </InputGroupAddon>
+        </ComboboxInput>
+      </div>
+
+      {/* 
+        Only show the dropdown content if they haven't exactly matched a friend's name,
+        and there are actually friends to show.
+      */}
+      {filteredFriends.length > 0 && (
+        <ComboboxContent anchor={anchorRef}>
+          <ComboboxList>
+            {filteredFriends.map((friend) => (
+              <ComboboxItem
+                key={friend.friendId}
+                // We use the ID as the value so it uniquely identifies them
+                value={friend.friendId}
+                className="flex flex-col items-start gap-0 text-xs"
+              >
+                {friend.friendFirstName} {friend.friendLastName}
+                <span className="text-black/50">@{friend.friendUsername}</span>
+              </ComboboxItem>
+            ))}
+          </ComboboxList>
+        </ComboboxContent>
+      )}
     </Combobox>
   );
 }
@@ -369,7 +528,7 @@ function DatePicker({
         <button
           type="button"
           className={cn(
-            "flex h-10 w-full min-w-0 items-center gap-2 bg-transparent px-3 text-center text-base text-black transition-all outline-none hover:bg-black/10 focus-visible:bg-black/5 md:text-sm",
+            "flex h-full w-full min-w-0 items-center gap-2 bg-transparent px-3 text-center text-base text-black transition-all outline-none md:text-sm",
             !value && "text-black/50",
           )}
         >
