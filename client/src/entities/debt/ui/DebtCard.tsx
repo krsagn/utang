@@ -51,7 +51,7 @@ export function DebtCard({
       {/* Details portion */}
       <div
         className={cn(
-          "flex shrink-0 flex-col justify-between py-5",
+          "flex min-w-0 flex-1 flex-col justify-between py-5",
           isOutgoing ? "pl-7" : "items-end pr-7",
         )}
       >

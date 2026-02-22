@@ -8,6 +8,9 @@ export function formatCurrency(amount: number | string, currency: string) {
         style: "currency",
         currency: currency,
         currencyDisplay: "narrowSymbol",
+        notation: "compact",
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2,
       }),
     );
   }

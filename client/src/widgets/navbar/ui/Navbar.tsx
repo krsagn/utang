@@ -11,7 +11,7 @@ interface NavbarProps {
 
 export function Navbar({ title, className, children }: NavbarProps) {
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="popLayout">
       <div
         className={cn(
           "flex w-full items-center justify-between px-10 pt-10 pb-5",
@@ -20,8 +20,8 @@ export function Navbar({ title, className, children }: NavbarProps) {
       >
         <motion.h1
           key={title}
-          initial={{ opacity: 0, scale: 0.85, x: -10 }}
-          animate={{ opacity: 1, scale: 1, x: 0 }}
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
           className="font-heading text-2xl font-extrabold"
         >
           {title}

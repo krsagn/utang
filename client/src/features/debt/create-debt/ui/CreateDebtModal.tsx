@@ -63,11 +63,13 @@ export function CreateDebtModal({
     createDebt(payload, {
       onSuccess: () => {
         onClose();
-        if (type === "pay") {
-          navigate("/debts/outgoing");
-        } else {
-          navigate("/debts/incoming");
-        }
+        setTimeout(() => {
+          if (type === "pay") {
+            navigate("/debts/outgoing");
+          } else {
+            navigate("/debts/incoming");
+          }
+        }, 310);
       },
     });
   };
@@ -409,7 +411,7 @@ function AmountInput({
               if (integerPart !== undefined && integerPart.length > 8)
                 return false;
 
-              return floatValue === undefined || floatValue <= 99999999.99;
+              return floatValue === undefined || floatValue <= 9999999.99;
             }}
             placeholder="0.00"
             className={cn(
