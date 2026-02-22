@@ -457,7 +457,7 @@ function FriendsCombobox({
 
   return (
     <Combobox
-      // The `value` is the ID of the friend if they picked one from the list.
+      // the value is the ID of the friend if they picked one from the list
       // If it's a custom name, `value` is null/undefined in the Combobox's eyes.
       value={value.id ?? null}
       // When a user specifically CLICKS a friend from the dropdown list
@@ -513,20 +513,51 @@ function FriendsCombobox({
         Only show the dropdown content if they haven't exactly matched a friend's name,
         and there are actually friends to show.
       */}
-      {filteredFriends.length > 0 && (
+      {(filteredFriends.length > 0 ||
+        (inputValue && inputValue.trim().length > 0)) && (
         <ComboboxContent anchor={anchorRef}>
-          <ComboboxList>
-            {filteredFriends.map((friend) => (
-              <ComboboxItem
-                key={friend.friendId}
-                // We use the ID as the value so it uniquely identifies them
-                value={friend.friendId}
-                className="flex flex-col items-start gap-0 text-xs"
-              >
-                {friend.friendFirstName} {friend.friendLastName}
-                <span className="text-black/50">@{friend.friendUsername}</span>
-              </ComboboxItem>
-            ))}
+          <ComboboxList className="overflow-hidden">
+            <AnimatePresence initial={false}>
+              {filteredFriends.length > 0 ? (
+                filteredFriends.map((friend) => (
+                  <motion.div
+                    key={friend.friendId}
+                    layout
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <ComboboxItem
+                      value={friend.friendId}
+                      className="flex flex-col items-start gap-0 text-xs tracking-wide"
+                    >
+                      {friend.friendFirstName} {friend.friendLastName}
+                      <span className="text-black/40">
+                        @{friend.friendUsername}
+                      </span>
+                    </ComboboxItem>
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div
+                  key="stranger-fallback"
+                  layout
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <ComboboxItem
+                    value={inputValue}
+                    className="flex flex-col items-start gap-0 text-xs"
+                  >
+                    {inputValue}
+                    <span className="text-black/50">Stranger</span>
+                  </ComboboxItem>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </ComboboxList>
         </ComboboxContent>
       )}
