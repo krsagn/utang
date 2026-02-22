@@ -14,6 +14,7 @@ import {
   InputGroupAddon,
 } from "@/shared/ui";
 import { useState, useId } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { CalendarAdd, User } from "@solar-icons/react";
 import {
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/shared/lib";
 import type { NewDebt } from "../model/types";
+import type { DebtType } from "@/entities/debt";
 import { NumericFormat } from "react-number-format";
 import { useFriends } from "@/entities/friendship";
 import { useSession } from "@/entities/user";
@@ -33,13 +35,19 @@ import { useCreateDebt } from "../model/useCreateDebt";
 interface CreateDebtModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialType?: DebtType;
 }
 
-export function CreateDebtModal({ isOpen, onClose }: CreateDebtModalProps) {
+export function CreateDebtModal({
+  isOpen,
+  onClose,
+  initialType = "pay",
+}: CreateDebtModalProps) {
   const { data: user } = useSession();
   const { mutate: createDebt, isPending } = useCreateDebt();
+  const navigate = useNavigate();
 
-  const handleSubmit = (formData: NewDebt, type: "pay" | "receive") => {
+  const handleSubmit = (formData: NewDebt, type: DebtType) => {
     if (!user) return;
 
     const payload = { ...formData };
@@ -55,6 +63,11 @@ export function CreateDebtModal({ isOpen, onClose }: CreateDebtModalProps) {
     createDebt(payload, {
       onSuccess: () => {
         onClose();
+        if (type === "pay") {
+          navigate("/debts/outgoing");
+        } else {
+          navigate("/debts/incoming");
+        }
       },
     });
   };
@@ -66,6 +79,7 @@ export function CreateDebtModal({ isOpen, onClose }: CreateDebtModalProps) {
           onClose={onClose}
           onSubmit={handleSubmit}
           isPending={isPending}
+          initialType={initialType}
         />
       </div>
     </Modal>
@@ -76,12 +90,14 @@ function CreateDebtForm({
   onClose,
   onSubmit,
   isPending,
+  initialType = "pay",
 }: {
   onClose: () => void;
-  onSubmit: (formData: NewDebt, type: "pay" | "receive") => void;
+  onSubmit: (formData: NewDebt, type: DebtType) => void;
   isPending: boolean;
+  initialType?: DebtType;
 }) {
-  const [type, setType] = useState<"pay" | "receive">("pay");
+  const [type, setType] = useState<DebtType>(initialType);
 
   const [formData, setFormData] = useState<NewDebt>({
     lenderName: "",
@@ -198,7 +214,7 @@ function CreateDebtForm({
             placeholder="Title"
             className="h-10 w-full bg-transparent px-4 text-sm text-black outline-none placeholder:text-black/50"
           />
-          <div className="mx-3 h-px bg-black/10" />
+          <div className="h-px w-full shrink-0 bg-black/10" />
           <textarea
             value={formData.description ?? ""}
             onChange={(e) => {
@@ -241,9 +257,9 @@ function TypeToggle({
   setType,
   onToggle,
 }: {
-  type: "pay" | "receive";
-  setType: (val: "pay" | "receive") => void;
-  onToggle: (type: "pay" | "receive") => void;
+  type: DebtType;
+  setType: (val: DebtType) => void;
+  onToggle: (type: DebtType) => void;
 }) {
   return (
     <div className="flex w-fit justify-center gap-2 rounded-3xl bg-black/5 p-2 text-sm">
@@ -296,6 +312,9 @@ function TypeToggle({
 const CURRENCIES: Record<string, string> = {
   AUD: "$",
   PHP: "₱",
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
 };
 
 function AmountInput({
@@ -309,7 +328,7 @@ function AmountInput({
   onChange: (val: string) => void;
   currency: string;
   onCurrencyChange: (val: string) => void;
-  type: "pay" | "receive";
+  type: DebtType;
 }) {
   return (
     <div className="mt-5 flex w-full flex-col items-center justify-center">
