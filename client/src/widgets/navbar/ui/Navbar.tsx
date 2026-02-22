@@ -20,8 +20,8 @@ export function Navbar({ title, className, children }: NavbarProps) {
       >
         <motion.h1
           key={title}
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.85, x: -10 }}
+          animate={{ opacity: 1, scale: 1, x: 0 }}
           className="font-heading text-2xl font-extrabold"
         >
           {title}
