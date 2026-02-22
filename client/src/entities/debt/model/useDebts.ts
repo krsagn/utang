@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/shared/lib";
-import type { Debt } from "./types";
+import type { Debt, DebtType } from "./types";
 
-export function useDebts(type?: "pay" | "receive") {
+export function useDebts(type?: DebtType) {
   return useQuery({
     queryKey: ["debts", type],
     queryFn: async () => {

@@ -94,7 +94,7 @@ export function Sidebar() {
       {/* Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="bg-sidebar absolute top-12 -right-3 z-10 flex size-7 items-center justify-center rounded-full shadow-xl transition duration-300 hover:scale-110"
+        className="bg-sidebar absolute top-12 -right-3 z-30 flex size-7 items-center justify-center rounded-full shadow-xl transition duration-300 hover:scale-110"
       >
         <AltArrowLeft
           className={cn(

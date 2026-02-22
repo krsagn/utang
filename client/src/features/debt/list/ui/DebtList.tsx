@@ -1,23 +1,6 @@
 import { type DebtType, DebtCard, useDebts } from "@/entities/debt";
 
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring" as const, stiffness: 300, damping: 24 },
-  },
-};
+import { motion, AnimatePresence } from "framer-motion";
 
 export function DebtList({ type }: { type: DebtType }) {
   const { data: debts, isLoading, error } = useDebts(type);
@@ -37,26 +20,33 @@ export function DebtList({ type }: { type: DebtType }) {
     );
 
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="grid grid-cols-1 gap-6 lg:grid-cols-2"
-    >
-      {debts?.map((d) => (
-        <motion.div variants={item}>
-          <DebtCard
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <AnimatePresence mode="popLayout">
+        {debts?.map((d, i) => (
+          <motion.div
             key={d.id}
-            owner={isOutgoing ? d.lenderName : d.lendeeName}
-            title={d.title}
-            amount={d.amount}
-            type={type}
-            currency={d.currency}
-            deadline={d.deadline}
-            createdAt={d.createdAt}
-          />
-        </motion.div>
-      ))}
-    </motion.div>
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 24,
+              delay: i * 0.05, // Index-based stagger!
+            }}
+          >
+            <DebtCard
+              owner={isOutgoing ? d.lenderName : d.lendeeName}
+              title={d.title}
+              amount={d.amount}
+              type={type}
+              currency={d.currency}
+              deadline={d.deadline}
+              createdAt={d.createdAt}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
   );
 }

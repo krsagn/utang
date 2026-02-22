@@ -1,5 +1,5 @@
 import { db } from '../src/db/index.js';
-import { users, sessions, debts } from '../src/db/schema.js';
+import { users, sessions, debts, friendships } from '../src/db/schema.js';
 import { sql } from 'drizzle-orm';
 
 async function reset() {
@@ -8,6 +8,7 @@ async function reset() {
   // Delete in order to respect foreign key constraints
   try {
     await db.delete(debts); // Debts reference Users
+    await db.delete(friendships); // Friendships reference Users
     await db.delete(sessions); // Sessions reference Users
     await db.delete(users); // Users are referenced by others
 
