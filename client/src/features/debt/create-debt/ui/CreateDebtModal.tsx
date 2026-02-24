@@ -20,7 +20,7 @@ import { CalendarAdd, User } from "@solar-icons/react";
 import {
   ChevronDownIcon,
   ArrowUpRight,
-  ArrowDownLeft,
+  ArrowDownRight,
   X,
   Plus,
 } from "lucide-react";
@@ -214,6 +214,8 @@ function CreateDebtForm({
               setFormData({ ...formData, title: e.target.value });
             }}
             placeholder="Title"
+            aria-label="Title"
+            aria-required="true"
             className="h-10 w-full bg-transparent px-4 text-sm text-black outline-none placeholder:text-black/50"
           />
           <div className="h-px w-full shrink-0 bg-black/10" />
@@ -224,6 +226,7 @@ function CreateDebtForm({
             }}
             maxLength={100}
             placeholder="Description (Optional)"
+            aria-label="Description"
             className="h-20 w-full resize-none bg-transparent px-4 py-2.5 text-sm text-black outline-none placeholder:text-black/50"
           />
         </div>
@@ -237,7 +240,7 @@ function CreateDebtForm({
             onClick={onClose}
             className="h-14 flex-1 gap-1.5 rounded-2xl bg-black/5 text-sm font-semibold tracking-wide text-black hover:bg-black/10 active:bg-black/15"
           >
-            <X className="size-4 shrink-0" />
+            <X className="size-4 shrink-0 stroke-[2.5px]" />
             Cancel
           </Button>
           <Button
@@ -245,7 +248,7 @@ function CreateDebtForm({
             className="h-14 flex-1 gap-1.5 rounded-2xl text-sm font-semibold tracking-wide"
             disabled={isPending}
           >
-            <Plus className="size-4 shrink-0" />
+            <Plus className="size-4 shrink-0 stroke-[2.5px]" />
             Create
           </Button>
         </div>
@@ -264,9 +267,15 @@ function TypeToggle({
   onToggle: (type: DebtType) => void;
 }) {
   return (
-    <div className="flex w-fit justify-center gap-2 rounded-3xl bg-black/5 p-2 text-sm">
+    <div
+      role="radiogroup"
+      aria-label="Debt type"
+      className="flex w-fit justify-center gap-2 rounded-3xl bg-black/5 p-2 text-sm"
+    >
       <button
         type="button"
+        role="radio"
+        aria-checked={type === "pay"}
         onClick={() => {
           setType("pay");
           onToggle("pay");
@@ -276,7 +285,20 @@ function TypeToggle({
           type === "pay" ? "text-[#AF1D1D]" : "text-foreground",
         )}
       >
-        <ArrowUpRight className="relative z-10 size-4 shrink-0" />
+        <motion.div
+          animate={{
+            y: type === "pay" ? [0, -1, 0] : 0,
+            x: type === "pay" ? [0, 1, 0] : 0,
+          }}
+          transition={{
+            duration: 0.3,
+            ease: "easeInOut",
+            delay: 0.1,
+          }}
+          className="relative z-10"
+        >
+          <ArrowUpRight className="size-4 shrink-0 stroke-[2.5px]" />
+        </motion.div>
         <span className="relative z-10">To Pay</span>
         {type === "pay" && (
           <motion.div
@@ -288,6 +310,8 @@ function TypeToggle({
       </button>
       <button
         type="button"
+        role="radio"
+        aria-checked={type === "receive"}
         onClick={() => {
           setType("receive");
           onToggle("receive");
@@ -297,7 +321,20 @@ function TypeToggle({
           type === "receive" ? "text-primary" : "text-foreground",
         )}
       >
-        <ArrowDownLeft className="relative z-10 size-4 shrink-0" />
+        <motion.div
+          animate={{
+            y: type === "receive" ? [0, 1, 0] : 0,
+            x: type === "receive" ? [0, 1, 0] : 0,
+          }}
+          transition={{
+            duration: 0.3,
+            ease: "easeInOut",
+            delay: 0.1,
+          }}
+          className="relative z-10"
+        >
+          <ArrowDownRight className="size-4 shrink-0 stroke-[2.5px]" />
+        </motion.div>
         <span className="relative z-10">To Receive</span>
         {type === "receive" && (
           <motion.div
@@ -333,13 +370,18 @@ function AmountInput({
   type: DebtType;
 }) {
   return (
-    <div className="mt-5 flex w-full flex-col items-center justify-center">
-      <div className="relative flex w-full max-w-full items-center justify-center gap-3 mask-[linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)]">
+    <div className="relative mt-5 flex w-full flex-col items-center justify-center overflow-hidden">
+      {/* Edge fade overlays */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-linear-to-r from-white to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-linear-to-l from-white to-transparent" />
+
+      <div className="relative flex max-w-full items-center justify-center gap-3">
         <Popover>
           <PopoverTrigger asChild>
             <motion.button
               layout="position"
               type="button"
+              aria-label={`Change currency, currently ${currency}`}
               className={cn(
                 "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-colors outline-none hover:bg-black/5 active:bg-black/10",
                 value
@@ -395,6 +437,8 @@ function AmountInput({
         >
           <NumericFormat
             id="amount"
+            aria-label="Amount"
+            aria-required="true"
             value={value}
             onValueChange={(val) => onChange(val.value)}
             thousandSeparator=","
@@ -519,47 +563,28 @@ function FriendsCombobox({
         (inputValue && inputValue.trim().length > 0)) && (
         <ComboboxContent anchor={anchorRef}>
           <ComboboxList className="overflow-hidden">
-            <AnimatePresence initial={false}>
-              {filteredFriends.length > 0 ? (
-                filteredFriends.map((friend) => (
-                  <motion.div
-                    key={friend.friendId}
-                    layout
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <ComboboxItem
-                      value={friend.friendId}
-                      className="flex flex-col items-start gap-0 text-xs tracking-wide"
-                    >
-                      {friend.friendFirstName} {friend.friendLastName}
-                      <span className="text-black/40">
-                        @{friend.friendUsername}
-                      </span>
-                    </ComboboxItem>
-                  </motion.div>
-                ))
-              ) : (
-                <motion.div
-                  key="stranger-fallback"
-                  layout
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
+            {filteredFriends.length > 0 ? (
+              filteredFriends.map((friend) => (
+                <ComboboxItem
+                  key={friend.friendId}
+                  value={friend.friendId}
+                  className="flex flex-col items-start gap-0 text-xs tracking-wide"
                 >
-                  <ComboboxItem
-                    value={inputValue}
-                    className="flex flex-col items-start gap-0 text-xs"
-                  >
-                    {inputValue}
-                    <span className="text-black/50">Stranger</span>
-                  </ComboboxItem>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {friend.friendFirstName} {friend.friendLastName}
+                  <span className="text-black/40">
+                    @{friend.friendUsername}
+                  </span>
+                </ComboboxItem>
+              ))
+            ) : (
+              <ComboboxItem
+                value={inputValue}
+                className="flex flex-col items-start gap-0 text-xs"
+              >
+                {inputValue}
+                <span className="text-black/50">Stranger</span>
+              </ComboboxItem>
+            )}
           </ComboboxList>
         </ComboboxContent>
       )}
