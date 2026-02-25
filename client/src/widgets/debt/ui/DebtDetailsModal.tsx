@@ -59,11 +59,23 @@ function DebtDetailsCard({
     }
   })();
 
+  const creatorName = (() => {
+    if (debt.createdBy === currentUser?.id) {
+      return "you";
+    } else if (debt.createdBy === debt.lendeeId) {
+      return debt.lendeeName;
+    } else if (debt.createdBy === debt.lenderId) {
+      return debt.lenderName;
+    } else {
+      return debt.createdBy;
+    }
+  })();
+
   return (
     <div className="flex w-full flex-col">
       {/* Top Ticket Section */}
       <div className="flex w-full flex-col items-center justify-center gap-5 rounded-t-[36px] bg-white p-6 pb-0 sm:p-8 sm:pb-0">
-        <Header debt={debt} />
+        <Header debt={debt} creatorName={creatorName} />
         <AmountDisplay
           amount={debt.amount}
           currency={debt.currency}
@@ -131,21 +143,7 @@ function DebtDetailsCard({
   );
 }
 
-function Header({ debt }: { debt: Debt }) {
-  const { data: currentUser } = useSession();
-
-  const creatorName = (() => {
-    if (debt.createdBy === currentUser?.id) {
-      return "you";
-    } else if (debt.createdBy === debt.lendeeId) {
-      return debt.lendeeName;
-    } else if (debt.createdBy === debt.lenderId) {
-      return debt.lenderName;
-    } else {
-      return debt.createdBy;
-    }
-  })();
-
+function Header({ debt, creatorName }: { debt: Debt; creatorName: string }) {
   const isPaid = debt.status === "paid";
   const statusColor = isPaid
     ? "bg-primary/10 text-primary"
@@ -237,7 +235,7 @@ function AmountDisplay({
                 ? "from-[#7D1313] to-[#AF1D1D]"
                 : "to-primary from-[#6A7D13]",
             ),
-            cn("text-6xl", parseInt(amount) > 99999.99 && "mb-1 text-5xl"),
+            cn("text-6xl", parseFloat(amount) > 99999.99 && "mb-1 text-5xl"),
           )}
         >
           {formatCurrency(amount, currency)}
