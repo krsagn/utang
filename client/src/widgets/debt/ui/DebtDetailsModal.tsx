@@ -13,6 +13,7 @@ import { useDebt, type Debt, type DebtType } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { useFriends } from "@/entities/friendship";
 import { useUpdateDebt } from "@/features/debt/update-debt";
+import { DeleteDebtDialog } from "@/features/debt/delete-debt";
 
 interface DebtDetailsModalProps {
   onClose: () => void;
@@ -83,7 +84,12 @@ function DebtDetailsCard({
     <div className="flex w-full flex-col">
       {/* Top Ticket Section */}
       <div className="flex w-full flex-col items-center justify-center gap-5 rounded-t-[36px] bg-white p-6 pb-0 sm:p-8 sm:pb-0">
-        <Header debt={debt} creatorName={creatorName} />
+        <Header
+          debt={debt}
+          creatorName={creatorName}
+          isCreator={debt.createdBy === currentUser?.id}
+          onClose={onClose}
+        />
         <AmountDisplay
           amount={debt.amount}
           currency={debt.currency}
@@ -154,9 +160,20 @@ function DebtDetailsCard({
   );
 }
 
-function Header({ debt, creatorName }: { debt: Debt; creatorName: string }) {
+function Header({
+  debt,
+  creatorName,
+  isCreator,
+  onClose,
+}: {
+  debt: Debt;
+  creatorName: string;
+  isCreator: boolean;
+  onClose: () => void;
+}) {
   const modal = useModal();
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isPaid = debt.status === "paid";
   const statusColor = isPaid
     ? "bg-primary/10 text-primary"
@@ -195,37 +212,61 @@ function Header({ debt, creatorName }: { debt: Debt; creatorName: string }) {
         {debt.status}
       </div>
 
-      <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
-        <PopoverTrigger asChild>
-          <button className="flex size-8 items-center justify-center rounded-full text-black/40 transition-colors outline-none hover:bg-black/5 hover:text-black active:bg-black/10">
-            <MoreHorizontal className="size-5" strokeWidth={2.5} />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-36 overflow-hidden rounded-xl p-1"
-          align="end"
-        >
-          <div className="flex flex-col">
-            <button
-              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors outline-none hover:bg-black/5"
-              onClick={() => {
-                setOptionsOpen(false);
-                modal.open("edit-debt", debt.id);
-              }}
+      {isCreator ? (
+        <>
+          <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
+            <PopoverTrigger asChild>
+              <button className="flex size-8 items-center justify-center rounded-full text-black/40 transition-colors outline-none hover:bg-black/5 hover:text-black active:bg-black/10">
+                <MoreHorizontal className="size-5" strokeWidth={2.5} />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-36 overflow-hidden rounded-xl p-1"
+              align="end"
             >
-              <Pen weight="BoldDuotone" className="size-4 opacity-50" />
-              <span>Edit</span>
-            </button>
-            <button className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-[#AF1D1D] transition-colors outline-none hover:bg-[#AF1D1D]/10">
-              <TrashBinTrash
-                weight="BoldDuotone"
-                className="size-4 opacity-60 transition-opacity group-hover:opacity-100"
-              />
-              <span>Delete</span>
-            </button>
-          </div>
-        </PopoverContent>
-      </Popover>
+              <div className="flex flex-col">
+                <button
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors outline-none hover:bg-black/5"
+                  onClick={() => {
+                    setOptionsOpen(false);
+                    modal.open("edit-debt", debt.id);
+                  }}
+                >
+                  <Pen weight="BoldDuotone" className="size-4 opacity-50" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-[#AF1D1D] transition-colors outline-none hover:bg-[#AF1D1D]/10"
+                  onClick={() => {
+                    setOptionsOpen(false);
+                    setShowDeleteConfirm(true);
+                  }}
+                >
+                  <TrashBinTrash
+                    weight="BoldDuotone"
+                    className="size-4 opacity-60 transition-opacity group-hover:opacity-100"
+                  />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <DeleteDebtDialog
+            open={showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(false)}
+            debtId={debt.id}
+            onDeleted={() => modal.close()}
+          />
+        </>
+      ) : (
+        <button
+          onClick={onClose}
+          className="flex size-8 items-center justify-center rounded-full text-black/40 transition-colors outline-none hover:bg-black/5 hover:text-black active:bg-black/10"
+        >
+          <X className="size-5" strokeWidth={2.5} />
+        </button>
+      )}
     </div>
   );
 }
