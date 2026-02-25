@@ -5,29 +5,25 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/ui";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { CalendarMark, User, Pen, TrashBinTrash } from "@solar-icons/react";
 import { X, Check, Info, MoreHorizontal } from "lucide-react";
-import { cn, formatCurrency } from "@/shared/lib";
+import { cn, formatCurrency, useModal } from "@/shared/lib";
 import { useDebt, type Debt, type DebtType } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { useFriends } from "@/entities/friendship";
+import { useUpdateDebt } from "@/features/debt/update-debt";
 
 interface DebtDetailsModalProps {
-  isOpen: boolean;
   onClose: () => void;
   debtId: string;
 }
 
-export function DebtDetailsModal({
-  isOpen = true,
-  onClose,
-  debtId,
-}: DebtDetailsModalProps) {
+export function DebtDetailsModal({ onClose, debtId }: DebtDetailsModalProps) {
   const { data: debt } = useDebt(debtId);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} custom={true}>
+    <Modal onClose={onClose} custom={true}>
       <div className="isolate flex w-[calc(100vw-2rem)] items-end justify-center gap-10 overflow-clip rounded-4xl sm:w-md">
         {debt && <DebtDetailsCard onClose={onClose} debt={debt} />}
       </div>
@@ -43,6 +39,18 @@ function DebtDetailsCard({
   debt: Debt;
 }) {
   const { data: currentUser } = useSession();
+  const { mutate: updateDebt } = useUpdateDebt();
+  const modal = useModal();
+
+  const handleMarkDone = () => {
+    updateDebt(
+      {
+        id: debt.id,
+        updates: { status: "paid" },
+      },
+      { onSuccess: () => modal.close() },
+    );
+  };
 
   const type: DebtType = currentUser?.id === debt.lendeeId ? "pay" : "receive";
 
@@ -130,13 +138,16 @@ function DebtDetailsCard({
             <X className="size-4 shrink-0 stroke-[2.5px]" />
             Close
           </Button>
-          <Button
-            type="button"
-            className="h-14 flex-1 gap-1.5 rounded-2xl bg-black/90 text-sm font-semibold tracking-wide hover:bg-black"
-          >
-            <Check className="size-4 shrink-0 stroke-[2.5px]" />
-            Mark Done
-          </Button>
+          {debt.status !== "paid" && (
+            <Button
+              onClick={handleMarkDone}
+              type="button"
+              className="h-14 flex-1 gap-1.5 rounded-2xl bg-black/90 text-sm font-semibold tracking-wide hover:bg-black"
+            >
+              <Check className="size-4 shrink-0 stroke-[2.5px]" />
+              Mark Done
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -144,6 +155,8 @@ function DebtDetailsCard({
 }
 
 function Header({ debt, creatorName }: { debt: Debt; creatorName: string }) {
+  const modal = useModal();
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const isPaid = debt.status === "paid";
   const statusColor = isPaid
     ? "bg-primary/10 text-primary"
@@ -182,7 +195,7 @@ function Header({ debt, creatorName }: { debt: Debt; creatorName: string }) {
         {debt.status}
       </div>
 
-      <Popover>
+      <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
         <PopoverTrigger asChild>
           <button className="flex size-8 items-center justify-center rounded-full text-black/40 transition-colors outline-none hover:bg-black/5 hover:text-black active:bg-black/10">
             <MoreHorizontal className="size-5" strokeWidth={2.5} />
@@ -193,7 +206,13 @@ function Header({ debt, creatorName }: { debt: Debt; creatorName: string }) {
           align="end"
         >
           <div className="flex flex-col">
-            <button className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors outline-none hover:bg-black/5">
+            <button
+              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors outline-none hover:bg-black/5"
+              onClick={() => {
+                setOptionsOpen(false);
+                modal.open("edit-debt", debt.id);
+              }}
+            >
               <Pen weight="BoldDuotone" className="size-4 opacity-50" />
               <span>Edit</span>
             </button>

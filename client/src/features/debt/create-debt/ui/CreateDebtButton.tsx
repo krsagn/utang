@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { CreateDebtModal } from "./CreateDebtModal";
 import { useLocation } from "react-router-dom";
 import type { DebtType } from "@/entities/debt";
+import { AnimatePresence } from "framer-motion";
 
 export function CreateDebtButton() {
   const modal = useModal();
@@ -21,11 +22,15 @@ export function CreateDebtButton() {
         <Plus className="size-4 shrink-0 stroke-[2.5px]" />
         New Debt
       </Button>
-      <CreateDebtModal
-        isOpen={modal.isOpen("create-debt")}
-        onClose={modal.close}
-        initialType={initialType}
-      />
+      <AnimatePresence>
+        {modal.isOpen("create-debt") && (
+          <CreateDebtModal
+            key="create-debt"
+            onClose={modal.close}
+            initialType={initialType}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

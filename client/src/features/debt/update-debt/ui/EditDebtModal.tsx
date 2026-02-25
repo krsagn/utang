@@ -14,7 +14,6 @@ import {
   InputGroupAddon,
 } from "@/shared/ui";
 import { useState, useId } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { CalendarAdd, User } from "@solar-icons/react";
 import {
@@ -22,30 +21,28 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   X,
-  Plus,
+  Check,
 } from "lucide-react";
 import { cn } from "@/shared/lib";
-import type { NewDebt } from "../model/types";
-import type { DebtType } from "@/entities/debt";
+import type { UpdateDebtForm } from "../model/types";
+import { useDebt, type Debt, type DebtType } from "@/entities/debt";
 import { NumericFormat } from "react-number-format";
 import { useFriends } from "@/entities/friendship";
 import { useSession } from "@/entities/user";
-import { useCreateDebt } from "../model/useCreateDebt";
+import { useUpdateDebt } from "../model/useUpdateDebt";
 
-interface CreateDebtModalProps {
+interface EditDebtModalProps {
   onClose: () => void;
-  initialType?: DebtType;
+  debtId: string;
 }
 
-export function CreateDebtModal({
-  onClose,
-  initialType = "pay",
-}: CreateDebtModalProps) {
+export function EditDebtModal({ onClose, debtId }: EditDebtModalProps) {
   const { data: user } = useSession();
-  const { mutate: createDebt, isPending } = useCreateDebt();
-  const navigate = useNavigate();
+  const { mutate: updateDebt, isPending } = useUpdateDebt();
 
-  const handleSubmit = (formData: NewDebt, type: DebtType) => {
+  const { data: debt } = useDebt(debtId);
+
+  const handleSubmit = (formData: UpdateDebtForm, type: DebtType) => {
     if (!user) return;
 
     const payload = { ...formData };
@@ -58,56 +55,57 @@ export function CreateDebtModal({
       payload.lenderName = `${user.firstName} ${user.lastName}`;
     }
 
-    createDebt(payload, {
-      onSuccess: () => {
-        onClose();
-        setTimeout(() => {
-          if (type === "pay") {
-            navigate("/debts/outgoing");
-          } else {
-            navigate("/debts/incoming");
-          }
-        }, 310);
+    updateDebt(
+      { id: debtId, updates: payload },
+      {
+        onSuccess: () => {
+          onClose();
+        },
       },
-    });
+    );
   };
 
   return (
     <Modal onClose={onClose} custom={true}>
       <div className="isolate flex w-[calc(100vw-2rem)] flex-col overflow-clip rounded-4xl sm:w-md">
-        <CreateDebtForm
-          onClose={onClose}
-          onSubmit={handleSubmit}
-          isPending={isPending}
-          initialType={initialType}
-        />
+        {debt && (
+          <EditDebtForm
+            debt={debt}
+            onClose={onClose}
+            onSubmit={handleSubmit}
+            isPending={isPending}
+          />
+        )}
       </div>
     </Modal>
   );
 }
 
-export function CreateDebtForm({
+function EditDebtForm({
   onClose,
   onSubmit,
   isPending,
-  initialType = "pay",
+  debt,
 }: {
   onClose: () => void;
-  onSubmit: (formData: NewDebt, type: DebtType) => void;
+  onSubmit: (formData: UpdateDebtForm, type: DebtType) => void;
   isPending: boolean;
-  initialType?: DebtType;
+  debt: Debt;
 }) {
-  const [type, setType] = useState<DebtType>(initialType);
-
-  const [formData, setFormData] = useState<NewDebt>({
-    lenderName: "",
-    lendeeName: "",
-    currency: "AUD",
-    amount: "",
-    title: "",
-    description: undefined,
-    deadline: undefined,
+  const [formData, setFormData] = useState<UpdateDebtForm>({
+    lenderName: debt.lenderName,
+    lendeeName: debt.lendeeName,
+    lenderId: debt.lenderId,
+    lendeeId: debt.lendeeId,
+    currency: debt.currency,
+    amount: debt.amount,
+    title: debt.title,
+    description: debt.description ?? undefined,
+    deadline: debt.deadline ?? undefined,
   });
+
+  const { data: currentUser } = useSession();
+  const type: DebtType = currentUser?.id === debt.lendeeId ? "pay" : "receive";
 
   return (
     <form
@@ -127,31 +125,7 @@ export function CreateDebtForm({
     >
       {/* Top Ticket Section */}
       <div className="flex w-full flex-col items-center justify-center gap-5 rounded-t-[36px] bg-white p-6 pb-0 sm:p-8 sm:pb-0">
-        <TypeToggle
-          type={type}
-          setType={setType}
-          onToggle={(newType) => {
-            if (newType === "pay") {
-              // "To Pay": I owe them. The friend is the LENDER.
-              setFormData((prev) => ({
-                ...prev,
-                lenderName: prev.lendeeName || prev.lenderName,
-                lenderId: prev.lendeeId || prev.lenderId,
-                lendeeName: "",
-                lendeeId: null,
-              }));
-            } else {
-              // "To Receive": They owe me. The friend is the LENDEE.
-              setFormData((prev) => ({
-                ...prev,
-                lendeeName: prev.lenderName || prev.lendeeName,
-                lendeeId: prev.lenderId || prev.lenderId,
-                lenderName: "",
-                lenderId: null,
-              }));
-            }
-          }}
-        />
+        <TypeToggle type={type} />
         <AmountInput
           value={formData.amount}
           onChange={(val) => setFormData({ ...formData, amount: val })}
@@ -246,8 +220,8 @@ export function CreateDebtForm({
             className="h-14 flex-1 gap-1.5 rounded-2xl text-sm font-semibold tracking-wide"
             disabled={isPending}
           >
-            <Plus className="size-4 shrink-0 stroke-[2.5px]" />
-            Create
+            <Check className="size-4 shrink-0 stroke-[2.5px]" />
+            Save
           </Button>
         </div>
       </div>
@@ -255,48 +229,23 @@ export function CreateDebtForm({
   );
 }
 
-function TypeToggle({
-  type,
-  setType,
-  onToggle,
-}: {
-  type: DebtType;
-  setType: (val: DebtType) => void;
-  onToggle: (type: DebtType) => void;
-}) {
+function TypeToggle({ type }: { type: DebtType }) {
   return (
     <div
       role="radiogroup"
       aria-label="Debt type"
-      className="flex w-fit justify-center gap-2 rounded-3xl bg-black/5 p-2 text-sm"
+      className="pointer-events-none flex w-fit justify-center gap-2 rounded-3xl bg-black/5 p-2 text-sm opacity-30 select-none"
     >
       <button
         type="button"
         role="radio"
         aria-checked={type === "pay"}
-        onClick={() => {
-          setType("pay");
-          onToggle("pay");
-        }}
         className={cn(
           "relative flex w-44 items-center justify-center gap-1.5 rounded-2xl py-3 font-semibold transition-colors outline-none",
           type === "pay" ? "text-[#AF1D1D]" : "text-foreground",
         )}
       >
-        <motion.div
-          animate={{
-            y: type === "pay" ? [0, -1, 0] : 0,
-            x: type === "pay" ? [0, 1, 0] : 0,
-          }}
-          transition={{
-            duration: 0.3,
-            ease: "easeInOut",
-            delay: 0.1,
-          }}
-          className="relative z-10"
-        >
-          <ArrowUpRight className="size-4 shrink-0 stroke-[2.5px]" />
-        </motion.div>
+        <ArrowUpRight className="z-20 size-4 shrink-0 stroke-[2.5px]" />
         <span className="relative z-10">To Pay</span>
         {type === "pay" && (
           <motion.div
@@ -310,29 +259,12 @@ function TypeToggle({
         type="button"
         role="radio"
         aria-checked={type === "receive"}
-        onClick={() => {
-          setType("receive");
-          onToggle("receive");
-        }}
         className={cn(
           "relative flex w-44 items-center justify-center gap-1.5 rounded-2xl py-3 font-semibold transition-colors outline-none",
           type === "receive" ? "text-primary" : "text-foreground",
         )}
       >
-        <motion.div
-          animate={{
-            y: type === "receive" ? [0, 1, 0] : 0,
-            x: type === "receive" ? [0, 1, 0] : 0,
-          }}
-          transition={{
-            duration: 0.3,
-            ease: "easeInOut",
-            delay: 0.1,
-          }}
-          className="relative z-10"
-        >
-          <ArrowDownRight className="size-4 shrink-0 stroke-[2.5px]" />
-        </motion.div>
+        <ArrowDownRight className="z-20 size-4 shrink-0 stroke-[2.5px]" />
         <span className="relative z-10">To Receive</span>
         {type === "receive" && (
           <motion.div
