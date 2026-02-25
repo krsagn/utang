@@ -6,7 +6,7 @@ import { useId } from "react";
 
 // Utils
 import { formatDistanceToNow } from "date-fns";
-import { formatCurrency, cn } from "@/shared/lib";
+import { formatCompactCurrency, cn } from "@/shared/lib";
 
 type DebtCardProps = Pick<
   Debt,
@@ -74,7 +74,7 @@ export function DebtCard({
                 : "to-primary from-[#6A7D13]",
             )}
           >
-            {formatCurrency(amount, currency)}
+            {formatCompactCurrency(amount, currency)}
           </h3>
         </header>
         <div className={cn("flex flex-col", !isOutgoing && "items-end")}>

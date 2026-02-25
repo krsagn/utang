@@ -26,7 +26,7 @@ export function Navbar({ title, className, children }: NavbarProps) {
         >
           {title}
         </motion.h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 drop-shadow-lg">
           {children}
           <CreateDebtButton />
         </div>

@@ -58,7 +58,7 @@ export function Sidebar() {
   const { mutate: performLogout } = useLogout();
 
   const buttonClasses = cn(
-    "flex font-bold items-center rounded-xl bg-sidebar transition-all duration-300 hover:scale-98 group opacity-40 hover:opacity-100",
+    "flex font-bold items-center rounded-xl transition-all duration-300 hover:scale-98 group opacity-40 hover:opacity-100",
     collapsed ? "w-12 p-3" : "w-50 p-3 hover:bg-sidebar-accent",
   );
 
@@ -87,7 +87,7 @@ export function Sidebar() {
         duration: 0.7,
       }}
       className={cn(
-        "bg-sidebar relative flex flex-col items-stretch justify-between p-6 transition-[width,padding,margin] duration-300",
+        "bg-sidebar relative z-30 flex flex-col items-stretch justify-between p-6 shadow-xl transition-[width,padding,margin] duration-300",
         collapsed ? "w-24" : "w-64",
       )}
     >

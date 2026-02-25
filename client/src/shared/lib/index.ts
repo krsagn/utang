@@ -1,4 +1,4 @@
 export { useModal } from "./useModal";
 export { api } from "./api";
-export { formatCurrency } from "./formatCurrency";
+export * from "./formatCurrency";
 export { cn } from "./utils";

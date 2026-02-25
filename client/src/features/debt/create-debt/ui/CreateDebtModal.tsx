@@ -88,7 +88,7 @@ export function CreateDebtModal({
   );
 }
 
-function CreateDebtForm({
+export function CreateDebtForm({
   onClose,
   onSubmit,
   isPending,

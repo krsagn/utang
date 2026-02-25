@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/shared/lib";
 import type { Debt, DebtType } from "./types";
 
@@ -14,6 +14,8 @@ export function useDebts(type?: DebtType) {
 }
 
 export function useDebt(id: string) {
+  const queryClient = useQueryClient();
+
   return useQuery({
     queryKey: ["debt", id],
     queryFn: async () => {
@@ -21,5 +23,16 @@ export function useDebt(id: string) {
       return data;
     },
     enabled: !!id,
+    initialData: () => {
+      const payDebts = queryClient.getQueryData<Debt[]>(["debts", "pay"]);
+      const receiveDebts = queryClient.getQueryData<Debt[]>([
+        "debts",
+        "receive",
+      ]);
+      return (
+        payDebts?.find((d) => d.id === id) ??
+        receiveDebts?.find((d) => d.id === id)
+      );
+    },
   });
 }
