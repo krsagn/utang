@@ -2,85 +2,709 @@ import { db } from '../src/db/index.js';
 import { users, debts, friendships } from '../src/db/schema.js';
 import * as argon2 from 'argon2';
 
+const randomCurrency = () => (Math.random() < 0.5 ? 'AUD' : 'PHP');
+
 async function seed() {
   console.log('Seeding database...');
 
   try {
     // 1. Create Users
     console.log('Creating users...');
-    const hashedPassword = await argon2.hash('password123'); // Default password for everyone
+    const hashedPassword = await argon2.hash('password123');
 
-    const user1Id = crypto.randomUUID();
-    const user2Id = crypto.randomUUID();
+    const kristianId = crypto.randomUUID();
+    const rominaId = crypto.randomUUID();
+    const jadenId = crypto.randomUUID();
+    const jasId = crypto.randomUUID();
+    const eunjunId = crypto.randomUUID();
+    const emId = crypto.randomUUID();
 
-    await db.insert(users).values({
-      id: user1Id,
-      username: 'kristian',
-      email: 'kristian@example.com',
-      firstName: 'Kristian',
-      lastName: 'Example',
-      passwordHash: hashedPassword,
-    });
-    console.log('Created Kristian');
+    const userList = [
+      {
+        id: kristianId,
+        username: 'kristian',
+        email: 'kristian@example.com',
+        firstName: 'Kristian',
+        lastName: 'Agena',
+      },
+      {
+        id: rominaId,
+        username: 'romina',
+        email: 'romina@example.com',
+        firstName: 'Romina',
+        lastName: 'Manuel',
+      },
+      {
+        id: jadenId,
+        username: 'jaden',
+        email: 'jaden@example.com',
+        firstName: 'Jaden',
+        lastName: 'Karmajana',
+      },
+      {
+        id: jasId,
+        username: 'jas',
+        email: 'jas@example.com',
+        firstName: 'Jas',
+        lastName: 'Karmajana',
+      },
+      {
+        id: eunjunId,
+        username: 'eunjun',
+        email: 'eunjun@example.com',
+        firstName: 'Eunjun',
+        lastName: 'Park',
+      },
+      {
+        id: emId,
+        username: 'emmeline',
+        email: 'emmeline@example.com',
+        firstName: 'Emmeline',
+        lastName: 'Lazuardi',
+      },
+    ];
 
-    await db.insert(users).values({
-      id: user2Id,
-      username: 'romina',
-      email: 'romina@example.com',
-      firstName: 'Romina',
-      lastName: 'Friend',
-      passwordHash: hashedPassword,
-    });
-    console.log('Created Romina');
+    for (const u of userList) {
+      await db.insert(users).values({ ...u, passwordHash: hashedPassword });
+      console.log(`Created ${u.firstName}`);
+    }
 
-    // 2. Create Debts
+    // 2. Create Debts (10+ per user, spread across different pairs)
     console.log('Creating debts...');
-    await db.insert(debts).values({
-      title: 'Lunch at McDo',
-      amount: '150.00',
-      currency: 'PHP',
-      lenderId: user2Id, // Romina
-      lenderName: 'Romina',
-      lendeeId: user1Id, // Kristian
-      lendeeName: 'Kristian',
-      createdBy: user1Id, // Kristian created this record
-    });
 
-    await db.insert(debts).values({
-      title: 'Cinema Tickets',
-      amount: '300.00',
-      currency: 'PHP',
-      lenderId: user1Id, // Kristian
-      lenderName: 'Kristian',
-      lendeeId: user2Id, // Romina
-      lendeeName: 'Romina',
-      createdBy: user1Id, // Kristian created this too
-    });
+    const allDebts = [
+      // --- Kristian's debts ---
+      {
+        title: 'Lunch at McDo',
+        amount: '150.00',
+        currency: randomCurrency(),
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Cinema Tickets',
+        amount: '300.00',
+        currency: randomCurrency(),
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Grab Share',
+        amount: '85.50',
+        currency: randomCurrency(),
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: rominaId,
+      },
+      {
+        title: 'Coffee Run',
+        amount: '220.00',
+        currency: randomCurrency(),
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Spotify Premium',
+        amount: '65.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Groceries Split',
+        amount: '430.00',
+        currency: 'PHP',
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Birthday Gift Chip-in',
+        amount: '250.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: emId,
+      },
+      {
+        title: 'Parking Fee',
+        amount: '100.00',
+        currency: 'PHP',
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Netflix Sub Share',
+        amount: '175.00',
+        currency: 'PHP',
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Board Game Night Snacks',
+        amount: '190.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Taxi Home',
+        amount: '310.00',
+        currency: 'PHP',
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: kristianId,
+      },
 
-    await db.insert(debts).values({
-      title: 'Grab Share',
-      amount: '85.50',
-      currency: 'PHP',
-      lenderId: user2Id,
-      lenderName: 'Romina',
-      lendeeId: user1Id,
-      lendeeName: 'Kristian',
-      createdBy: user2Id, // Romina created this one
-    });
+      // --- Jaden's debts ---
+      {
+        title: 'Boba Tea Run',
+        amount: '180.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: jadenId,
+      },
+      {
+        title: 'Pizza Delivery',
+        amount: '550.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: jasId,
+      },
+      {
+        title: 'Gym Membership Split',
+        amount: '750.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: jadenId,
+      },
+      {
+        title: 'Concert Tickets',
+        amount: '1200.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Karaoke Night',
+        amount: '400.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: jadenId,
+      },
+      {
+        title: 'Uber to Airport',
+        amount: '620.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: emId,
+      },
+      {
+        title: 'Lunch Treat',
+        amount: '340.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: jadenId,
+      },
+      {
+        title: 'Textbook Lend',
+        amount: '800.00',
+        currency: 'PHP',
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: rominaId,
+      },
+      {
+        title: 'Gas Money',
+        amount: '500.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: jadenId,
+      },
+      {
+        title: 'Water Bill Split',
+        amount: '275.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: jasId,
+      },
 
-    console.log('Creating friendship...');
-    const [userId1, userId2] = [user1Id, user2Id].sort();
-    await db.insert(friendships).values({
-      userId1,
-      userId2,
-      requesterId: user1Id,
-      status: 'accepted',
-    });
-    console.log('Created Friendships');
+      // --- Jas's debts ---
+      {
+        title: 'Milk Tea Order',
+        amount: '195.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: jasId,
+      },
+      {
+        title: 'Samgyupsal Dinner',
+        amount: '890.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Sticker Printing',
+        amount: '120.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: jasId,
+      },
+      {
+        title: 'Art Supplies',
+        amount: '450.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: emId,
+      },
+      {
+        title: 'Movie Snacks',
+        amount: '280.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: jasId,
+      },
+      {
+        title: 'Photocard Purchase',
+        amount: '350.00',
+        currency: 'PHP',
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: rominaId,
+      },
+      {
+        title: 'Laundry Detergent',
+        amount: '160.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: jasId,
+      },
+      {
+        title: 'Group Donation',
+        amount: '200.00',
+        currency: 'PHP',
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Late Night Jollibee',
+        amount: '325.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: jasId,
+      },
+      {
+        title: 'Printing Fee',
+        amount: '45.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: jadenId,
+      },
+
+      // --- Eunjun's debts ---
+      {
+        title: 'Korean Snack Box',
+        amount: '680.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Ramen Dinner',
+        amount: '410.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: emId,
+      },
+      {
+        title: 'Language Book',
+        amount: '550.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Convenience Store Run',
+        amount: '130.00',
+        currency: 'PHP',
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: rominaId,
+      },
+      {
+        title: 'Tteokbokki Ingredients',
+        amount: '290.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Bus Card Top-up',
+        amount: '500.00',
+        currency: 'PHP',
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Laptop Charger Lend',
+        amount: '1500.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Study Cafe Fee',
+        amount: '150.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: jadenId,
+      },
+      {
+        title: 'Haircut Bill',
+        amount: '350.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Ice Cream Treat',
+        amount: '95.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: jasId,
+      },
+
+      // --- Em's debts ---
+      {
+        title: 'Fried Chicken Dinner',
+        amount: '480.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: kristianId,
+        lendeeName: 'Kristian',
+        createdBy: emId,
+      },
+      {
+        title: 'Bike Repair Share',
+        amount: '600.00',
+        currency: 'PHP',
+        lenderId: kristianId,
+        lenderName: 'Kristian',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: kristianId,
+      },
+      {
+        title: 'Zine Printing',
+        amount: '350.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: emId,
+      },
+      {
+        title: 'Pottery Class',
+        amount: '900.00',
+        currency: 'PHP',
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: rominaId,
+      },
+      {
+        title: 'Vintage Shirt Buy',
+        amount: '250.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: emId,
+      },
+      {
+        title: 'Weekend Brunch',
+        amount: '720.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: jadenId,
+      },
+      {
+        title: 'Streaming Service Split',
+        amount: '140.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: emId,
+      },
+      {
+        title: 'Plant Shop Haul',
+        amount: '380.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: jasId,
+      },
+      {
+        title: 'Escape Room Fee',
+        amount: '500.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: emId,
+      },
+      {
+        title: 'Bowling Night',
+        amount: '310.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: eunjunId,
+      },
+
+      // --- Romina extra debts ---
+      {
+        title: 'Skincare Haul Split',
+        amount: '670.00',
+        currency: 'PHP',
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: jasId,
+        lendeeName: 'Jas',
+        createdBy: rominaId,
+      },
+      {
+        title: 'Thrift Shop Finds',
+        amount: '200.00',
+        currency: 'PHP',
+        lenderId: jasId,
+        lenderName: 'Jas',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: jasId,
+      },
+      {
+        title: 'Nails Appointment',
+        amount: '550.00',
+        currency: 'PHP',
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: emId,
+        lendeeName: 'Emmeline',
+        createdBy: rominaId,
+      },
+      {
+        title: 'Dessert Bar',
+        amount: '390.00',
+        currency: 'PHP',
+        lenderId: emId,
+        lenderName: 'Emmeline',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: emId,
+      },
+      {
+        title: 'Yoga Mat',
+        amount: '800.00',
+        currency: 'PHP',
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: eunjunId,
+        lendeeName: 'Eunjun',
+        createdBy: rominaId,
+      },
+      {
+        title: 'BBQ Supplies',
+        amount: '440.00',
+        currency: 'PHP',
+        lenderId: eunjunId,
+        lenderName: 'Eunjun',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: eunjunId,
+      },
+      {
+        title: 'Sunscreen Buy',
+        amount: '310.00',
+        currency: 'PHP',
+        lenderId: rominaId,
+        lenderName: 'Romina',
+        lendeeId: jadenId,
+        lendeeName: 'Jaden',
+        createdBy: rominaId,
+      },
+      {
+        title: 'Energy Drinks',
+        amount: '175.00',
+        currency: 'PHP',
+        lenderId: jadenId,
+        lenderName: 'Jaden',
+        lendeeId: rominaId,
+        lendeeName: 'Romina',
+        createdBy: jadenId,
+      },
+    ];
+
+    for (const d of allDebts) {
+      await db.insert(debts).values({ ...d, title: d.title.toLowerCase() });
+    }
+    console.log(`Created ${allDebts.length} debts`);
+
+    // 3. Create Friendships (all pairs, sorted for the force_order check)
+    console.log('Creating friendships...');
+
+    const allUserIds = [kristianId, rominaId, jadenId, jasId, eunjunId, emId];
+    let friendshipCount = 0;
+
+    for (let i = 0; i < allUserIds.length; i++) {
+      for (let j = i + 1; j < allUserIds.length; j++) {
+        const [userId1, userId2] = [allUserIds[i], allUserIds[j]].sort();
+        await db.insert(friendships).values({
+          userId1,
+          userId2,
+          requesterId: allUserIds[i],
+          status: 'accepted',
+        });
+        friendshipCount++;
+      }
+    }
+    console.log(`Created ${friendshipCount} friendships`);
 
     console.log('✅ Database seeded successfully!');
-    console.log(`User 1 (Kristian): ${user1Id}`);
-    console.log(`User 2 (Romina): ${user2Id}`);
+    console.log(
+      `Users: Kristian(${kristianId}), Romina(${rominaId}), Jaden(${jadenId}), Jas(${jasId}), Eunjun(${eunjunId}), Em(${emId})`
+    );
     console.log('Password for all: password123');
     process.exit(0);
   } catch (err) {

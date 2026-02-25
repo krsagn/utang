@@ -1,12 +1,31 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 export function useModal() {
-  // use string identifier for modals, null if closed
-  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeModal = searchParams.get("modal");
+  const idParam = searchParams.get("id");
 
   return {
     isOpen: (modalId: string) => activeModal === modalId,
-    open: (modalId: string) => setActiveModal(modalId),
-    close: () => setActiveModal(null),
+    open: (modalId: string, id?: string) => {
+      const newParams = new URLSearchParams(searchParams);
+
+      newParams.set("modal", modalId);
+      if (id) {
+        newParams.set("id", id);
+      }
+
+      setSearchParams(newParams);
+    },
+    close: () => {
+      const newParams = new URLSearchParams(searchParams);
+
+      newParams.delete("modal");
+      newParams.delete("id");
+
+      setSearchParams(newParams);
+    },
+    activeModal,
+    idParam,
   };
 }

@@ -240,7 +240,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-xl py-6 select-none hover:scale-101 hover:bg-[#6A7D13] active:scale-99 disabled:pointer-events-none disabled:opacity-50"
+            className="w-full rounded-xl py-6 select-none hover:bg-[#6A7D13] disabled:pointer-events-none disabled:opacity-50"
           >
             {isLoading ? (
               <>

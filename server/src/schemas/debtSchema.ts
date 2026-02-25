@@ -8,9 +8,12 @@ export const createDebtSchema = z.object({
   lenderName: z.string().min(1, 'Lender name is required'),
   lendeeName: z.string().min(1, 'Lendee name is required'),
 
-  // Lent amount must be positive
+  // Lent amount must be positive, and capped locally at ~10M for real-life usage
   currency: z.string().length(3).toUpperCase(),
-  amount: z.coerce.number().positive(),
+  amount: z.coerce
+    .number()
+    .positive()
+    .max(9999999.99, 'Amount cannot exceed 9,999,999.99'),
 
   // Description is optional
   title: z.string().min(1, 'Title is required').max(30, 'Title too long'),

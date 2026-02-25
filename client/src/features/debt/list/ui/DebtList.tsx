@@ -1,10 +1,13 @@
 import { type DebtType, DebtCard, useDebts } from "@/entities/debt";
+import { useModal } from "@/shared/lib";
+import { DebtDetailsModal } from "@/widgets/debt/ui/DebtDetailsModal";
 
 import { motion, AnimatePresence } from "framer-motion";
 
 export function DebtList({ type }: { type: DebtType }) {
   const { data: debts, isLoading, error } = useDebts(type);
   const isOutgoing = type === "pay";
+  const modal = useModal();
 
   if (isLoading)
     return (
@@ -32,8 +35,9 @@ export function DebtList({ type }: { type: DebtType }) {
               type: "spring",
               stiffness: 300,
               damping: 24,
-              delay: i * 0.05, // Index-based stagger!
+              delay: i * 0.05,
             }}
+            onClick={() => modal.open("detail-debt", d.id)}
           >
             <DebtCard
               owner={isOutgoing ? d.lenderName : d.lendeeName}
@@ -47,6 +51,11 @@ export function DebtList({ type }: { type: DebtType }) {
           </motion.div>
         ))}
       </AnimatePresence>
+      <DebtDetailsModal
+        isOpen={modal.isOpen("detail-debt")}
+        onClose={modal.close}
+        debtId={modal.idParam ?? ""}
+      />
     </div>
   );
 }

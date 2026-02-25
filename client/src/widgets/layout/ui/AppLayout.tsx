@@ -2,7 +2,7 @@ import { Sidebar } from "@/widgets/sidebar";
 import { Outlet, useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Navbar } from "@/widgets/navbar";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const titleMap: Record<string, string> = {
   "/home": "Home",
@@ -13,9 +13,16 @@ const titleMap: Record<string, string> = {
 
 export function AppLayout() {
   const { pathname } = useLocation();
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
   const gradientOpacity = useTransform(scrollY, [0, 20], [0, 1]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: 0,
+      behavior: "instant",
+    });
+  }, [pathname]);
 
   // An exponential 'scrim' gradient to completely eliminate linear banding.
   const scrimGradient = `linear-gradient(to bottom, 
@@ -75,7 +82,7 @@ export function AppLayout() {
         {/* Bottom Scroll Shadow */}
         <div
           style={{ backgroundImage: flippedScrimGradient }}
-          className="pointer-events-none sticky -bottom-[0.5px] z-20 h-10 w-full shrink-0"
+          className="pointer-events-none fixed -bottom-[0.5px] z-20 h-10 w-full shrink-0"
         />
       </div>
     </div>

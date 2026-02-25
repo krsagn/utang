@@ -37,10 +37,14 @@ function Modal({ isOpen, onClose, custom, children }: ModalProps) {
           className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-linear-to-t from-black/60 to-black/25 backdrop-blur-xs"
         >
           <motion.div
-            initial={{ opacity: 0, y: 15, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 15, scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            initial={{ y: 15, scale: 0.98 }}
+            animate={{ y: 0, scale: 1 }}
+            exit={{ y: 15, scale: 0.98 }}
+            transition={{
+              type: "spring",
+              stiffness: 350,
+              damping: 25,
+            }}
             onClick={(e) => e.stopPropagation()}
             className="drop-shadow-xl"
           >

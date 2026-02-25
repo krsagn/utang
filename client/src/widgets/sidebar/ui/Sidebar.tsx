@@ -58,7 +58,7 @@ export function Sidebar() {
   const { mutate: performLogout } = useLogout();
 
   const buttonClasses = cn(
-    "flex font-bold items-center rounded-xl bg-sidebar transition-all duration-300 hover:scale-98 group opacity-40 hover:opacity-100",
+    "flex font-bold items-center rounded-xl transition-all duration-300 hover:scale-98 group opacity-40 hover:opacity-100",
     collapsed ? "w-12 p-3" : "w-50 p-3 hover:bg-sidebar-accent",
   );
 
@@ -87,7 +87,7 @@ export function Sidebar() {
         duration: 0.7,
       }}
       className={cn(
-        "bg-sidebar relative flex flex-col items-stretch justify-between p-6 transition-[width,padding,margin] duration-300",
+        "bg-sidebar relative z-30 flex flex-col items-stretch justify-between p-6 shadow-xl transition-[width,padding,margin] duration-300",
         collapsed ? "w-24" : "w-64",
       )}
     >
@@ -106,38 +106,30 @@ export function Sidebar() {
       </button>
 
       <div className="flex flex-col">
-        {/* User Profile */}
+        {/* Logo */}
         <div
           className={cn(
-            "bg-sidebar border-sidebar-border mt-3 flex items-center rounded-2xl border text-xs tracking-wide transition-all duration-300",
-            collapsed ? "w-12 border-none p-3" : "w-50 p-3",
+            "mt-3 mb-5 flex items-center py-1 transition-all duration-300",
+            collapsed ? "ml-1.5 w-12 scale-90" : "w-50 scale-100 px-3",
           )}
         >
-          <UserCircle
-            aria-hidden
-            color="black"
+          <h1
             className={cn(
-              "shrink-0 drop-shadow-md transition-all duration-300",
-              collapsed ? "size-6" : "size-8",
-            )}
-            weight="BoldDuotone"
-          />
-          <div
-            className={cn(
-              "flex flex-col overflow-hidden whitespace-nowrap transition-all duration-300",
-              collapsed
-                ? "ml-0 max-w-0 opacity-0"
-                : "ml-4 max-w-40 opacity-100",
+              "font-display to-primary flex items-center bg-linear-to-tr from-[#6A7D13] bg-clip-text text-4xl font-semibold tracking-wide text-transparent select-none",
             )}
           >
-            <p className="font-bold whitespace-nowrap">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <p className="whitespace-nowrap opacity-50">{user?.username}</p>
-          </div>
+            <span>u</span>
+            <span
+              className={cn(
+                "overflow-hidden whitespace-nowrap transition-all duration-300",
+                collapsed ? "max-w-0" : "max-w-[5ch]",
+              )}
+            >
+              tang
+            </span>
+            <span className="text-primary bg-white">!</span>
+          </h1>
         </div>
-
-        <hr className="border-sidebar-border mx-2 my-5 border-t" />
 
         {/* Navigation */}
         <nav>
@@ -163,36 +155,70 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* Bottom Actions */}
-      <ul className="flex flex-col">
-        {bottomItems.map((item) => (
-          <li key={item.label}>
-            {item.path ? (
-              <NavLink
-                to={item.path ?? "/home"}
-                className={cn(
-                  buttonClasses,
-                  "mb-2 transition-all duration-300",
-                  collapsed && "mb-4",
-                )}
-              >
-                <SidebarButton item={item} collapsed={collapsed} />
-              </NavLink>
-            ) : (
-              <button
-                onClick={item.action}
-                className={cn(
-                  buttonClasses,
-                  "mb-2 transition-all duration-300",
-                  collapsed && "mb-4",
-                )}
-              >
-                <SidebarButton item={item} collapsed={collapsed} />
-              </button>
+      <div className="flex flex-col">
+        {/* Bottom Actions */}
+        <ul className="flex flex-col">
+          {bottomItems.map((item) => (
+            <li key={item.label}>
+              {item.path ? (
+                <NavLink
+                  to={item.path ?? "/home"}
+                  className={cn(
+                    buttonClasses,
+                    "mb-2 transition-all duration-300",
+                  )}
+                >
+                  <SidebarButton item={item} collapsed={collapsed} />
+                </NavLink>
+              ) : (
+                <button
+                  onClick={item.action}
+                  className={cn(
+                    buttonClasses,
+                    "mb-2 transition-all duration-300",
+                    collapsed && "-ml-0.5",
+                  )}
+                >
+                  <SidebarButton item={item} collapsed={collapsed} />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        <hr className="border-sidebar-border my-3 border-t" />
+
+        {/* User Profile */}
+        <div
+          className={cn(
+            "bg-sidebar flex items-center rounded-2xl text-xs tracking-wide transition-all duration-300",
+            collapsed ? "w-12 p-3" : "w-50 p-3",
+          )}
+        >
+          <UserCircle
+            aria-hidden
+            color="black"
+            className={cn(
+              "shrink-0 drop-shadow-md transition-all duration-300",
+              collapsed ? "size-6" : "size-8",
             )}
-          </li>
-        ))}
-      </ul>
+            weight="BoldDuotone"
+          />
+          <div
+            className={cn(
+              "flex flex-col overflow-hidden whitespace-nowrap transition-all duration-300",
+              collapsed
+                ? "ml-0 max-w-0 opacity-0"
+                : "ml-4 max-w-40 opacity-100",
+            )}
+          >
+            <p className="font-bold whitespace-nowrap">
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p className="whitespace-nowrap opacity-50">{user?.username}</p>
+          </div>
+        </div>
+      </div>
     </motion.aside>
   );
 }
