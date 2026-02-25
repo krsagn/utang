@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/shared/lib";
 import type { Debt } from "@/entities/debt";
-import type { UpdateDebt } from "./types";
+import type { UpdateDebtPayload } from "./types";
 
 export function useUpdateDebt() {
   const queryClient = useQueryClient();
@@ -12,7 +12,7 @@ export function useUpdateDebt() {
       updates,
     }: {
       id: string;
-      updates: UpdateDebt;
+      updates: UpdateDebtPayload;
     }) => {
       const { data } = await api.patch<Debt>(`/debts/${id}`, updates);
       return data;

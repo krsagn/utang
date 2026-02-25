@@ -11,4 +11,4 @@ export { Input } from "./input";
 export { Label } from "./label";
 export { Separator } from "./separator";
 export { Spinner } from "./spinner";
-export { Modal } from "./modal";
+export { Modal, ModalBackdrop } from "./modal";

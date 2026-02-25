@@ -27,5 +27,6 @@ export function useModal() {
     },
     activeModal,
     idParam,
+    hasActiveModal: activeModal !== null,
   };
 }

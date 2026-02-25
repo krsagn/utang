@@ -14,22 +14,31 @@ import { z } from 'zod';
 export const getDebts = async (req: Request, res: Response) => {
   try {
     const userId = res.locals.user!.id;
+
     const type = req.query.type as string | undefined;
+    const status = req.query.status as string | undefined;
 
     let query = db.select().from(debts).limit(100);
 
+    const conditions = [];
+
     if (type === 'pay') {
-      // User is the borrower (Lendee)
-      query.where(eq(debts.lendeeId, userId));
+      conditions.push(eq(debts.lendeeId, userId));
     } else if (type === 'receive') {
-      // User is the lender (Lender)
-      query.where(eq(debts.lenderId, userId));
+      conditions.push(eq(debts.lenderId, userId));
     } else {
-      // User is involved as either party
-      query.where(or(eq(debts.lendeeId, userId), eq(debts.lenderId, userId)));
+      conditions.push(
+        or(eq(debts.lendeeId, userId), eq(debts.lenderId, userId))
+      );
     }
 
-    // Newest debts at the top!
+    if (status) {
+      conditions.push(eq(debts.status, status));
+    }
+
+    query.where(and(...conditions));
+
+    // Newest debts at the top
     query.orderBy(desc(debts.createdAt));
 
     const userDebts = await query;
