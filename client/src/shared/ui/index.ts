@@ -13,3 +13,4 @@ export { Separator } from "./separator";
 export { Spinner } from "./spinner";
 export { Modal, ModalBackdrop } from "./modal";
 export * from "./alert-dialog";
+export * from "./context-menu";
