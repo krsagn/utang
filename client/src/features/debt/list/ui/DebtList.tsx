@@ -89,7 +89,6 @@ export function DebtList({ type }: { type: DebtType }) {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         debtId={deleteTarget ?? ""}
-        onDeleted={() => modal.close()}
       />
     </>
   );
