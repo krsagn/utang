@@ -22,13 +22,17 @@ function Modal({ onClose, custom, children }: ModalProps) {
       className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center"
     >
       <motion.div
-        initial={{ y: 15, scale: 0.98 }}
+        initial={{ y: 5, scale: 0.95 }}
         animate={{ y: 0, scale: 1 }}
-        exit={{ y: 15, scale: 0.98 }}
+        exit={{
+          y: 5,
+          scale: 0.95,
+          transition: { type: "tween", duration: 0.1 },
+        }}
         transition={{
           type: "spring",
-          stiffness: 350,
-          damping: 25,
+          stiffness: 700,
+          damping: 30,
         }}
         onClick={(e) => e.stopPropagation()}
         className="drop-shadow-xl"
