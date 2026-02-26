@@ -1,9 +1,9 @@
 import { FriendList } from "@/features/friendship/list";
 
-export function Friends() {
+export function FriendRequests() {
   return (
     <div className="flex flex-col">
-      <FriendList status="accepted" />
+      <FriendList status="pending" />
     </div>
   );
 }

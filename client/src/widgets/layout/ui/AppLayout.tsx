@@ -2,14 +2,30 @@ import { Sidebar } from "@/widgets/sidebar";
 import { Outlet, useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Navbar } from "@/widgets/navbar";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { FriendsTabs } from "@/pages/friends/ui/FriendsTabs";
 
-const titleMap: Record<string, string> = {
-  "/home": "Home",
-  "/debts/outgoing": "To Pay",
-  "/debts/incoming": "To Receive",
-  "/friends": "Friends",
-};
+interface NavbarConfig {
+  titleKey: string;
+  title: ReactNode;
+}
+
+function getNavbarConfig(pathname: string): NavbarConfig {
+  if (pathname.startsWith("/friends")) {
+    return { titleKey: "friends", title: <FriendsTabs /> };
+  }
+
+  const titleMap: Record<string, string> = {
+    "/home": "Home",
+    "/debts/outgoing": "To Pay",
+    "/debts/incoming": "To Receive",
+  };
+
+  return {
+    titleKey: pathname,
+    title: titleMap[pathname] ?? "",
+  };
+}
 
 export function AppLayout() {
   const { pathname } = useLocation();
@@ -55,6 +71,8 @@ export function AppLayout() {
     transparent 100%
   )`;
 
+  const { titleKey, title } = getNavbarConfig(pathname);
+
   return (
     <div className="bg-background flex h-screen w-full overflow-hidden overscroll-none">
       <Sidebar />
@@ -63,7 +81,7 @@ export function AppLayout() {
         className="relative flex flex-1 flex-col overflow-y-auto overscroll-none [scrollbar-gutter:stable]"
       >
         <div className="bg-background sticky top-0 z-20 mb-5 flex flex-col">
-          <Navbar title={titleMap[pathname] || ""} />
+          <Navbar titleKey={titleKey} title={title} />
           <motion.div
             style={{ opacity: gradientOpacity, backgroundImage: scrimGradient }}
             className="pointer-events-none absolute right-0 -bottom-[39.5px] left-0 h-10"
