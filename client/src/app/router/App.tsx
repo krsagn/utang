@@ -6,7 +6,7 @@ import AuthRedirect from "@/app/router/guards/AuthRedirect";
 import { Outgoing } from "@/pages/debts/outgoing";
 import { Incoming } from "@/pages/debts/incoming";
 import { AppLayout } from "@/widgets/layout";
-import { Friends } from "@/pages/friends";
+import { Friends, FriendRequests } from "@/pages/friends";
 
 function App() {
   return (
@@ -21,6 +21,7 @@ function App() {
             <Route path="/debts/outgoing" element={<Outgoing />} />
             <Route path="/debts/incoming" element={<Incoming />} />
             <Route path="/friends" element={<Friends />} />
+            <Route path="/friends/requests" element={<FriendRequests />} />
           </Route>
         </Route>
       </Routes>

@@ -36,6 +36,7 @@ export const getFriends = async (req: Request, res: Response) => {
         id: friendships.id,
         status: friendships.status,
         createdAt: friendships.createdAt,
+        updatedAt: friendships.updatedAt,
 
         friendId: users.id,
         friendFirstName: users.firstName,

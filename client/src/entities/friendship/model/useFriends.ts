@@ -6,8 +6,7 @@ export function useFriends(type: "pending" | "accepted") {
   return useQuery({
     queryKey: ["friendships", type],
     queryFn: async () => {
-      const url = type ? `/friendships?type=${type}` : "/friendships";
-      const { data } = await api.get<Friendship[]>(url);
+      const { data } = await api.get<Friendship[]>(`/friendships?type=${type}`);
       return data;
     },
   });

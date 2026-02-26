@@ -4,12 +4,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/shared/lib";
 
 interface NavbarProps {
-  title: string;
+  titleKey: string;
+  title: ReactNode;
   className?: string;
   children?: ReactNode;
 }
 
-export function Navbar({ title, className, children }: NavbarProps) {
+export function Navbar({ titleKey, title, className, children }: NavbarProps) {
   return (
     <AnimatePresence mode="popLayout">
       <div
@@ -18,14 +19,17 @@ export function Navbar({ title, className, children }: NavbarProps) {
           className ?? "",
         )}
       >
-        <motion.h1
-          key={title}
+        <motion.div
+          key={titleKey}
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="font-heading text-2xl font-extrabold"
         >
-          {title}
-        </motion.h1>
+          {typeof title === "string" ? (
+            <h1 className="font-heading text-2xl font-extrabold">{title}</h1>
+          ) : (
+            title
+          )}
+        </motion.div>
         <div className="flex items-center gap-3 drop-shadow-lg">
           {children}
           <CreateDebtButton />

@@ -102,24 +102,23 @@ export const createDebt = async (req: Request, res: Response) => {
     let finalLenderName = body.lenderName;
     let finalLendeeName = body.lendeeName;
 
-    // If lenderId is provided, fetch the user's real name from the DB
-    if (body.lenderId) {
-      const lenderUser = await db.query.users.findFirst({
-        where: eq(users.id, body.lenderId),
-      });
-      if (lenderUser) {
-        finalLenderName = lenderUser.firstName;
-      }
+    const [lenderUser, lendeeUser] = await Promise.all([
+      body.lenderId
+        ? db.query.users.findFirst({ where: eq(users.id, body.lenderId) })
+        : Promise.resolve(null),
+      body.lendeeId
+        ? db.query.users.findFirst({ where: eq(users.id, body.lendeeId) })
+        : Promise.resolve(null),
+    ]);
+
+    // Refresh names if IDs are provided
+
+    if (lenderUser) {
+      finalLenderName = lenderUser.firstName;
     }
 
-    // If lendeeId is provided, fetch the user's real name from the DB
-    if (body.lendeeId) {
-      const lendeeUser = await db.query.users.findFirst({
-        where: eq(users.id, body.lendeeId),
-      });
-      if (lendeeUser) {
-        finalLendeeName = lendeeUser.firstName;
-      }
+    if (lendeeUser) {
+      finalLendeeName = lendeeUser.firstName;
     }
 
     const newDebt = {
@@ -159,23 +158,23 @@ export const updateDebt = async (req: Request, res: Response) => {
     let finalLenderName = body.lenderName;
     let finalLendeeName = body.lendeeName;
 
+    const [lenderUser, lendeeUser] = await Promise.all([
+      body.lenderId
+        ? db.query.users.findFirst({ where: eq(users.id, body.lenderId) })
+        : Promise.resolve(null),
+      body.lendeeId
+        ? db.query.users.findFirst({ where: eq(users.id, body.lendeeId) })
+        : Promise.resolve(null),
+    ]);
+
     // Refresh names if IDs are being updated
-    if (body.lenderId) {
-      const lenderUser = await db.query.users.findFirst({
-        where: eq(users.id, body.lenderId),
-      });
-      if (lenderUser) {
-        finalLenderName = lenderUser.firstName;
-      }
+
+    if (lenderUser) {
+      finalLenderName = lenderUser.firstName;
     }
 
-    if (body.lendeeId) {
-      const lendeeUser = await db.query.users.findFirst({
-        where: eq(users.id, body.lendeeId),
-      });
-      if (lendeeUser) {
-        finalLendeeName = lendeeUser.firstName;
-      }
+    if (lendeeUser) {
+      finalLendeeName = lendeeUser.firstName;
     }
 
     type NewDebt = InferInsertModel<typeof debts>;
