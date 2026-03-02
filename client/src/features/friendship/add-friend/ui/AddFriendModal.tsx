@@ -1,24 +1,35 @@
 import { useSearchUser, type User } from "@/entities/user";
-import { useDebounce } from "@/shared/lib";
+import { cn, useDebounce } from "@/shared/lib";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
   Modal,
 } from "@/shared/ui";
-import { Plus, Search, X } from "lucide-react";
+import { Check, Plus, Search, X } from "lucide-react";
 import { useState } from "react";
 import { useAddFriend } from "../model/useAddFriend";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddFriendModalProps {
   onClose: () => void;
 }
 
 export function AddFriendModal({ onClose }: AddFriendModalProps) {
+  const queryClient = useQueryClient();
+
+  const handleClose = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["friendships"],
+    });
+    queryClient.removeQueries({ queryKey: ["users"] });
+    onClose();
+  };
+
   return (
-    <Modal onClose={onClose} custom={true}>
+    <Modal onClose={handleClose} custom={true}>
       <div className="isolate flex w-[calc(100vw-2rem)] flex-col overflow-clip rounded-4xl sm:w-md">
-        <AddFriendCard onClose={onClose} />
+        <AddFriendCard onClose={handleClose} />
       </div>
     </Modal>
   );
@@ -72,7 +83,7 @@ function AddFriendCard({ onClose }: { onClose: () => void }) {
 }
 
 function AddFriendItem({ user }: { user: User }) {
-  const { mutate: addFriend, isPending } = useAddFriend();
+  const { mutate: addFriend, isPending, isSuccess } = useAddFriend();
 
   const handleAddFriend = () => {
     if (!user) return;
@@ -80,7 +91,12 @@ function AddFriendItem({ user }: { user: User }) {
   };
 
   return (
-    <div className="flex items-center justify-between border-b border-black/10 p-3 text-xs transition duration-300 hover:bg-black/5">
+    <div
+      className={cn(
+        "flex items-center justify-between border-b border-black/10 p-3 text-xs transition duration-300 hover:bg-black/5",
+        isSuccess && "opacity-50",
+      )}
+    >
       <div className="flex flex-col justify-center">
         <p className="font-medium">
           {user.firstName} {user.lastName}
@@ -92,7 +108,11 @@ function AddFriendItem({ user }: { user: User }) {
         onClick={handleAddFriend}
         disabled={isPending}
       >
-        <Plus className="stroke-2.5 size-4 text-black" />
+        {isSuccess ? (
+          <Check className="stroke-2.5 size-4" />
+        ) : (
+          <Plus className="stroke-2.5 size-4" />
+        )}
       </button>
     </div>
   );

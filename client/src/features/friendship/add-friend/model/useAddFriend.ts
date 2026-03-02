@@ -12,7 +12,6 @@ export function useAddFriend() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["friendships"] });
     },
   });
