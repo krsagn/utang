@@ -1,6 +1,6 @@
 # Utang
 
-> **A minimalist debt tracking application.** Track who owes you, and who you owe, with a sleek, modern interface.
+> **A minimalist debt tracking application.** Track who owes you, and who you owe.
 
 "Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose of this application: simplifying how you track shared expenses among friends.
 
