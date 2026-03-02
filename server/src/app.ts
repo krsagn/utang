@@ -4,6 +4,7 @@ import authRouter from './routes/auth.js';
 import friendshipRouter from './routes/friendships.js';
 import cors from 'cors';
 import { authMiddleware } from './middleware/auth.js';
+import usersRouter from './routes/users.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(express.json());
 // Enable auth middleware
 app.use(authMiddleware);
 
+app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/friendships', friendshipRouter);
 app.use('/debts', debtRouter);

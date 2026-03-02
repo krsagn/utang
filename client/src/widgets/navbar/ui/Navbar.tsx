@@ -1,5 +1,4 @@
 import { type ReactNode } from "react";
-import { CreateDebtButton } from "@/features/debt/create-debt";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/shared/lib";
 
@@ -30,10 +29,7 @@ export function Navbar({ titleKey, title, className, children }: NavbarProps) {
             title
           )}
         </motion.div>
-        <div className="flex items-center gap-3 drop-shadow-lg">
-          {children}
-          <CreateDebtButton />
-        </div>
+        <div className="flex items-center gap-3 drop-shadow-lg">{children}</div>
       </div>
     </AnimatePresence>
   );

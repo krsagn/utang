@@ -4,6 +4,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Navbar } from "@/widgets/navbar";
 import { useEffect, useRef, type ReactNode } from "react";
 import { FriendsTabs } from "@/pages/friends/ui/FriendsTabs";
+import { CreateDebtButton } from "@/features/debt/create-debt";
+import { AddFriendButton } from "@/features/friendship/add-friend/ui/AddFriendButton";
 
 interface NavbarConfig {
   titleKey: string;
@@ -81,7 +83,13 @@ export function AppLayout() {
         className="relative flex flex-1 flex-col overflow-y-auto overscroll-none [scrollbar-gutter:stable]"
       >
         <div className="bg-background sticky top-0 z-20 mb-5 flex flex-col">
-          <Navbar titleKey={titleKey} title={title} />
+          <Navbar titleKey={titleKey} title={title}>
+            {pathname !== "/friends" ? (
+              <CreateDebtButton />
+            ) : (
+              <AddFriendButton />
+            )}
+          </Navbar>
           <motion.div
             style={{ opacity: gradientOpacity, backgroundImage: scrimGradient }}
             className="pointer-events-none absolute right-0 -bottom-[39.5px] left-0 h-10"

@@ -62,6 +62,77 @@ async function seed() {
         firstName: 'Emmeline',
         lastName: 'Lazuardi',
       },
+      // --- Stranger Users (Not friends with Kristian by default) ---
+      {
+        id: crypto.randomUUID(),
+        username: 'marcus',
+        email: 'marcus@example.com',
+        firstName: 'Marcus',
+        lastName: 'Aurelius',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'seneca',
+        email: 'seneca@example.com',
+        firstName: 'Lucius',
+        lastName: 'Seneca',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'epictetus',
+        email: 'epictetus@example.com',
+        firstName: 'Epictetus',
+        lastName: 'Philosopher',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'sofia',
+        email: 'sofia@example.com',
+        firstName: 'Sofia',
+        lastName: 'Loren',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'diogenes',
+        email: 'diogenes@example.com',
+        firstName: 'Diogenes',
+        lastName: 'Sinope',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'socrates',
+        email: 'socrates@example.com',
+        firstName: 'Socrates',
+        lastName: 'Athens',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'plato',
+        email: 'plato@example.com',
+        firstName: 'Plato',
+        lastName: 'Academy',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'aristotle',
+        email: 'aristotle@example.com',
+        firstName: 'Aristotle',
+        lastName: 'Lyceum',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'hypatia',
+        email: 'hypatia@example.com',
+        firstName: 'Hypatia',
+        lastName: 'Alexandria',
+      },
+      {
+        id: crypto.randomUUID(),
+        username: 'cleopatra',
+        email: 'cleopatra@example.com',
+        firstName: 'Cleopatra',
+        lastName: 'Egypt',
+      },
     ];
 
     for (const u of userList) {
