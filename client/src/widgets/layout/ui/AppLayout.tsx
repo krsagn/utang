@@ -1,6 +1,11 @@
 import { Sidebar } from "@/widgets/sidebar";
 import { Outlet, useLocation } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { Navbar } from "@/widgets/navbar";
 import { useEffect, useRef, type ReactNode } from "react";
 import { FriendsTabs } from "@/pages/friends/ui/FriendsTabs";
@@ -10,11 +15,18 @@ import { AddFriendButton } from "@/features/friendship/add-friend/ui/AddFriendBu
 interface NavbarConfig {
   titleKey: string;
   title: ReactNode;
+  actionKey?: string;
+  actionButton?: ReactNode;
 }
 
 function getNavbarConfig(pathname: string): NavbarConfig {
   if (pathname.startsWith("/friends")) {
-    return { titleKey: "friends", title: <FriendsTabs /> };
+    return {
+      titleKey: "/friends",
+      title: <FriendsTabs />,
+      actionKey: "add-friend-button",
+      actionButton: <AddFriendButton />,
+    };
   }
 
   const titleMap: Record<string, string> = {
@@ -26,6 +38,8 @@ function getNavbarConfig(pathname: string): NavbarConfig {
   return {
     titleKey: pathname,
     title: titleMap[pathname] ?? "",
+    actionKey: "create-debt-button",
+    actionButton: <CreateDebtButton />,
   };
 }
 
@@ -73,7 +87,8 @@ export function AppLayout() {
     transparent 100%
   )`;
 
-  const { titleKey, title } = getNavbarConfig(pathname);
+  const { titleKey, title, actionKey, actionButton } =
+    getNavbarConfig(pathname);
 
   return (
     <div className="bg-background flex h-screen w-full overflow-hidden overscroll-none">
@@ -84,11 +99,17 @@ export function AppLayout() {
       >
         <div className="bg-background sticky top-0 z-20 mb-5 flex flex-col">
           <Navbar titleKey={titleKey} title={title}>
-            {pathname !== "/friends" ? (
-              <CreateDebtButton />
-            ) : (
-              <AddFriendButton />
-            )}
+            <AnimatePresence mode="popLayout">
+              {actionButton && (
+                <motion.div
+                  key={actionKey}
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                >
+                  {actionButton}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Navbar>
           <motion.div
             style={{ opacity: gradientOpacity, backgroundImage: scrimGradient }}

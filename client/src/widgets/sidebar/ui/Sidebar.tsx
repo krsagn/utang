@@ -87,7 +87,7 @@ export function Sidebar() {
         duration: 0.7,
       }}
       className={cn(
-        "bg-sidebar relative z-30 flex flex-col items-stretch justify-between p-6 shadow-xl transition-[width,padding,margin] duration-300",
+        "bg-sidebar relative z-30 flex flex-col items-stretch justify-between p-6 transition-[width,padding,margin] duration-300",
         collapsed ? "w-24" : "w-64",
       )}
     >
