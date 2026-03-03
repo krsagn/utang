@@ -2,10 +2,7 @@ import { z } from 'zod';
 
 // validate username only, controller handles the rest
 export const addFriendSchema = z.object({
-  username: z
-    .string()
-    .min(1, 'Username is required')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Alphanumeric only'),
+  id: z.string().uuid().min(1, 'Friend ID is required'),
 });
 
 // no reject status, since that just implies deletion

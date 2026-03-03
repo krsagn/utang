@@ -31,6 +31,10 @@ export const getFriends = async (req: Request, res: Response) => {
       );
     }
 
+    if (type === 'pending') {
+      whereConditions.push(ne(friendships.requesterId, userId));
+    }
+
     const result = await db
       .select({
         id: friendships.id,
@@ -66,9 +70,9 @@ export const getFriends = async (req: Request, res: Response) => {
 
 /**
  * POST /friendships
- * Sends a friend request to another user by username.
+ * Sends a friend request to another user by their ID.
  *
- * @body {string} username - The username of the user to add.
+ * @body {string} id - The UUID of the user to add.
  *
  * Logic:
  * - Sorts IDs (userId1 < userId2) to enforce database uniqueness constraints.
@@ -77,22 +81,23 @@ export const getFriends = async (req: Request, res: Response) => {
  */
 export const addFriend = async (req: Request, res: Response) => {
   try {
-    const { username } = addFriendSchema.parse(req.body);
+    const { id: targetUserId } = addFriendSchema.parse(req.body);
     const requesterId = res.locals.user!.id;
 
+    if (targetUserId === requesterId) {
+      return res.status(400).json({ error: 'Cannot add yourself' });
+    }
+
+    // verify if user exists
     const targetUser = await db.query.users.findFirst({
-      where: eq(users.username, username),
+      where: eq(users.id, targetUserId),
     });
 
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
     }
-    if (targetUser.id === requesterId) {
-      return res.status(400).json({ error: 'Cannot add yourself' });
-    }
 
-    const targetId = targetUser.id;
-    const [userId1, userId2] = [requesterId, targetId].sort();
+    const [userId1, userId2] = [requesterId, targetUserId].sort();
 
     const friendRequest = {
       requesterId: requesterId,
@@ -113,7 +118,7 @@ export const addFriend = async (req: Request, res: Response) => {
     }
 
     // Handle Unique Key violations (Postgres Error 23505)
-    if (error.code === '23505') {
+    if (error.code === '23505' || error.cause?.code === '23505') {
       return res.status(409).json({
         error: 'Friend request already exists or you are already friends.',
       });
@@ -171,7 +176,7 @@ export const acceptFriend = async (req: Request, res: Response) => {
     }
 
     console.error(error);
-    return res.status(500).json({ errors: 'Server Error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -212,6 +217,6 @@ export const deleteFriend = async (req: Request, res: Response) => {
     return res.json(result[0]);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ errors: 'Server Error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };

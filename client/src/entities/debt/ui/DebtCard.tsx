@@ -59,7 +59,7 @@ export function DebtCard({
           {/* Currency type */}
           <span
             className={cn(
-              "text-base tracking-wider",
+              "text-sm tracking-wider",
               isOutgoing ? "text-[#7D1313]/50" : "text-[#6A7D13]/50",
             )}
           >

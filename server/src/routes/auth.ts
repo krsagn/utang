@@ -7,6 +7,6 @@ const authRouter = Router();
 authRouter.post('/users', signUp);
 authRouter.post('/sessions', logIn);
 authRouter.delete('/sessions/current', logOut);
-authRouter.get('/users/me', getMe);
+authRouter.get('/sessions/current', getMe);
 
 export default authRouter;

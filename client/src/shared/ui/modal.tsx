@@ -7,11 +7,19 @@ interface ModalProps {
   onClose: () => void;
   custom: boolean;
   children?: React.ReactNode;
+  "aria-labelledby"?: string;
 }
 
-function Modal({ onClose, custom, children }: ModalProps) {
+function Modal({
+  onClose,
+  custom,
+  children,
+  "aria-labelledby": ariaLabelledBy,
+}: ModalProps) {
   return createPortal(
-    <motion.div
+    <motion.dialog
+      aria-modal="true"
+      aria-labelledby={ariaLabelledBy}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -22,11 +30,12 @@ function Modal({ onClose, custom, children }: ModalProps) {
       className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center"
     >
       <motion.div
-        initial={{ y: 5, scale: 0.95 }}
-        animate={{ y: 0, scale: 1 }}
+        initial={{ y: 5, scale: 0.95, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
         exit={{
           y: 5,
           scale: 0.95,
+          opacity: 0,
           transition: { type: "tween", duration: 0.1 },
         }}
         transition={{
@@ -43,7 +52,7 @@ function Modal({ onClose, custom, children }: ModalProps) {
           <div className="rounded-3xl bg-white p-10">unfinished for now...</div>
         )}
       </motion.div>
-    </motion.div>,
+    </motion.dialog>,
     document.body,
   );
 }
