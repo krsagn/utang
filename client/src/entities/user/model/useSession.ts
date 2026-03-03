@@ -6,7 +6,7 @@ export function useSession() {
   return useQuery({
     queryKey: ["me"],
     queryFn: async () => {
-      const { data } = await api.get<{ user: User }>("/auth/users/me");
+      const { data } = await api.get<{ user: User }>("/auth/sessions/current");
       return data.user;
     },
     retry: false,

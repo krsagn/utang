@@ -17,9 +17,7 @@ export function AddFriendButton() {
         Add Friend
       </Button>
       <AnimatePresence>
-        {modal.isOpen("add-friend") && (
-          <AddFriendModal key="create-debt" onClose={modal.close} />
-        )}
+        {modal.isOpen("add-friend") && <AddFriendModal onClose={modal.close} />}
       </AnimatePresence>
     </>
   );

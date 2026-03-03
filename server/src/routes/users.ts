@@ -1,6 +1,6 @@
 import { Router } from 'express';
 // Controller function imports
-import { searchUsers } from '../controllers/friendshipController.js';
+import { searchUsers } from '../controllers/userController.js';
 
 import { requireAuth } from '../middleware/auth.js';
 

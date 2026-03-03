@@ -7,11 +7,19 @@ interface ModalProps {
   onClose: () => void;
   custom: boolean;
   children?: React.ReactNode;
+  "aria-labelledby"?: string;
 }
 
-function Modal({ onClose, custom, children }: ModalProps) {
+function Modal({
+  onClose,
+  custom,
+  children,
+  "aria-labelledby": ariaLabelledBy,
+}: ModalProps) {
   return createPortal(
-    <motion.div
+    <motion.dialog
+      aria-modal="true"
+      aria-labelledby={ariaLabelledBy}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -44,7 +52,7 @@ function Modal({ onClose, custom, children }: ModalProps) {
           <div className="rounded-3xl bg-white p-10">unfinished for now...</div>
         )}
       </motion.div>
-    </motion.div>,
+    </motion.dialog>,
     document.body,
   );
 }

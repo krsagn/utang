@@ -24,7 +24,11 @@ export function AddFriendModal({ onClose }: AddFriendModalProps) {
   };
 
   return (
-    <Modal onClose={handleClose} custom={true}>
+    <Modal
+      onClose={handleClose}
+      custom={true}
+      aria-labelledby="add-friend-title"
+    >
       <div className="isolate flex w-[calc(100vw-2rem)] flex-col overflow-clip rounded-4xl sm:w-md">
         <AddFriendCard onClose={handleClose} />
       </div>
@@ -42,7 +46,10 @@ function AddFriendCard({ onClose }: { onClose: () => void }) {
     <div className="flex w-full flex-col items-center justify-center rounded-[36px] bg-white p-6 sm:p-8">
       <div className="mb-5 flex w-full justify-between">
         <div className="flex flex-col">
-          <h2 className="font-heading text-2xl font-extrabold tracking-wide">
+          <h2
+            id="add-friend-title"
+            className="font-heading text-2xl font-extrabold tracking-wide"
+          >
             Add friend
           </h2>
           <p className="text-sm leading-5 tracking-wide text-black/50">
@@ -50,6 +57,7 @@ function AddFriendCard({ onClose }: { onClose: () => void }) {
           </p>
         </div>
         <button
+          aria-label="Close"
           onClick={onClose}
           className="flex size-8 items-center justify-center rounded-full text-black/40 transition-colors outline-none hover:bg-black/5 hover:text-black active:bg-black/10"
         >
@@ -63,18 +71,17 @@ function AddFriendCard({ onClose }: { onClose: () => void }) {
           onChange={(e) => setSearchValue(e.target.value)}
           placeholder="Search for users..."
           aria-label="Search"
-          required
           className="h-10 px-4"
         />
         <InputGroupAddon>
           <Search className="stroke-2.5 size-3.5 text-black/50" />
         </InputGroupAddon>
       </InputGroup>
-      <div className="flex h-75 w-full flex-col overflow-clip rounded-b-2xl bg-black/5">
+      <ul className="flex h-75 w-full flex-col overflow-clip rounded-b-2xl bg-black/5">
         {users?.map((user) => {
           return <AddFriendItem key={user.id} user={user} />;
         })}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -83,12 +90,11 @@ function AddFriendItem({ user }: { user: User }) {
   const { mutate: addFriend, isPending, isSuccess } = useAddFriend();
 
   const handleAddFriend = () => {
-    if (!user) return;
     addFriend(user.id);
   };
 
   return (
-    <div
+    <li
       className={cn(
         "flex items-center justify-between border-b border-black/10 p-3 text-xs transition duration-300 hover:bg-black/5",
         isSuccess && "opacity-50",
@@ -101,6 +107,11 @@ function AddFriendItem({ user }: { user: User }) {
         <p className="opacity-50">@{user.username}</p>
       </div>
       <button
+        aria-label={
+          isSuccess
+            ? `Friend request sent to ${user.firstName} ${user.lastName}`
+            : `Send friend request to ${user.firstName} ${user.lastName}`
+        }
         className="flex size-6 items-center justify-center rounded-full transition duration-300 hover:scale-95 hover:bg-black/10"
         onClick={handleAddFriend}
         disabled={isPending}
@@ -111,6 +122,6 @@ function AddFriendItem({ user }: { user: User }) {
           <Plus className="stroke-2.5 size-4" />
         )}
       </button>
-    </div>
+    </li>
   );
 }
