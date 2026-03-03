@@ -1,4 +1,4 @@
-import { useSearchUser, type User } from "@/entities/user";
+import { useSearchUser, userQueries, type User } from "@/entities/user";
 import { cn, useDebounce } from "@/shared/lib";
 import {
   InputGroup,
@@ -19,10 +19,7 @@ export function AddFriendModal({ onClose }: AddFriendModalProps) {
   const queryClient = useQueryClient();
 
   const handleClose = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["friendships"],
-    });
-    queryClient.removeQueries({ queryKey: ["users"] });
+    queryClient.removeQueries({ queryKey: userQueries.all() });
     onClose();
   };
 

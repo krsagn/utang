@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { users, friendships } from '../db/schema.js';
-import { and, eq, ilike, like, ne, notExists, or, sql } from 'drizzle-orm';
+import { and, eq, ilike, ne, notExists, or, sql } from 'drizzle-orm';
 import {
   addFriendSchema,
   acceptFriendSchema,

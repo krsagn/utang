@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/shared/lib";
 import type { User } from "./types";
+import { userQueries } from "./queries";
 
 export function useSearchUser(q: string) {
   return useQuery({
-    queryKey: ["users", q],
+    queryKey: userQueries.search(q),
     queryFn: async () => {
       const params = new URLSearchParams();
       if (q) params.set("q", q);

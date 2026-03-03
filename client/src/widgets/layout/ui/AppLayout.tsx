@@ -8,9 +8,9 @@ import {
 } from "framer-motion";
 import { Navbar } from "@/widgets/navbar";
 import { useEffect, useRef, type ReactNode } from "react";
-import { FriendsTabs } from "@/pages/friends/ui/FriendsTabs";
 import { CreateDebtButton } from "@/features/debt/create-debt";
-import { AddFriendButton } from "@/features/friendship/add-friend/ui/AddFriendButton";
+import { AddFriendButton } from "@/features/friendship/add-friend";
+import { FriendsTabs } from "@/features/friendship/tabs";
 
 interface NavbarConfig {
   titleKey: string;

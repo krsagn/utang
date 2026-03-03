@@ -1,5 +1,6 @@
 import { api } from "@/shared/lib";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { friendshipQueries } from "@/entities/friendship";
 
 export function useAddFriend() {
   const queryClient = useQueryClient();
@@ -12,7 +13,7 @@ export function useAddFriend() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["friendships"] });
+      queryClient.invalidateQueries({ queryKey: friendshipQueries.all() });
     },
   });
 }
