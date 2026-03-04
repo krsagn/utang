@@ -1,29 +1,30 @@
 import type { Friendship } from "../model/types";
-import { Button, PopoverContent, PopoverTrigger, Popover } from "@/shared/ui";
-import { Check, MoreHorizontal } from "lucide-react";
+import { PopoverContent, PopoverTrigger, Popover } from "@/shared/ui";
+import { MoreHorizontal } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { TrashBinTrash, UsersGroupRounded } from "@solar-icons/react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 type FriendCardProps = Pick<
   Friendship,
-  | "id"
   | "friendFirstName"
   | "friendLastName"
   | "friendUsername"
   | "status"
   | "updatedAt"
   | "createdAt"
->;
+> & {
+  action?: ReactNode;
+};
 
 export function FriendCard({
-  id, // TODO: wire up accept/delete mutations
   friendFirstName,
   friendLastName,
   friendUsername,
   status,
   updatedAt,
   createdAt,
+  action,
 }: FriendCardProps) {
   const [optionsOpen, setOptionsOpen] = useState(false);
 
@@ -54,10 +55,7 @@ export function FriendCard({
       </div>
       <div className="flex items-center justify-end">
         {status === "pending" ? (
-          <Button variant="default" className="rounded-xl p-5">
-            <Check className="size-4 shrink-0 stroke-[2.5px]" />
-            Accept
-          </Button>
+          action
         ) : (
           <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
             <PopoverTrigger asChild>

@@ -1,4 +1,5 @@
 import { FriendCard, useFriends, type Friendship } from "@/entities/friendship";
+import { AcceptFriendButton } from "@/features/friendship/accept-friend";
 import { AnimatePresence, motion } from "framer-motion";
 
 export function FriendList({ status }: { status: Friendship["status"] }) {
@@ -45,13 +46,17 @@ export function FriendList({ status }: { status: Friendship["status"] }) {
                 }}
               >
                 <FriendCard
-                  id={f.id}
                   friendFirstName={f.friendFirstName}
                   friendLastName={f.friendLastName}
                   friendUsername={f.friendUsername}
                   status={f.status}
                   createdAt={f.createdAt}
                   updatedAt={f.updatedAt}
+                  action={
+                    f.status === "pending" ? (
+                      <AcceptFriendButton friendId={f.id} />
+                    ) : undefined
+                  }
                 />
               </motion.div>
             );

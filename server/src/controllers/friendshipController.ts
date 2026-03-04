@@ -2,10 +2,7 @@ import type { Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { users, friendships } from '../db/schema.js';
 import { and, eq, ne, or } from 'drizzle-orm';
-import {
-  addFriendSchema,
-  acceptFriendSchema,
-} from '../schemas/friendshipSchema.js';
+import { addFriendSchema } from '../schemas/friendshipSchema.js';
 import { z } from 'zod';
 
 /**
@@ -134,7 +131,6 @@ export const addFriend = async (req: Request, res: Response) => {
  * Updates the status of a friendship (e.g., 'accepted').
  *
  * @param {string} id - The UUID of the friendship.
- * @body {string} status - New status (e.g., 'accepted').
  *
  * Access Control:
  * - Security: The 'requester' cannot accept their own request.
@@ -144,11 +140,10 @@ export const acceptFriend = async (req: Request, res: Response) => {
   try {
     const currentUser = res.locals.user!.id;
     const { id } = req.params;
-    const { status } = acceptFriendSchema.parse(req.body);
 
     const result = await db
       .update(friendships)
-      .set({ status: status })
+      .set({ status: 'accepted' })
       .where(
         and(
           eq(friendships.id, id as string),
@@ -171,10 +166,6 @@ export const acceptFriend = async (req: Request, res: Response) => {
 
     return res.json(result[0]);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ errors: error.issues });
-    }
-
     console.error(error);
     return res.status(500).json({ error: 'Server error' });
   }
