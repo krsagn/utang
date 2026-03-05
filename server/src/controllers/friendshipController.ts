@@ -205,7 +205,7 @@ export const deleteFriend = async (req: Request, res: Response) => {
         .json({ error: 'Request not found or unauthorized' });
     }
 
-    return res.json(result[0]);
+    return res.status(204).send();
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });

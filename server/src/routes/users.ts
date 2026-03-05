@@ -10,6 +10,6 @@ const usersRouter = Router();
 usersRouter.use(requireAuth);
 
 // Route definitions
-usersRouter.get('/search', searchUsers);
+usersRouter.get('/', searchUsers);
 
 export default usersRouter;

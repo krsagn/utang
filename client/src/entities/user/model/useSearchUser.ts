@@ -10,7 +10,7 @@ export function useSearchUser(q: string) {
       const params = new URLSearchParams();
       if (q) params.set("q", q);
 
-      const { data } = await api.get<User[]>(`/users/search?${params}`);
+      const { data } = await api.get<User[]>(`/users?${params}`);
       return data;
     },
     enabled: q.length >= 2,
