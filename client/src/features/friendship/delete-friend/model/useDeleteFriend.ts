@@ -6,9 +6,8 @@ export function useDeleteFriend(type: Friendship["status"]) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (targetFriendshipId: string) => {
-      await api.delete(`/friendships/${targetFriendshipId}`);
-    },
+    mutationFn: (friendshipId: string) =>
+      api.delete(`/friendships/${friendshipId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: friendshipQueries.list(type) });
     },
