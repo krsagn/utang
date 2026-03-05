@@ -14,5 +14,7 @@ export function useSearchUser(q: string) {
       return data;
     },
     enabled: q.length >= 2,
+    gcTime: 30_000,
+    staleTime: 10_000,
   });
 }

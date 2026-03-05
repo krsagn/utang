@@ -5,6 +5,7 @@ import {
   timestamp,
   check,
   unique,
+  index,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -69,6 +70,9 @@ export const debts = pgTable(
       'one-participant-check',
       sql`${table.lenderId} IS NOT NULL OR ${table.lendeeId} IS NOT NULL`
     ),
+    index('idx_debts_lender').on(table.lenderId),
+    index('idx_debts_lendee').on(table.lendeeId),
+    index('idx_debts_created_by').on(table.createdBy),
   ]
 );
 
@@ -110,5 +114,8 @@ export const friendships = pgTable(
     ),
     // cares about order, so reverse order of IDs slip through this check, hence the force order check
     unique('unique_pair').on(table.userId1, table.userId2),
+    index('idx_friendships_user1').on(table.userId1),
+    index('idx_friendships_user2').on(table.userId2),
+    index('idx_friendships_requester').on(table.requesterId),
   ]
 );
