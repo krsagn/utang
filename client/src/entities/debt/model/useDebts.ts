@@ -13,6 +13,7 @@ export function useDebts(type?: DebtType, status?: Debt["status"]) {
       const { data } = await api.get<Debt[]>(`/debts?${params}`);
       return data;
     },
+    staleTime: 30_000,
   });
 }
 
@@ -35,6 +36,19 @@ export function useDebt(id: string) {
         const found = debts?.find((d) => d.id === id);
         if (found) return found;
       }
+    },
+    initialDataUpdatedAt: () => {
+      const allDebtQueries = queryClient.getQueriesData<Debt[]>({
+        queryKey: ["debts"],
+      });
+
+      let latest = 0;
+      for (const [key] of allDebtQueries) {
+        const updatedAt = queryClient.getQueryState(key)?.dataUpdatedAt ?? 0;
+        if (updatedAt > latest) latest = updatedAt;
+      }
+
+      return latest || undefined;
     },
   });
 }

@@ -6,8 +6,7 @@ export function useDeleteDebt() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data } = await api.delete(`/debts/${id}`);
-      return data;
+      await api.delete(`/debts/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["debts"] });

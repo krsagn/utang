@@ -9,8 +9,8 @@ export function useLogout() {
   return useMutation({
     mutationFn: async () => api.delete("/auth/sessions/current"),
     onSuccess: () => {
-      queryClient.setQueryData(["me"], null);
-      navigate("/login");
+      queryClient.clear();
+      navigate("/");
     },
   });
 }

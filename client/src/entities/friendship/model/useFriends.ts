@@ -10,5 +10,6 @@ export function useFriends(type: "pending" | "accepted") {
       const { data } = await api.get<Friendship[]>(`/friendships?type=${type}`);
       return data;
     },
+    staleTime: 30_000,
   });
 }

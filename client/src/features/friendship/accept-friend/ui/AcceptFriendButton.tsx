@@ -2,16 +2,17 @@ import { Button, Spinner } from "@/shared/ui";
 import { Check } from "lucide-react";
 import { useAcceptFriend } from "../model/useAcceptFriend";
 import type { Friendship } from "@/entities/friendship";
+import { cn } from "@/shared/lib";
 
 export function AcceptFriendButton({
-  friendId,
+  friendshipId,
 }: {
-  friendId: Friendship["id"];
+  friendshipId: Friendship["id"];
 }) {
   const { mutate: acceptFriend, isPending } = useAcceptFriend();
 
   const handleAcceptFriend = () => {
-    acceptFriend(friendId);
+    acceptFriend(friendshipId);
   };
 
   return (
@@ -19,7 +20,7 @@ export function AcceptFriendButton({
       onClick={handleAcceptFriend}
       variant="default"
       disabled={isPending}
-      className="rounded-xl p-5"
+      className={cn("w-30 rounded-xl p-5", isPending && "opacity-50")}
     >
       {isPending ? (
         <Spinner className="size-4" />
