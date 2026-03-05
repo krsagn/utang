@@ -2,7 +2,7 @@ import type { Friendship } from "../model/types";
 import { PopoverContent, PopoverTrigger, Popover } from "@/shared/ui";
 import { MoreHorizontal } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
-import { TrashBinTrash, UsersGroupRounded } from "@solar-icons/react";
+import { UsersGroupRounded } from "@solar-icons/react";
 import { useState, type ReactNode } from "react";
 
 type FriendCardProps = Pick<
@@ -14,7 +14,7 @@ type FriendCardProps = Pick<
   | "updatedAt"
   | "createdAt"
 > & {
-  action?: ReactNode;
+  action?: (close: () => void) => ReactNode;
 };
 
 export function FriendCard({
@@ -55,7 +55,7 @@ export function FriendCard({
       </div>
       <div className="flex items-center justify-end">
         {status === "pending" ? (
-          action
+          action?.(setOptionsOpen.bind(null, false))
         ) : (
           <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
             <PopoverTrigger asChild>
@@ -68,18 +68,7 @@ export function FriendCard({
               align="end"
             >
               <div className="flex flex-col">
-                <button
-                  className="group flex w-fit items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-[#AF1D1D] transition-colors outline-none hover:bg-[#AF1D1D]/10"
-                  onClick={() => {
-                    setOptionsOpen(false);
-                  }}
-                >
-                  <TrashBinTrash
-                    weight="BoldDuotone"
-                    className="size-4 opacity-60 transition-opacity group-hover:opacity-100"
-                  />
-                  <span>Remove Friend</span>
-                </button>
+                {action?.(() => setOptionsOpen(false))}
               </div>
             </PopoverContent>
           </Popover>

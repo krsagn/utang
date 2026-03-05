@@ -1,6 +1,7 @@
 import { FriendCard, useFriends, type Friendship } from "@/entities/friendship";
 import { AcceptFriendButton } from "@/features/friendship/accept-friend";
 import { AnimatePresence, motion } from "framer-motion";
+import { RejectFriendButton, RemoveFriendButton } from "../../delete-friend";
 
 export function FriendList({ status }: { status: Friendship["status"] }) {
   const { data: friends, isLoading, error } = useFriends(status);
@@ -31,7 +32,7 @@ export function FriendList({ status }: { status: Friendship["status"] }) {
     <>
       <div className="grid grid-cols-1 gap-6">
         <AnimatePresence mode="popLayout">
-          {friends?.map((f, i) => {
+          {friends.map((f, i) => {
             return (
               <motion.div
                 key={f.id}
@@ -52,10 +53,15 @@ export function FriendList({ status }: { status: Friendship["status"] }) {
                   status={f.status}
                   createdAt={f.createdAt}
                   updatedAt={f.updatedAt}
-                  action={
+                  action={(close) =>
                     f.status === "pending" ? (
-                      <AcceptFriendButton friendId={f.id} />
-                    ) : undefined
+                      <div className="flex gap-3">
+                        <AcceptFriendButton friendshipId={f.id} />
+                        <RejectFriendButton friendshipId={f.id} />
+                      </div>
+                    ) : (
+                      <RemoveFriendButton friendshipId={f.id} onClose={close} />
+                    )
                   }
                 />
               </motion.div>

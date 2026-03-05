@@ -27,7 +27,7 @@ function Modal({
         e.stopPropagation();
         if (onClose) onClose();
       }}
-      className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center"
+      className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-transparent"
     >
       <motion.div
         initial={{ y: 5, scale: 0.95, opacity: 0 }}

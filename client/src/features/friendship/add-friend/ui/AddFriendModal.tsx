@@ -112,9 +112,12 @@ function AddFriendItem({ user }: { user: User }) {
             ? `Friend request sent to ${user.firstName} ${user.lastName}`
             : `Send friend request to ${user.firstName} ${user.lastName}`
         }
-        className="flex size-6 items-center justify-center rounded-full transition duration-300 hover:scale-95 hover:bg-black/10"
+        className={cn(
+          "flex size-6 items-center justify-center rounded-full transition duration-300 hover:scale-95",
+          !isSuccess && "hover:bg-black/10",
+        )}
         onClick={handleAddFriend}
-        disabled={isPending}
+        disabled={isPending || isSuccess}
       >
         {isSuccess ? (
           <Check className="stroke-2.5 size-4" />
