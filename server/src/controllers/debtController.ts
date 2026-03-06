@@ -96,7 +96,7 @@ export const createDebt = async (req: Request, res: Response) => {
     if (body.lenderId !== sessionUserId && body.lendeeId !== sessionUserId) {
       return res
         .status(403)
-        .json({ error: 'You cannot create a debt between two other people.' });
+        .json({ error: 'You cannot create a debt between two other people' });
     }
 
     let finalLenderName = body.lenderName;

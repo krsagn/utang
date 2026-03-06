@@ -4,7 +4,7 @@ import { users } from '../db/schema.js';
 import * as argon2 from 'argon2';
 import { lucia } from '../auth.js';
 
-// Nock database
+// Mock database
 vi.mock('../db/index.js', () => ({
   db: {
     insert: vi.fn().mockReturnThis(),
