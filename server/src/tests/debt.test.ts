@@ -180,7 +180,7 @@ describe('PATCH /debts/:id', () => {
 });
 
 describe('DELETE /debts/:id', () => {
-  it('should return 204 if input is valid', async () => {
+  it('should return 204 if debt is successfully deleted', async () => {
     const response = await request(app).delete('/debts/12345');
 
     expect(response.status).toBe(204);
@@ -200,7 +200,7 @@ describe('DELETE /debts/:id', () => {
 });
 
 describe('GET /debts/:id', () => {
-  it('should return 200 if input is valid', async () => {
+  it('should return 200 if debt exists', async () => {
     vi.mocked(db.query.debts.findFirst).mockResolvedValueOnce({
       id: 'mock-debt-id',
     } as any);
@@ -209,7 +209,7 @@ describe('GET /debts/:id', () => {
     expect(response.status).toBe(200);
   });
 
-  it('should return 404 if debt is missing', async () => {
+  it('should return 404 if debt does not exist', async () => {
     const response = await request(app).get('/debts/12345');
 
     expect(response.status).toBe(404);

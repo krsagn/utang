@@ -182,7 +182,7 @@ describe('PATCH /friendships/:id', () => {
     expect(response.body.error).toBe('Request not found or unauthorized');
   });
 
-  it('should return 200 if input if valid', async () => {
+  it('should return 200 if input is valid', async () => {
     const setSpy = vi.fn().mockReturnValue({
       where: vi.fn().mockReturnValue({
         returning: vi.fn().mockResolvedValue([{ id: 'mock-friendship-id' }]),
