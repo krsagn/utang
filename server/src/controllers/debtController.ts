@@ -182,7 +182,6 @@ export const updateDebt = async (req: Request, res: Response) => {
     const updateData: Partial<NewDebt> = {
       ...body,
       amount: body.amount?.toString(),
-      updatedAt: new Date(),
       lenderName: finalLenderName,
       lendeeName: finalLendeeName,
     };

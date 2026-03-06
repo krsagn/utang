@@ -117,7 +117,7 @@ export const addFriend = async (req: Request, res: Response) => {
     // Handle Unique Key violations (Postgres Error 23505)
     if (error.code === '23505' || error.cause?.code === '23505') {
       return res.status(409).json({
-        error: 'Friend request already exists or you are already friends.',
+        error: 'Friend request already exists or you are already friends',
       });
     }
 

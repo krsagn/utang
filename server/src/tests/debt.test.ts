@@ -1,6 +1,4 @@
-import { eq } from 'drizzle-orm';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { debts } from '../db/schema.js';
 import { lucia } from '../auth.js';
 import { db } from '../db/index.js';
 
@@ -152,7 +150,6 @@ describe('PATCH /debts/:id', () => {
     expect(setSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'paid',
-        updatedAt: expect.any(Date),
       })
     );
   });
