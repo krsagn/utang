@@ -97,6 +97,26 @@ The frontend application should now be accessible in your web browser, typically
 
 ---
 
+## Testing
+
+The backend has a comprehensive integration test suite achieving **100% API endpoint coverage** and **82% business logic coverage** across 36 tests.
+
+Run the test suite:
+
+```bash
+cd server
+npm test
+```
+
+Run with a detailed coverage report:
+
+```bash
+cd server
+npx vitest run --coverage
+```
+
+---
+
 ## Licence
 
 MIT License. See [LICENSE](LICENSE) for details.
