@@ -3,6 +3,13 @@ import { db } from '../db/index.js';
 import { users, friendships } from '../db/schema.js';
 import { and, eq, ilike, ne, notExists, or, sql } from 'drizzle-orm';
 
+/**
+ * GET /users
+ * Searches for users by username or full name (first + last).
+ * Excludes the currently authenticated user and any existing friends.
+ *
+ * @query {string} q - The search term (must be at least 2 characters).
+ */
 export const searchUsers = async (req: Request, res: Response) => {
   try {
     const currentUserId = res.locals.user!.id;
