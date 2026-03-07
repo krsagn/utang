@@ -1,5 +1,7 @@
 # Utang
 
+[![CI Pipeline](https://github.com/krsagn/utang/actions/workflows/ci.yml/badge.svg)](https://github.com/krsagn/utang/actions/workflows/ci.yml)
+
 > **A minimalist debt tracking application.** Track who owes you, and who you owe.
 
 "Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose of this application: simplifying how you track shared expenses among friends.
