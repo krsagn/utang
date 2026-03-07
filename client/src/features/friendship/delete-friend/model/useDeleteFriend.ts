@@ -9,6 +9,7 @@ export function useDeleteFriend(type: Friendship["status"]) {
     mutationFn: (friendshipId: string) =>
       api.delete(`/friendships/${friendshipId}`),
     onSuccess: () => {
+      // Refresh the specific friendship list to remove the deleted user
       queryClient.invalidateQueries({ queryKey: friendshipQueries.list(type) });
     },
   });

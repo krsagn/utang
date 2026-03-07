@@ -1,3 +1,5 @@
+// Cache formatter instances to prevent expensive reinstantiation on every render.
+// Intl.NumberFormat is notoriously slow to initialize, so we store one instance per currency.
 const numberFormatters = new Map<string, Intl.NumberFormat>();
 const compactFormatters = new Map<string, Intl.NumberFormat>();
 

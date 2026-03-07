@@ -13,6 +13,7 @@ export function useAddFriend() {
       return data;
     },
     onSuccess: () => {
+      // Refresh all friendship lists to reflect the new pending request
       queryClient.invalidateQueries({ queryKey: friendshipQueries.all() });
     },
   });
