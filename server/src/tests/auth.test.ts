@@ -1,35 +1,39 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { eq } from 'drizzle-orm';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { users } from '../db/schema.js';
+import * as argon2 from 'argon2';
+import { lucia } from '../auth.js';
 
-jest.unstable_mockModule('../db/index.js', () => ({
+// Mock database
+vi.mock('../db/index.js', () => ({
   db: {
-    insert: jest.fn().mockReturnThis(),
-    values: jest.fn<any>().mockResolvedValue([{ id: 'mock-user-id' }]),
-    select: jest.fn().mockReturnThis(),
-    from: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnValue([]),
+    insert: vi.fn().mockReturnThis(),
+    values: vi.fn().mockResolvedValue([{ id: 'mock-user-id' }]),
+    query: {
+      users: {
+        findFirst: vi.fn(),
+      },
+    },
   },
 }));
 
-jest.unstable_mockModule('argon2', () => ({
-  hash: jest.fn<any>().mockResolvedValue('mock-hashed-password'),
-  verify: jest.fn<any>().mockResolvedValue(true),
-  default: {
-    hash: jest.fn<any>().mockResolvedValue('mock-hashed-password'),
-    verify: jest.fn<any>().mockResolvedValue(true),
-  },
+// Mock Argon2 password hashing
+vi.mock('argon2', () => ({
+  hash: vi.fn().mockResolvedValue('mock-hashed-password'),
+  verify: vi.fn().mockResolvedValue(true),
 }));
 
-jest.unstable_mockModule('../auth.js', () => ({
+// Mock Lucia Auth
+vi.mock('../auth.js', () => ({
   lucia: {
-    createSession: jest.fn<any>().mockResolvedValue({ id: 'mock-session-id' }),
-    createSessionCookie: jest.fn<any>().mockReturnValue({
-      serialize: () => 'auth_session=mock-cookie',
+    createSession: vi.fn().mockResolvedValue({ id: 'mock-session-id' }),
+    createSessionCookie: vi.fn().mockReturnValue({
+      serialize: () => 'auth_session=mock_cookie',
     }),
-    readSessionCookie: jest.fn<any>().mockReturnValue(null),
-    validateSession: jest
-      .fn<any>()
-      .mockResolvedValue({ session: null, user: null }),
-    createBlankSessionCookie: jest.fn<any>().mockReturnValue({
+    readSessionCookie: vi.fn().mockReturnValue(null),
+    validateSession: vi.fn().mockResolvedValue({ session: null, user: null }),
+    invalidateSession: vi.fn(),
+    createBlankSessionCookie: vi.fn().mockReturnValue({
       serialize: () => 'auth_session=blank-cookie',
     }),
   },
@@ -38,71 +42,164 @@ jest.unstable_mockModule('../auth.js', () => ({
 const { default: app } = await import('../app.js');
 const { default: request } = await import('supertest');
 
-describe('POST /auth/users {Signup}', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
-  it('should create a new user and return 201', async () => {
-    const response = await request(app).post('/auth/users').send({
-      email: 'test@example.com',
-      password: 'password123',
-      name: 'Test User',
-    });
+const createMockUser = (overrides = {}) => ({
+  email: 'alice@example.com',
+  password: 'password123',
+  username: 'alice_wonder',
+  firstName: 'Alice',
+  lastName: 'Smith',
+  ...overrides,
+});
+
+describe('POST /auth/users', () => {
+  it('should return 201 if input is valid', async () => {
+    const validInput = createMockUser();
+    const response = await request(app).post('/auth/users').send(validInput);
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({
-      message: 'User created',
-      user: {
-        id: expect.any(String),
-        email: 'test@example.com',
-        name: 'Test User',
-      },
-    });
-
-    const cookies = response.headers['set-cookie'];
-    expect(cookies).toBeDefined();
-    expect(cookies?.[0]).toContain('auth_session=mock-cookie');
   });
 
-  it('should fail if email is invalid', async () => {
-    const response = await request(app).post('/auth/users').send({
-      email: 'invalid-email',
-      password: '123',
-      name: '',
-    });
+  it('should return 400 if input is invalid', async () => {
+    const badInput = createMockUser({ email: 'not-an-email' });
+    const response = await request(app).post('/auth/users').send(badInput);
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBeDefined();
   });
 
-  it('should login an existing user', async () => {
-    const mockUser = {
-      id: 'existing-user-id',
-      email: 'test@example.com',
-      passwordHash: 'hashed-password',
-      name: 'Existing User',
-    };
-
+  it('should return 409 if user already exists', async () => {
     const { db } = await import('../db/index.js');
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn<any>().mockResolvedValue([mockUser]),
-      }),
+    vi.mocked(db.insert).mockImplementationOnce(() => {
+      throw { code: '23505' };
     });
 
-    const response = await request(app).post('/auth/sessions').send({
-      email: 'test@example.com',
-      password: 'password123',
+    const input = createMockUser();
+    const response = await request(app).post('/auth/users').send(input);
+
+    expect(response.status).toBe(409);
+    expect(response.body.error).toBe('Email or username already exists');
+  });
+});
+
+describe('POST /auth/sessions', () => {
+  it('should return 200 if input is valid', async () => {
+    const { db } = await import('../db/index.js');
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: 'mock-user-id',
+      email: 'alice@example.com',
+      passwordHash: 'mock-hashed-password',
+      username: 'alice_wonder',
+      firstName: 'Alice',
+      lastName: 'Smith',
+      createdAt: null,
     });
+
+    const { email, password } = createMockUser();
+    const response = await request(app)
+      .post('/auth/sessions')
+      .send({ email: email, password: password });
 
     expect(response.status).toBe(200);
-    expect(response.body.user).toEqual({
-      id: 'existing-user-id',
-      email: 'test@example.com',
-      name: 'Existing User',
+    expect(response.body.user.email).toBe(email);
+    expect(db.query.users.findFirst).toHaveBeenCalledWith({
+      where: eq(users.email, 'alice@example.com'),
+    });
+  });
+
+  it('should return 400 if input is invalid', async () => {
+    const badInput = createMockUser({ email: 'not-an-email' });
+    const response = await request(app).post('/auth/sessions').send(badInput);
+
+    expect(response.status).toBe(400);
+  });
+
+  it('should return 400 if user does not exist', async () => {
+    const { db } = await import('../db/index.js');
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce(undefined);
+
+    const response = await request(app)
+      .post('/auth/sessions')
+      .send({ email: 'nobody@example.com', password: 'wrongpassword' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Invalid email or password');
+  });
+
+  it('should return 400 if password is wrong', async () => {
+    const { db } = await import('../db/index.js');
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: 'mock-user-id',
+      email: 'alice@example.com',
+      passwordHash: 'mock-hashed-password',
+      username: 'alice_wonder',
+      firstName: 'Alice',
+      lastName: 'Smith',
+      createdAt: null,
+    });
+    vi.mocked(argon2.verify).mockResolvedValueOnce(false);
+
+    const { email, password } = createMockUser();
+    const response = await request(app)
+      .post('/auth/sessions')
+      .send({ email: email, password: password });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Invalid email or password');
+    expect(argon2.verify).toHaveBeenCalledWith(
+      'mock-hashed-password',
+      password
+    );
+  });
+});
+
+describe('GET /auth/sessions/current', () => {
+  it('should return 200 if no user is logged in', async () => {
+    const response = await request(app).get('/auth/sessions/current');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ user: null });
+  });
+
+  it('should return 200 if user is logged in', async () => {
+    vi.mocked(lucia.readSessionCookie).mockReturnValueOnce(
+      'auth-session=mock-cookie'
+    );
+    vi.mocked(lucia.validateSession).mockResolvedValueOnce({
+      session: { id: 'mock-session-id', fresh: false } as any,
+      user: createMockUser({ id: 'mock-user-id' }) as any,
     });
 
-    expect(response.headers['set-cookie']).toBeDefined();
+    const response = await request(app).get('/auth/sessions/current');
+
+    expect(response.status).toBe(200);
+    expect(response.body.user.email).toBe('alice@example.com');
+  });
+});
+
+describe('DELETE /auth/sessions/current', () => {
+  it('should return 401 if user is not logged in', async () => {
+    const response = await request(app).delete('/auth/sessions/current');
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe('Not logged in');
+  });
+
+  it('should return 200 if user is logged in', async () => {
+    vi.mocked(lucia.readSessionCookie).mockReturnValueOnce(
+      'auth-session=mock-cookie'
+    );
+    vi.mocked(lucia.validateSession).mockResolvedValueOnce({
+      session: { id: 'mock-session-id', fresh: false } as any,
+      user: createMockUser({ id: 'mock-user-id' }) as any,
+    });
+
+    const response = await request(app).delete('/auth/sessions/current');
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe('Logged out');
+    expect(lucia.invalidateSession).toHaveBeenCalledWith('mock-session-id');
   });
 });

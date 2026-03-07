@@ -8,7 +8,7 @@ import * as argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
 
 /**
- * POST /auth/signup
+ * POST /auth/users
  * Creates a new user account, hashes the password, and starts a session.
  * Rejects duplicate emails/usernames.
  */
@@ -55,7 +55,7 @@ export const signUp = async (req: Request, res: Response) => {
 };
 
 /**
- * POST /auth/login
+ * POST /auth/sessions
  * Verifies credentials and starts a new session.
  */
 export const logIn = async (req: Request, res: Response) => {
@@ -102,7 +102,7 @@ export const logIn = async (req: Request, res: Response) => {
 };
 
 /**
- * POST /auth/logout
+ * DELETE /auth/sessions/current
  * Invalidates the current session and clears the session cookie.
  */
 export const logOut = async (_req: Request, res: Response) => {
@@ -119,7 +119,7 @@ export const logOut = async (_req: Request, res: Response) => {
 };
 
 /**
- * GET /auth/me
+ * GET /auth/sessions/current
  * Returns the currently authenticated user's profile.
  * Used by the frontend to restore session state on page load.
  */
