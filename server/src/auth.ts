@@ -28,7 +28,8 @@ export const lucia = new Lucia(adapter, {
 
 type User = InferSelectModel<typeof users>;
 
-// type definitions for email & name (for TypeScript's sake)
+// Inject database fields into Lucia's default User type.
+// This ensures res.locals.user includes email, name, etc. with perfect type safety.
 declare module 'lucia' {
   interface Register {
     Lucia: typeof lucia;

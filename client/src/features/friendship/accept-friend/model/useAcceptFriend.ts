@@ -13,6 +13,7 @@ export function useAcceptFriend() {
       return data;
     },
     onSuccess: () => {
+      // Refetch all friendships so the UI reflects the newly accepted status
       queryClient.invalidateQueries({ queryKey: friendshipQueries.all() });
     },
   });

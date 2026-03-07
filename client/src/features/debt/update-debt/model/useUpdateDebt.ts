@@ -20,6 +20,7 @@ export function useUpdateDebt() {
       return data;
     },
     onSuccess: (updatedDebt) => {
+      // Refresh the specific debt list and instantly update the detailed view cache
       const type = updatedDebt.lendeeId === currentUser?.id ? "pay" : "receive";
       queryClient.invalidateQueries({ queryKey: ["debts", type] });
       queryClient.setQueryData(["debt", updatedDebt.id], updatedDebt);

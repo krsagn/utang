@@ -66,6 +66,7 @@ export const debts = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
+    // Ensures a debt record cannot exist without at least one assigned participant
     check(
       'one-participant-check',
       sql`${table.lenderId} IS NOT NULL OR ${table.lendeeId} IS NOT NULL`
@@ -106,13 +107,16 @@ export const friendships = pgTable(
       .notNull(),
   },
   (table) => [
-    // make sure this is handled in controller as well
+    // Enforce alphabetical sort (userId1 < userId2) to prevent bi-directional duplicate pairs (A->B vs B->A)
     check('force_order', sql`${table.userId1} < ${table.userId2}`),
+
+    // Security check: The user initiating the request must be one of the two participants
     check(
       'requester_is_participant',
       sql`${table.requesterId} = ${table.userId1} OR ${table.requesterId} = ${table.userId2}`
     ),
-    // cares about order, so reverse order of IDs slip through this check, hence the force order check
+
+    // The unique pair index works flawlessly because 'force_order' guarantees consistent left-to-right storage
     unique('unique_pair').on(table.userId1, table.userId2),
     index('idx_friendships_user1').on(table.userId1),
     index('idx_friendships_user2').on(table.userId2),

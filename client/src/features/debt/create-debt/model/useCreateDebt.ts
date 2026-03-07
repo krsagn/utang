@@ -22,6 +22,7 @@ export function useCreateDebt() {
       return data;
     },
     onSuccess: (newDebt) => {
+      // Invalidate the list to refresh dashboard, and pre-cache the new detail view instantly
       const type = newDebt.lendeeId === currentUser?.id ? "pay" : "receive";
       queryClient.invalidateQueries({ queryKey: ["debts", type] });
       queryClient.setQueryData(["debt", newDebt.id], newDebt);

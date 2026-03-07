@@ -7,6 +7,7 @@ export function useDeleteDebt() {
   return useMutation({
     mutationFn: (id: string) => api.delete(`/debts/${id}`),
     onSuccess: () => {
+      // Refresh all debt lists to remove the deleted item from the dashboard
       queryClient.invalidateQueries({ queryKey: ["debts"] });
     },
   });

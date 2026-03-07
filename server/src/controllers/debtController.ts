@@ -10,6 +10,9 @@ import { z } from 'zod';
  * Retrieves a list of debts associated with the authenticated user.
  * Supports filtering by 'pay' (outgoing) or 'receive' (incoming) debts via query params.
  * Defaults to returning all debts where the user is either the lender or the lendee.
+ *
+ * @query {string} type - Optional filter for debt role ('pay' | 'receive').
+ * @query {string} status - Optional filter for debt status ('pending' | 'settled').
  */
 export const getDebts = async (req: Request, res: Response) => {
   try {
@@ -53,6 +56,8 @@ export const getDebts = async (req: Request, res: Response) => {
  * GET /debts/:id
  * Retrieves a single debt record by ID.
  * Access Control: The user must be the Creator, Lender, or Lendee to view the record.
+ *
+ * @param {string} id - The UUID of the debt.
  */
 export const getDebtById = async (req: Request, res: Response) => {
   try {
@@ -87,6 +92,11 @@ export const getDebtById = async (req: Request, res: Response) => {
  * POST /debts
  * Creates a new debt record.
  * Automatically derives lender/lendee names if valid User IDs are provided.
+ *
+ * @body {string} title - The title/description of the debt.
+ * @body {string} amount - The initial debt amount.
+ * @body {string} [lenderId] - Optional UUID of the lender.
+ * @body {string} [lendeeId] - Optional UUID of the lendee.
  */
 export const createDebt = async (req: Request, res: Response) => {
   try {
@@ -147,6 +157,8 @@ export const createDebt = async (req: Request, res: Response) => {
  * Updates an existing debt record.
  * Access Control: Only the properties' Creator can update the record.
  * Automatically updates names if IDs are changed.
+ *
+ * @param {string} id - The UUID of the debt.
  */
 export const updateDebt = async (req: Request, res: Response) => {
   try {
@@ -212,6 +224,8 @@ export const updateDebt = async (req: Request, res: Response) => {
  * DELETE /debts/:id
  * Deletes a debt record.
  * Access Control: Only the Creator can delete the record.
+ *
+ * @param {string} id - The UUID of the debt.
  */
 export const deleteDebt = async (req: Request, res: Response) => {
   try {

@@ -11,6 +11,7 @@ export function useSignup() {
     mutationFn: async (creds: SignupCredentials) =>
       api.post("/auth/users", creds),
     onSuccess: async () => {
+      // Refresh the global 'me' query so the UI picks up the new authenticated user
       await queryClient.invalidateQueries({ queryKey: ["me"] });
       navigate("/home");
     },

@@ -11,6 +11,12 @@ import { eq } from 'drizzle-orm';
  * POST /auth/users
  * Creates a new user account, hashes the password, and starts a session.
  * Rejects duplicate emails/usernames.
+ *
+ * @body {string} email - User's email address.
+ * @body {string} username - User's chosen username.
+ * @body {string} password - User's plain text password.
+ * @body {string} firstName - User's first name.
+ * @body {string} lastName - User's last name.
  */
 export const signUp = async (req: Request, res: Response) => {
   try {
@@ -57,6 +63,9 @@ export const signUp = async (req: Request, res: Response) => {
 /**
  * POST /auth/sessions
  * Verifies credentials and starts a new session.
+ *
+ * @body {string} email - User's registered email address.
+ * @body {string} password - User's plain text password.
  */
 export const logIn = async (req: Request, res: Response) => {
   try {
