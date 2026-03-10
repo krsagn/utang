@@ -1,224 +1,135 @@
 import { useState } from "react";
 import { cn } from "@/shared/lib";
-import {
-  HomeAngle,
-  CardSend,
-  CardReceive,
-  UsersGroupRounded,
-  Logout2,
-  UserCircle,
-  AltArrowLeft,
-} from "@solar-icons/react";
-
-import type { Icon } from "@solar-icons/react/lib/types";
-import { useSession } from "@/entities/user";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLogout } from "@/features/auth";
 import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, type Transition } from "framer-motion";
 
-interface SidebarItem {
+type SidebarLink = {
+  path: string;
   label: string;
-  icon: Icon;
-  path?: string;
-  action?: () => void;
-}
+  badge?: number;
+};
 
-function SidebarButton({
-  item,
-  collapsed,
-}: {
-  item: SidebarItem;
-  collapsed: boolean;
-}) {
-  return (
-    <>
-      <item.icon
-        aria-hidden
-        className={cn(
-          "shrink-0 drop-shadow-md transition-all duration-300 group-hover:scale-105",
-          collapsed ? "size-6" : "size-5",
-        )}
-        weight="BoldDuotone"
-      />
-      <span
-        className={cn(
-          "overflow-hidden text-xs tracking-wider whitespace-nowrap transition-all duration-300",
-          collapsed ? "ml-0 max-w-0 opacity-0" : "ml-4 max-w-24 opacity-100",
-        )}
-      >
-        {item.label}
-      </span>
-    </>
-  );
-}
+const SIDEBAR_LINKS: SidebarLink[] = [
+  { path: "/home", label: "My Board" },
+  { path: "/debts/outgoing", label: "To Pay", badge: 5 },
+  { path: "/debts/incoming", label: "To Receive", badge: 2 },
+  { path: "/friends", label: "Friends" },
+];
 
+// extracted so framer doesn't recreate these objects on every render
+const TWEEN_TRANSITION: Transition = {
+  type: "tween",
+  ease: [0.22, 1, 0.36, 1],
+  duration: 0.7,
+};
+
+const FADE_TRANSITION: Transition = { duration: 0.3 };
+
+// collapsed state lives here; subcomponents just receive it as a prop
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { data: user } = useSession();
-  const { mutate: performLogout } = useLogout();
-
-  const buttonClasses = cn(
-    "flex font-bold items-center rounded-xl transition-all duration-300 hover:scale-98 group opacity-40 hover:opacity-100",
-    collapsed ? "w-12 p-3" : "w-50 p-3 hover:bg-sidebar-accent",
-  );
-
-  const handleLogout = () => {
-    performLogout();
-  };
-
-  const upperItems: SidebarItem[] = [
-    { label: "Home", icon: HomeAngle, path: "/home" },
-    { label: "To Pay", icon: CardSend, path: "/debts/outgoing" },
-    { label: "To Receive", icon: CardReceive, path: "/debts/incoming" },
-    { label: "Friends", icon: UsersGroupRounded, path: "/friends" },
-  ];
-
-  const bottomItems: SidebarItem[] = [
-    { label: "Logout", icon: Logout2, action: handleLogout },
-  ];
 
   return (
     <motion.aside
       initial={{ x: "-110%" }}
-      animate={{ x: 0 }}
-      transition={{
-        type: "tween",
-        ease: [0.22, 1, 0.36, 1],
-        duration: 0.7,
-      }}
-      className={cn(
-        "bg-sidebar relative z-30 flex flex-col items-stretch justify-between p-6 transition-[width,padding,margin] duration-300",
-        collapsed ? "w-24" : "w-64",
-      )}
+      animate={{ x: 0, marginLeft: collapsed ? -96 : 0 }}
+      transition={TWEEN_TRANSITION}
+      className="relative z-30 flex w-48 shrink-0 flex-col justify-between bg-transparent px-6 py-7 text-[#333]"
     >
-      {/* Collapse Toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="bg-sidebar absolute top-12 -right-3 z-30 flex size-7 items-center justify-center rounded-full shadow-xl transition duration-300 hover:scale-110"
-      >
-        <AltArrowLeft
-          className={cn(
-            "size-4 transition-transform duration-300",
-            collapsed && "rotate-180",
-          )}
-          weight="Bold"
-        />
-      </button>
-
-      <div className="flex flex-col">
-        {/* Logo */}
-        <div
-          className={cn(
-            "mt-3 mb-5 flex items-center py-1 transition-all duration-300",
-            collapsed ? "ml-1.5 w-12 scale-90" : "w-50 scale-100 px-3",
-          )}
-        >
-          <h1
-            className={cn(
-              "font-display to-primary flex items-center bg-linear-to-tr from-[#6A7D13] bg-clip-text text-4xl font-semibold tracking-wide text-transparent select-none",
-            )}
-          >
-            <span>u</span>
-            <span
-              className={cn(
-                "overflow-hidden whitespace-nowrap transition-all duration-300",
-                collapsed ? "max-w-0" : "max-w-[5ch]",
-              )}
-            >
-              tang
-            </span>
-            <span className="text-primary bg-white">!</span>
-          </h1>
-        </div>
-
-        {/* Navigation */}
-        <nav>
-          <ul className="flex flex-col">
-            {upperItems.map((item) => (
-              <li key={item.label}>
-                <NavLink
-                  to={item.path ?? "/"}
-                  className={({ isActive }) =>
-                    cn(
-                      buttonClasses,
-                      "mb-2 transition-all duration-300",
-                      collapsed && "mb-4",
-                      isActive && "opacity-100",
-                    )
-                  }
-                >
-                  <SidebarButton item={item} collapsed={collapsed} />
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-
-      <div className="flex flex-col">
-        {/* Bottom Actions */}
-        <ul className="flex flex-col">
-          {bottomItems.map((item) => (
-            <li key={item.label}>
-              {item.path ? (
-                <NavLink
-                  to={item.path ?? "/home"}
-                  className={cn(
-                    buttonClasses,
-                    "mb-2 transition-all duration-300",
-                  )}
-                >
-                  <SidebarButton item={item} collapsed={collapsed} />
-                </NavLink>
-              ) : (
-                <button
-                  onClick={item.action}
-                  className={cn(
-                    buttonClasses,
-                    "mb-2 transition-all duration-300",
-                    collapsed && "-ml-0.5",
-                  )}
-                >
-                  <SidebarButton item={item} collapsed={collapsed} />
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        <hr className="border-sidebar-border my-3 border-t" />
-
-        {/* User Profile */}
-        <div
-          className={cn(
-            "bg-sidebar flex items-center rounded-2xl text-xs tracking-wide transition-all duration-300",
-            collapsed ? "w-12 p-3" : "w-50 p-3",
-          )}
-        >
-          <UserCircle
-            aria-hidden
-            color="black"
-            className={cn(
-              "shrink-0 drop-shadow-md transition-all duration-300",
-              collapsed ? "size-6" : "size-8",
-            )}
-            weight="BoldDuotone"
-          />
-          <div
-            className={cn(
-              "flex flex-col overflow-hidden whitespace-nowrap transition-all duration-300",
-              collapsed
-                ? "ml-0 max-w-0 opacity-0"
-                : "ml-4 max-w-40 opacity-100",
-            )}
-          >
-            <p className="font-bold whitespace-nowrap">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <p className="whitespace-nowrap opacity-50">{user?.username}</p>
-          </div>
-        </div>
-      </div>
+      <SidebarLogo collapsed={collapsed} setCollapsed={setCollapsed} />
+      <SidebarNav collapsed={collapsed} />
+      <SidebarLogout collapsed={collapsed} />
     </motion.aside>
+  );
+}
+
+// slides right by the same amount the sidebar slides left, so it stays pinned
+function SidebarLogo({
+  collapsed,
+  setCollapsed,
+}: {
+  collapsed: boolean;
+  setCollapsed: (val: boolean) => void;
+}) {
+  return (
+    <motion.div
+      animate={{ x: collapsed ? 96 : 0 }}
+      transition={TWEEN_TRANSITION}
+      className="flex h-8 cursor-pointer items-center gap-5 pl-2 select-none"
+      onClick={() => setCollapsed(!collapsed)}
+    >
+      <span className="font-display text-2xl font-semibold">u!</span>
+      <div className="text-black opacity-30 transition-all hover:opacity-100">
+        {collapsed ? (
+          <ChevronRight className="size-4" />
+        ) : (
+          <ChevronLeft className="size-4" />
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// fades out and kills pointer events so links aren't clickable while hidden
+function SidebarNav({ collapsed }: { collapsed: boolean }) {
+  return (
+    <motion.nav
+      animate={{ opacity: collapsed ? 0 : 1 }}
+      transition={FADE_TRANSITION}
+      style={{ pointerEvents: collapsed ? "none" : "auto" }}
+      className="my-auto flex w-full flex-col justify-center space-y-6 text-xs tracking-wider whitespace-nowrap text-black"
+    >
+      {SIDEBAR_LINKS.map((link) => (
+        <SidebarNavItem key={link.path} link={link} />
+      ))}
+    </motion.nav>
+  );
+}
+
+// one link: handles active styles, badge, and layout
+function SidebarNavItem({ link }: { link: SidebarLink }) {
+  return (
+    <NavLink
+      to={link.path}
+      className={({ isActive }) =>
+        cn(
+          "pl-2 transition-all duration-300",
+          link.badge !== undefined &&
+            "group flex items-center justify-between pr-1",
+          isActive
+            ? "font-extrabold opacity-100"
+            : "font-medium opacity-50 hover:opacity-75",
+        )
+      }
+    >
+      <span>{link.label}</span>
+      {link.badge !== undefined && (
+        <span className="flex size-5 items-center justify-center rounded-full bg-black text-[10px] font-medium text-white">
+          {link.badge}
+        </span>
+      )}
+    </NavLink>
+  );
+}
+
+// isolated so it can own useLogout directly without lifting it up
+function SidebarLogout({ collapsed }: { collapsed: boolean }) {
+  const { mutate: performLogout } = useLogout();
+
+  return (
+    <motion.div
+      animate={{ opacity: collapsed ? 0 : 1 }}
+      transition={FADE_TRANSITION}
+      style={{ pointerEvents: collapsed ? "none" : "auto" }}
+    >
+      <div
+        onClick={() => performLogout()}
+        className="cursor-pointer pl-2 text-xs font-medium tracking-wider whitespace-nowrap text-black opacity-50 transition-all duration-300 hover:opacity-75"
+      >
+        Logout
+      </div>
+    </motion.div>
   );
 }
