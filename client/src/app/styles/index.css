@@ -47,6 +47,7 @@
   --font-display: "ClashDisplay", sans-serif;
   --font-heading: "CabinetGrotesk", sans-serif;
   --font-sans: "PlusJakartaSans", sans-serif;
+  --font-receipt: "VT323", monospace;
 }
 
 :root {

@@ -1,19 +1,17 @@
 import { cn } from "@/shared/lib";
 import { Search } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { motion, type Transition } from "framer-motion";
+import { NavLink, useSearchParams } from "react-router-dom";
+import { motion, type Transition, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { DeleteDebtDialog } from "@/features/debt/delete-debt";
+import { EditDebtModal } from "@/features/debt/update-debt";
 
 type SidebarLink = {
   path: string;
   label: string;
 };
 
-const ACTION_LINKS: SidebarLink[] = [
-  { path: "/debts/new", label: "Create Debt" },
-  { path: "/debts/edit", label: "Edit Debt" },
-];
+const CREATE_LINK: SidebarLink = { path: "/debts/new", label: "Create Debt" };
 
 // shared transition preset to stay visually synced with the left sidebar
 const TWEEN_TRANSITION: Transition = {
@@ -24,7 +22,11 @@ const TWEEN_TRANSITION: Transition = {
 
 // static right sidebar; no collapsed state
 export function RightSidebar() {
+  const [searchParams] = useSearchParams();
+  const activeDebtId = searchParams.get("debtId") ?? undefined;
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   return (
     <motion.aside
@@ -34,14 +36,30 @@ export function RightSidebar() {
       className="relative z-30 flex w-48 shrink-0 flex-col justify-between bg-transparent px-6 py-7 text-[#333]"
     >
       <RightSidebarSearch />
-      <RightSidebarNav openDeleteDialog={() => setIsDeleteDialogOpen(true)} />
+      <RightSidebarNav
+        hasActiveDebt={!!activeDebtId}
+        openDeleteDialog={() => setIsDeleteDialogOpen(true)}
+        openEditModal={() => setIsEditModalOpen(true)}
+      />
       <RightSidebarSettings />
 
-      <DeleteDebtDialog
-        open={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        debtId="1" // TODO: Connect this to actual active context when routes are built
-      />
+      {activeDebtId && (
+        <>
+          <DeleteDebtDialog
+            open={isDeleteDialogOpen}
+            onClose={() => setIsDeleteDialogOpen(false)}
+            debtId={activeDebtId}
+          />
+          <AnimatePresence>
+            {isEditModalOpen && (
+              <EditDebtModal
+                onClose={() => setIsEditModalOpen(false)}
+                debtId={activeDebtId}
+              />
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </motion.aside>
   );
 }
@@ -67,18 +85,36 @@ function RightSidebarSearch() {
 
 // middle section: full list of action routes aligned to the right edge
 function RightSidebarNav({
+  hasActiveDebt,
   openDeleteDialog,
+  openEditModal,
 }: {
+  hasActiveDebt: boolean;
   openDeleteDialog: () => void;
+  openEditModal: () => void;
 }) {
   return (
     <nav className="my-auto flex w-full flex-col justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap text-black">
-      {ACTION_LINKS.map((link) => (
-        <RightSidebarNavItem key={link.path} link={link} />
-      ))}
+      <RightSidebarNavItem link={CREATE_LINK} />
       <div
-        onClick={openDeleteDialog}
-        className="cursor-pointer pr-2 font-medium opacity-50 transition-all duration-300 hover:opacity-75"
+        onClick={hasActiveDebt ? openEditModal : undefined}
+        className={cn(
+          "pr-2 font-medium transition-all duration-300",
+          hasActiveDebt
+            ? "cursor-pointer opacity-50 hover:opacity-75"
+            : "cursor-not-allowed opacity-20",
+        )}
+      >
+        <span>Edit Debt</span>
+      </div>
+      <div
+        onClick={hasActiveDebt ? openDeleteDialog : undefined}
+        className={cn(
+          "pr-2 font-medium transition-all duration-300",
+          hasActiveDebt
+            ? "cursor-pointer opacity-50 hover:opacity-75"
+            : "cursor-not-allowed opacity-20",
+        )}
       >
         <span>Delete Debt</span>
       </div>
@@ -95,7 +131,7 @@ function RightSidebarNavItem({ link }: { link: SidebarLink }) {
         cn(
           "pr-2 transition-all duration-300",
           isActive
-            ? "font-extrabold opacity-100"
+            ? "font-bold opacity-100"
             : "font-medium opacity-50 hover:opacity-75",
         )
       }

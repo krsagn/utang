@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/shared/lib";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useLogout } from "@/features/auth";
 import { NavLink } from "react-router-dom";
 import { motion, type Transition } from "framer-motion";
@@ -61,13 +61,13 @@ function SidebarLogo({
       onClick={() => setCollapsed(!collapsed)}
     >
       <span className="font-display text-2xl font-semibold">u!</span>
-      <div className="text-black opacity-30 transition-all hover:opacity-100">
-        {collapsed ? (
-          <ChevronRight className="size-4" />
-        ) : (
-          <ChevronLeft className="size-4" />
-        )}
-      </div>
+      <motion.div
+        animate={{ rotate: collapsed ? 180 : 0 }}
+        transition={TWEEN_TRANSITION}
+        className="text-black opacity-30 transition-opacity hover:opacity-100"
+      >
+        <ChevronLeft className="size-4" />
+      </motion.div>
     </motion.div>
   );
 }
@@ -99,7 +99,7 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
           link.badge !== undefined &&
             "group flex items-center justify-between pr-1",
           isActive
-            ? "font-extrabold opacity-100"
+            ? "font-bold opacity-100"
             : "font-medium opacity-50 hover:opacity-75",
         )
       }
