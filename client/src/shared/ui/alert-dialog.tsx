@@ -30,7 +30,7 @@ function AlertDialogContent({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] bg-black/40"
+          className="fixed inset-0 z-60 bg-black/40"
         />
       </AlertDialogPrimitive.Overlay>
       <AlertDialogPrimitive.Content asChild {...props}>
@@ -44,7 +44,7 @@ function AlertDialogContent({
             damping: 25,
           }}
           className={cn(
-            "fixed top-1/2 left-1/2 z-[60] w-[calc(100vw-3rem)] -translate-x-1/2 -translate-y-1/2 rounded-4xl bg-white p-6 shadow-2xl outline-hidden sm:w-sm",
+            "fixed top-1/2 left-1/2 z-60 w-[calc(100vw-3rem)] -translate-x-1/2 -translate-y-1/2 rounded-4xl bg-white p-6 shadow-2xl outline-hidden sm:w-sm",
             className,
           )}
         >
@@ -62,7 +62,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn("text-lg font-bold tracking-tight text-black", className)}
+      className={cn("text-lg font-bold tracking-tight text-primary", className)}
       {...props}
     />
   );
@@ -75,7 +75,7 @@ function AlertDialogDescription({
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn("text-sm leading-relaxed text-black/50", className)}
+      className={cn("text-sm leading-relaxed text-primary/50", className)}
       {...props}
     />
   );
@@ -89,7 +89,7 @@ function AlertDialogAction({
     <AlertDialogPrimitive.Action
       data-slot="alert-dialog-action"
       className={cn(
-        "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-[#AF1D1D] text-sm font-semibold tracking-wide text-white transition-colors outline-none hover:bg-[#8B1717] active:bg-[#6B1111]",
+        "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-(--color-outgoing) text-sm font-semibold tracking-wide text-white transition-colors outline-none hover:bg-(--color-outgoing-hover) active:bg-(--color-outgoing-active)",
         className,
       )}
       {...props}
@@ -105,7 +105,7 @@ function AlertDialogCancel({
     <AlertDialogPrimitive.Cancel
       data-slot="alert-dialog-cancel"
       className={cn(
-        "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-black/5 text-sm font-semibold tracking-wide text-black transition-colors outline-none hover:bg-black/10 active:bg-black/15",
+        "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-primary/5 text-sm font-semibold tracking-wide text-primary transition-colors outline-none hover:bg-primary/10 active:bg-primary/15",
         className,
       )}
       {...props}

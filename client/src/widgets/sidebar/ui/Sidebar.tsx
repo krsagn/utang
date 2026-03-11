@@ -4,18 +4,22 @@ import { ChevronLeft } from "lucide-react";
 import { useLogout } from "@/features/auth";
 import { NavLink } from "react-router-dom";
 import { motion, type Transition } from "framer-motion";
+import { useFriendsSidebar } from "@/widgets/friends-sidebar";
+import { useDebts } from "@/entities/debt";
 
 type SidebarLink = {
-  path: string;
+  path?: string;
+  action?: "toggleFriends";
   label: string;
   badge?: number;
 };
 
+// badge is now dynamic — not defined here
 const SIDEBAR_LINKS: SidebarLink[] = [
   { path: "/home", label: "My Board" },
-  { path: "/debts/outgoing", label: "To Pay", badge: 5 },
-  { path: "/debts/incoming", label: "To Receive", badge: 2 },
-  { path: "/friends", label: "Friends" },
+  { path: "/debts/outgoing", label: "To Pay" },
+  { path: "/debts/incoming", label: "To Receive" },
+  { action: "toggleFriends", label: "Friends" },
 ];
 
 // extracted so framer doesn't recreate these objects on every render
@@ -74,6 +78,16 @@ function SidebarLogo({
 
 // fades out and kills pointer events so links aren't clickable while hidden
 function SidebarNav({ collapsed }: { collapsed: boolean }) {
+  // fetch live counts for debt badges — same query key as DebtCarousel so no extra request is fired
+  const { data: outgoing } = useDebts("pay", "pending");
+  const { data: incoming } = useDebts("receive", "pending");
+
+  // map path -> badge count, only show when > 0
+  const badgeCounts: Record<string, number | undefined> = {
+    "/debts/outgoing": outgoing?.length || undefined,
+    "/debts/incoming": incoming?.length || undefined,
+  };
+
   return (
     <motion.nav
       animate={{ opacity: collapsed ? 0 : 1 }}
@@ -82,7 +96,13 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
       className="my-auto flex w-full flex-col justify-center space-y-6 text-xs tracking-wider whitespace-nowrap text-black"
     >
       {SIDEBAR_LINKS.map((link) => (
-        <SidebarNavItem key={link.path} link={link} />
+        <SidebarNavItem
+          key={link.label}
+          link={{
+            ...link,
+            badge: link.path ? badgeCounts[link.path] : undefined,
+          }}
+        />
       ))}
     </motion.nav>
   );
@@ -90,9 +110,40 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
 
 // one link: handles active styles, badge, and layout
 function SidebarNavItem({ link }: { link: SidebarLink }) {
+  const { toggleSidebar, isOpen } = useFriendsSidebar();
+
+  if (link.action === "toggleFriends") {
+    return (
+      <div
+        onClick={toggleSidebar}
+        className={cn(
+          "cursor-pointer pl-2 transition-all duration-300",
+          link.badge !== undefined &&
+            "group flex items-center justify-between pr-1",
+          isOpen
+            ? "font-bold opacity-100"
+            : "font-medium opacity-50 hover:opacity-75",
+        )}
+      >
+        <span>{link.label}</span>
+        {link.badge !== undefined && (
+          <motion.span
+            key={link.badge}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 500, damping: 100 }}
+            className="bg-primary flex size-5 items-center justify-center rounded-full text-[10px] font-medium text-white"
+          >
+            {link.badge}
+          </motion.span>
+        )}
+      </div>
+    );
+  }
+
   return (
     <NavLink
-      to={link.path}
+      to={link.path!}
       className={({ isActive }) =>
         cn(
           "pl-2 transition-all duration-300",
@@ -106,9 +157,15 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
     >
       <span>{link.label}</span>
       {link.badge !== undefined && (
-        <span className="flex size-5 items-center justify-center rounded-full bg-black text-[10px] font-medium text-white">
+        <motion.span
+          key={link.badge}
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 500, damping: 20 }}
+          className="bg-primary flex size-5 items-center justify-center rounded-full text-[10px] font-medium text-white"
+        >
           {link.badge}
-        </span>
+        </motion.span>
       )}
     </NavLink>
   );

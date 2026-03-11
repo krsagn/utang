@@ -87,13 +87,13 @@ export function LoginForm() {
     <section className="flex shrink-0 items-center justify-center px-40 text-left">
       <div className="flex w-xs min-w-[320px] flex-col items-start">
         <header>
-          <h1 className="font-display to-primary mb-10 bg-linear-to-tr from-[#6A7D13] bg-clip-text text-7xl font-semibold tracking-wide text-transparent select-none">
+          <h1 className="font-display to-[var(--color-incoming)] mb-10 bg-linear-to-tr from-[var(--color-incoming-dark)] bg-clip-text text-7xl font-semibold tracking-wide text-transparent select-none">
             utang!
           </h1>
           <h2 className="font-heading text-2xl font-bold tracking-wide select-none">
             {title}
           </h2>
-          <p className="mb-7 text-xs tracking-wide text-black/50 select-none">
+          <p className="mb-7 text-xs tracking-wide text-primary/50 select-none">
             {subtitle}
           </p>
         </header>
@@ -174,7 +174,7 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-black/50 hover:text-black/75 focus:outline-none"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-primary/50 hover:text-primary/75 focus:outline-none"
                   >
                     {showPassword ? (
                       <EyeClosed className="size-4" />
@@ -215,7 +215,7 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-black/50 hover:text-black/75 focus:outline-none"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-primary/50 hover:text-primary/75 focus:outline-none"
                   >
                     {showPassword ? (
                       <EyeClosed className="-mb-2 size-4" />
@@ -240,7 +240,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-xl py-6 select-none hover:bg-[#6A7D13] disabled:pointer-events-none disabled:opacity-50"
+            className="w-full rounded-xl py-6 select-none hover:bg-[var(--color-incoming-dark)] disabled:pointer-events-none disabled:opacity-50"
           >
             {isLoading ? (
               <>
@@ -256,7 +256,7 @@ export function LoginForm() {
         <footer className="mt-8 w-full text-center text-sm select-none">
           {toggleText}{" "}
           <span
-            className="cursor-pointer font-bold text-[#6A7D13] hover:underline"
+            className="cursor-pointer font-bold text-[var(--color-incoming-dark)] hover:underline"
             onClick={() => setIsSignup(!isSignup)}
           >
             {toggleLink}

@@ -15,7 +15,7 @@ export function FriendsTabs() {
       {tabs.map((tab, i) => (
         <Fragment key={tab.path}>
           {i > 0 && (
-            <span className="font-heading text-2xl font-extrabold text-black/20">
+            <span className="font-heading text-2xl font-extrabold text-primary/20">
               /
             </span>
           )}
@@ -25,7 +25,7 @@ export function FriendsTabs() {
               "font-heading text-2xl font-extrabold transition-colors duration-200",
               pathname === tab.path
                 ? "text-black"
-                : "text-black/30 hover:text-black/50",
+                : "text-primary/30 hover:text-primary/50",
             )}
           >
             {tab.label}

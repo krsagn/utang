@@ -11,7 +11,7 @@ export function AddFriendButton() {
     <>
       <Button
         onClick={() => modal.open("add-friend")}
-        className="flex w-30 items-center gap-3 rounded-xl bg-black/90 py-5 text-xs font-semibold tracking-wide text-white duration-300 hover:bg-black/80"
+        className="flex w-30 items-center gap-3 rounded-xl bg-primary/90 py-5 text-xs font-semibold tracking-wide text-white duration-300 hover:bg-primary/80"
       >
         <Plus className="size-4 shrink-0 stroke-[2.5px]" />
         Add Friend

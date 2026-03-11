@@ -43,7 +43,7 @@ function ContextMenuItem({
     <ContextMenuPrimitive.Item
       data-slot="context-menu-item"
       className={cn(
-        "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none select-none hover:bg-black/5 focus:bg-black/5 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none select-none hover:bg-primary/5 focus:bg-primary/5 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,
       )}
       {...props}
@@ -59,7 +59,7 @@ function ContextMenuLabel({
     <ContextMenuPrimitive.Label
       data-slot="context-menu-label"
       className={cn(
-        "px-2.5 py-2 text-xs font-semibold tracking-wide text-black/40",
+        "px-2.5 py-2 text-xs font-semibold tracking-wide text-primary/40",
         className,
       )}
       {...props}
@@ -74,7 +74,7 @@ function ContextMenuSeparator({
   return (
     <ContextMenuPrimitive.Separator
       data-slot="context-menu-separator"
-      className={cn("my-1 h-px bg-black/5", className)}
+      className={cn("my-1 h-px bg-primary/5", className)}
       {...props}
     />
   );

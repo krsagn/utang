@@ -1,17 +1,12 @@
 import { cn } from "@/shared/lib";
 import { Search } from "lucide-react";
-import { NavLink, useSearchParams } from "react-router-dom";
-import { motion, type Transition, AnimatePresence } from "framer-motion";
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
+import { motion, type Transition } from "framer-motion";
 import { useState } from "react";
 import { DeleteDebtDialog } from "@/features/debt/delete-debt";
-import { EditDebtModal } from "@/features/debt/update-debt";
-
-type SidebarLink = {
-  path: string;
-  label: string;
-};
-
-const CREATE_LINK: SidebarLink = { path: "/debts/new", label: "Create Debt" };
+import { useDebt } from "@/entities/debt";
+import { useSession } from "@/entities/user";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui";
 
 // shared transition preset to stay visually synced with the left sidebar
 const TWEEN_TRANSITION: Transition = {
@@ -24,9 +19,15 @@ const TWEEN_TRANSITION: Transition = {
 export function RightSidebar() {
   const [searchParams] = useSearchParams();
   const activeDebtId = searchParams.get("debtId") ?? undefined;
+  const navigate = useNavigate();
+  const { data: currentUser } = useSession();
+  const { data: activeDebt } = useDebt(activeDebtId ?? "");
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const isCreator = activeDebt
+    ? activeDebt.createdBy === currentUser?.id
+    : false;
 
   return (
     <motion.aside
@@ -38,27 +39,20 @@ export function RightSidebar() {
       <RightSidebarSearch />
       <RightSidebarNav
         hasActiveDebt={!!activeDebtId}
+        isCreator={isCreator}
         openDeleteDialog={() => setIsDeleteDialogOpen(true)}
-        openEditModal={() => setIsEditModalOpen(true)}
+        navigateToEdit={() =>
+          activeDebtId && navigate(`/debts/${activeDebtId}/edit`)
+        }
       />
       <RightSidebarSettings />
 
       {activeDebtId && (
-        <>
-          <DeleteDebtDialog
-            open={isDeleteDialogOpen}
-            onClose={() => setIsDeleteDialogOpen(false)}
-            debtId={activeDebtId}
-          />
-          <AnimatePresence>
-            {isEditModalOpen && (
-              <EditDebtModal
-                onClose={() => setIsEditModalOpen(false)}
-                debtId={activeDebtId}
-              />
-            )}
-          </AnimatePresence>
-        </>
+        <DeleteDebtDialog
+          open={isDeleteDialogOpen}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          debtId={activeDebtId}
+        />
       )}
     </motion.aside>
   );
@@ -86,58 +80,70 @@ function RightSidebarSearch() {
 // middle section: full list of action routes aligned to the right edge
 function RightSidebarNav({
   hasActiveDebt,
+  isCreator,
   openDeleteDialog,
-  openEditModal,
+  navigateToEdit,
 }: {
   hasActiveDebt: boolean;
+  isCreator: boolean;
   openDeleteDialog: () => void;
-  openEditModal: () => void;
+  navigateToEdit: () => void;
 }) {
-  return (
-    <nav className="my-auto flex w-full flex-col justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap text-black">
-      <RightSidebarNavItem link={CREATE_LINK} />
-      <div
-        onClick={hasActiveDebt ? openEditModal : undefined}
-        className={cn(
-          "pr-2 font-medium transition-all duration-300",
-          hasActiveDebt
-            ? "cursor-pointer opacity-50 hover:opacity-75"
-            : "cursor-not-allowed opacity-20",
-        )}
-      >
-        <span>Edit Debt</span>
-      </div>
-      <div
-        onClick={hasActiveDebt ? openDeleteDialog : undefined}
-        className={cn(
-          "pr-2 font-medium transition-all duration-300",
-          hasActiveDebt
-            ? "cursor-pointer opacity-50 hover:opacity-75"
-            : "cursor-not-allowed opacity-20",
-        )}
-      >
-        <span>Delete Debt</span>
-      </div>
-    </nav>
-  );
-}
+  const canEdit = hasActiveDebt && isCreator;
+  const canDelete = hasActiveDebt && isCreator;
 
-// single nav link; mirrors the exact font transitions from the left sidebar
-function RightSidebarNavItem({ link }: { link: SidebarLink }) {
   return (
-    <NavLink
-      to={link.path}
-      className={({ isActive }) =>
-        cn(
-          "pr-2 transition-all duration-300",
-          isActive
-            ? "font-bold opacity-100"
-            : "font-medium opacity-50 hover:opacity-75",
-        )
-      }
-    >
-      <span>{link.label}</span>
-    </NavLink>
+    <nav className="my-auto flex w-full flex-col items-end justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap text-black">
+      <NavLink
+        to="/debts/new"
+        className={({ isActive }) =>
+          cn(
+            "pr-2 transition-all duration-300",
+            isActive
+              ? "font-bold opacity-100"
+              : "font-medium opacity-50 hover:opacity-75",
+          )
+        }
+      >
+        <span>Create Debt</span>
+      </NavLink>
+      <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
+        <TooltipTrigger asChild>
+          <div
+            onClick={canEdit ? navigateToEdit : undefined}
+            className={cn(
+              "w-fit px-2 font-medium transition-all duration-300",
+              canEdit
+                ? "cursor-pointer opacity-50 hover:opacity-75"
+                : "cursor-not-allowed opacity-20",
+            )}
+          >
+            <span>Edit Debt</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          Only the creator can edit this debt
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
+        <TooltipTrigger asChild>
+          <div
+            onClick={canDelete ? openDeleteDialog : undefined}
+            className={cn(
+              "w-fit px-2 font-medium transition-all duration-300",
+              canDelete
+                ? "cursor-pointer opacity-50 hover:opacity-75"
+                : "cursor-not-allowed opacity-20",
+            )}
+          >
+            <span>Delete Debt</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          Only the creator can delete this debt
+        </TooltipContent>
+      </Tooltip>
+    </nav>
   );
 }
 

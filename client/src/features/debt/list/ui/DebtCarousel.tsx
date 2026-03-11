@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, isPast } from "date-fns";
 
 import {
   type Debt,
@@ -12,7 +12,9 @@ import {
   ReceiptCard,
 } from "@/entities/debt";
 import { useSession } from "@/entities/user";
+import { useUpdateDebt } from "@/features/debt/update-debt";
 import { formatCurrency, cn } from "@/shared/lib";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui";
 
 // module-level constants, not recreated on render
 const mountSpring = { type: "spring", stiffness: 500, damping: 35 } as const;
@@ -49,6 +51,14 @@ const CarouselSlide = memo(function CarouselSlide({
       className="flex-none basis-auto"
       initial={hasNavigated ? false : { opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
+      exit={{
+        opacity: 0,
+        scale: 0.6,
+        transition: {
+          opacity: { duration: 0.08, ease: "linear" },
+          scale: { duration: 0.3, ease: "easeOut" },
+        },
+      }}
       transition={{ ...mountSpring, delay: index * 0.1 }}
     >
       <div
@@ -70,6 +80,7 @@ const CarouselSlide = memo(function CarouselSlide({
 export function DebtCarousel({ type }: { type: DebtType }) {
   const { data: debts, isLoading, error } = useDebts(type, "pending");
   const { data: currentUser } = useSession();
+  const { mutate: updateDebt, isPending: isMarkingDone } = useUpdateDebt();
   const isOutgoing = type === "pay";
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -90,11 +101,12 @@ export function DebtCarousel({ type }: { type: DebtType }) {
   const isInitialSelectRef = useRef(true);
   const selectedIndexRef = useRef(0); // avoids stale closure when computing direction
   const debtsRef = useRef(debts); // always-fresh ref for use inside embla callbacks
-  const reInitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     debtsRef.current = debts;
-  });
+  }, [debts]);
+
+  const reInitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // if image wasn't complete at first render, wait for it
   useEffect(() => {
@@ -127,6 +139,23 @@ export function DebtCarousel({ type }: { type: DebtType }) {
     };
   }, [emblaApi, navigate]);
 
+  // clamp selectedIndex when debts array shrinks (e.g. after deletion)
+  const maxIndex = debts ? Math.max(debts.length - 1, 0) : 0;
+  const clampedIndex = Math.min(selectedIndex, maxIndex);
+
+  // correct state if it drifted (setState during render is fine as a self-correction)
+  if (clampedIndex !== selectedIndex) {
+    setSlide((prev) => ({ ...prev, index: clampedIndex }));
+  }
+
+  // sync ref + Embla to the clamped position (external system side-effects)
+  useEffect(() => {
+    selectedIndexRef.current = clampedIndex;
+    if (emblaApi && clampedIndex !== emblaApi.selectedScrollSnap()) {
+      emblaApi.scrollTo(clampedIndex, true);
+    }
+  }, [clampedIndex, emblaApi]);
+
   // reinit Embla after mount stagger settles so slide positions are accurate
   useEffect(() => {
     if (!emblaApi || !debts) return;
@@ -157,6 +186,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
     );
 
   const selectedDebt = debts[selectedIndex] ?? debts[0];
+  const isCreator = selectedDebt.createdBy === currentUser?.id;
   const counterparty = isOutgoing
     ? selectedDebt.lenderName
     : selectedDebt.lendeeName;
@@ -165,7 +195,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
     : null;
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex w-full flex-col items-center gap-6">
       {/* hero summary */}
       <div className="flex flex-col items-center gap-1 text-center">
         {/* direction arrow */}
@@ -221,8 +251,8 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                 className={cn(
                   "font-heading -mb-1 bg-linear-to-tr bg-clip-text text-6xl font-extrabold text-transparent",
                   isOutgoing
-                    ? "from-[#7D1313] to-[#AF1D1D]"
-                    : "to-primary from-[#6A7D13]",
+                    ? "from-[var(--color-outgoing-dark)] to-[var(--color-outgoing)]"
+                    : "to-[var(--color-incoming)] from-[var(--color-incoming-dark)]",
                 )}
               >
                 {formatCurrency(selectedDebt.amount, selectedDebt.currency)}
@@ -233,38 +263,46 @@ export function DebtCarousel({ type }: { type: DebtType }) {
 
         {/* "to/from" + counterparty */}
         <motion.p
-          className="text-foreground/70 flex items-center gap-1.5 text-sm tracking-wide"
+          className="text-foreground/70 flex items-center text-sm tracking-wide"
           initial={hasNavigated ? false : { y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={mountTransition(1, hasNavigated)}
         >
           <motion.span
             layout
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: "spring", stiffness: 350, damping: 35 }}
+            className="relative z-0"
           >
             {isOutgoing ? "to" : "from"}
           </motion.span>
+          <div className="from-background relative z-10 w-1.5 self-stretch bg-linear-to-l to-transparent" />
           <AnimatePresence mode="popLayout">
             <motion.span
               key={selectedIndex}
-              initial={hasNavigated ? { scale: 0.95, opacity: 0 } : false}
+              initial={hasNavigated ? { scale: 0.95 } : false}
               animate={{
                 scale: 1,
-                y: 0,
-                opacity: 1,
                 transition: mountTransition(1, hasNavigated),
               }}
-              style={{ display: "inline-block" }}
+              className="bg-background relative z-10 inline-flex items-center gap-1.5"
             >
               {counterparty}
+              {deadline && (
+                <>
+                  <span className="text-foreground/30">|</span>
+                  <span
+                    className={cn(
+                      isPast(deadline) && "font-bold text-[var(--color-outgoing)]",
+                    )}
+                  >
+                    {isPast(deadline)
+                      ? `overdue by ${formatDistanceToNow(deadline)}`
+                      : `due in ${formatDistanceToNow(deadline)}`}
+                  </span>
+                </>
+              )}
             </motion.span>
           </AnimatePresence>
-          {deadline && (
-            <>
-              <span className="text-foreground/30">|</span>
-              <span>due in {formatDistanceToNow(deadline)}</span>
-            </>
-          )}
         </motion.p>
       </div>
 
@@ -278,17 +316,19 @@ export function DebtCarousel({ type }: { type: DebtType }) {
         ref={emblaRef}
       >
         <div className="flex touch-pan-y">
-          {debts.map((debt, index) => (
-            <CarouselSlide
-              key={debt.id}
-              debt={debt}
-              index={index}
-              isSelected={index === selectedIndex}
-              isOutgoing={isOutgoing}
-              currentUserId={currentUser?.id}
-              hasNavigated={hasNavigated}
-            />
-          ))}
+          <AnimatePresence>
+            {debts.map((debt, index) => (
+              <CarouselSlide
+                key={debt.id}
+                debt={debt}
+                index={index}
+                isSelected={index === selectedIndex}
+                isOutgoing={isOutgoing}
+                currentUserId={currentUser?.id}
+                hasNavigated={hasNavigated}
+              />
+            ))}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -296,13 +336,11 @@ export function DebtCarousel({ type }: { type: DebtType }) {
       <div className="flex items-center justify-center gap-10">
         <motion.button
           onClick={() => emblaApi?.scrollPrev()}
+          disabled={selectedIndex === 0}
           aria-label="Previous debt"
-          className={cn(
-            "text-foreground/60 hover:text-foreground cursor-pointer transition-colors focus:outline-none",
-            selectedIndex === 0 && "opacity-50",
-          )}
+          className="text-foreground/60 hover:text-foreground cursor-pointer transition-colors focus:outline-none disabled:pointer-events-none"
           initial={hasNavigated ? false : { x: 5, y: -15, opacity: 0 }}
-          animate={{ x: 0, y: 0, opacity: 1 }}
+          animate={{ x: 0, y: 0, opacity: selectedIndex === 0 ? 0.5 : 1 }}
           transition={{
             ...mountTransition(1, hasNavigated),
             x: { ...mountSpring, delay: hasNavigated ? 0 : 2 * step },
@@ -310,23 +348,49 @@ export function DebtCarousel({ type }: { type: DebtType }) {
         >
           <ChevronLeft className="size-5" />
         </motion.button>
-        <motion.span
-          className="font-sans text-sm font-medium tracking-wide select-none"
-          initial={hasNavigated ? false : { y: -15, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={mountTransition(1, hasNavigated)}
-        >
-          Mark as Done
-        </motion.span>
+        <Tooltip open={!isCreator ? undefined : false}>
+          <TooltipTrigger asChild>
+            <span>
+              <motion.button
+                type="button"
+                onClick={() =>
+                  updateDebt({
+                    id: selectedDebt.id,
+                    updates: { status: "paid" },
+                  })
+                }
+                disabled={isMarkingDone || !isCreator}
+                className="cursor-pointer font-sans text-sm font-medium tracking-wide select-none disabled:pointer-events-none"
+                initial={hasNavigated ? false : { y: -15, opacity: 0 }}
+                animate={{
+                  y: 0,
+                  opacity: isMarkingDone || !isCreator ? 0.3 : 0.8,
+                }}
+                whileHover={{
+                  opacity: isMarkingDone || !isCreator ? 0.3 : 1,
+                  scale: isMarkingDone || !isCreator ? 1 : 0.98,
+                }}
+                transition={mountTransition(1, hasNavigated)}
+              >
+                Mark as Done
+              </motion.button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            Only the creator can mark this as done
+          </TooltipContent>
+        </Tooltip>
         <motion.button
           onClick={() => emblaApi?.scrollNext()}
+          disabled={selectedIndex === debts.length - 1}
           aria-label="Next debt"
-          className={cn(
-            "text-foreground/60 hover:text-foreground cursor-pointer transition-colors focus:outline-none",
-            selectedIndex === debts.length - 1 && "opacity-50",
-          )}
+          className="text-foreground/60 hover:text-foreground cursor-pointer transition-colors focus:outline-none disabled:pointer-events-none"
           initial={hasNavigated ? false : { x: -5, y: -15, opacity: 0 }}
-          animate={{ x: 0, y: 0, opacity: 1 }}
+          animate={{
+            x: 0,
+            y: 0,
+            opacity: selectedIndex === debts.length - 1 ? 0.5 : 1,
+          }}
           transition={{
             ...mountTransition(1, hasNavigated),
             x: { ...mountSpring, delay: hasNavigated ? 0 : 2 * step },

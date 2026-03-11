@@ -20,7 +20,7 @@ export function RemoveFriendButton({
 
   return (
     <button
-      className="group flex w-fit items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-[#AF1D1D] transition-colors outline-none hover:bg-[#AF1D1D]/10"
+      className="group flex w-fit items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-[var(--color-outgoing)] transition-colors outline-none hover:bg-[var(--color-outgoing)]/10"
       onClick={handleRemove}
     >
       <TrashBinTrash

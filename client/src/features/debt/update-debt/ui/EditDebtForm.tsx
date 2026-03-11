@@ -18,63 +18,37 @@ import { useState, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input as FieldSizingInput } from "react-field-sizing-content";
 
-import {
-  ChevronDownIcon,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Plus,
-  Asterisk,
-} from "lucide-react";
+import { ChevronDownIcon, X, Check, Asterisk } from "lucide-react";
 import { cn } from "@/shared/lib";
-import type { NewDebt } from "../model/types";
-import type { DebtType } from "@/entities/debt";
+import type { UpdateDebtForm } from "../model/types";
+import type { Debt, DebtType } from "@/entities/debt";
 import { NumericFormat } from "react-number-format";
 import { useFriends } from "@/entities/friendship";
 
-export function CreateDebtForm({
+export function EditDebtForm({
   onClose,
   onSubmit,
   isPending,
-  initialType = "pay",
+  debt,
+  type,
 }: {
   onClose: () => void;
-  onSubmit: (formData: NewDebt, type: DebtType) => void;
+  onSubmit: (formData: UpdateDebtForm, type: DebtType) => void;
   isPending: boolean;
-  initialType?: DebtType;
+  debt: Debt;
+  type: DebtType;
 }) {
-  const [type, setType] = useState<DebtType>(initialType);
-
-  const [formData, setFormData] = useState<NewDebt>({
-    lenderName: "",
-    lendeeName: "",
-    currency: "AUD",
-    amount: "",
-    title: "",
-    description: undefined,
-    deadline: undefined,
+  const [formData, setFormData] = useState<UpdateDebtForm>({
+    lenderName: debt.lenderName,
+    lendeeName: debt.lendeeName,
+    lenderId: debt.lenderId,
+    lendeeId: debt.lendeeId,
+    currency: debt.currency,
+    amount: debt.amount,
+    title: debt.title,
+    description: debt.description ?? undefined,
+    deadline: debt.deadline ?? undefined,
   });
-
-  const handleTypeChange = (newType: DebtType) => {
-    setType(newType);
-    if (newType === "pay") {
-      setFormData((prev) => ({
-        ...prev,
-        lenderName: prev.lendeeName || prev.lenderName,
-        lenderId: prev.lendeeId || prev.lenderId,
-        lendeeName: "",
-        lendeeId: null,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        lendeeName: prev.lenderName || prev.lendeeName,
-        lendeeId: prev.lenderId || prev.lenderId,
-        lenderName: "",
-        lenderId: null,
-      }));
-    }
-  };
 
   return (
     <form
@@ -92,9 +66,9 @@ export function CreateDebtForm({
         onSubmit(formData, type);
       }}
     >
-      {/* type toggle + amount */}
+      {/* type indicator + amount */}
       <div className="flex flex-col items-center justify-center gap-5">
-        <TypeToggle type={type} onChange={handleTypeChange} />
+        <TypeDisplay type={type} />
         <AmountInput
           value={formData.amount}
           onChange={(val) => setFormData({ ...formData, amount: val })}
@@ -115,7 +89,7 @@ export function CreateDebtForm({
               With Whom?
               <Asterisk className="size-3 stroke-[2.5px] text-primary/30" />
             </label>
-            <div className="squircle flex flex-1 items-center overflow-hidden border border-primary/10 bg-transparent transition-colors focus-within:border-primary/20">
+            <div className="flex flex-1 items-center overflow-hidden squircle border border-primary/10 bg-transparent transition-colors focus-within:border-primary/20">
               <FriendsCombobox
                 value={{
                   name:
@@ -146,7 +120,7 @@ export function CreateDebtForm({
             <label className="px-0.5 text-xs font-semibold tracking-wide text-primary/50">
               Deadline <span className="text-primary/30">(Optional)</span>
             </label>
-            <div className="squircle flex flex-1 items-center overflow-hidden border border-primary/10 bg-transparent transition-colors focus-within:border-primary/30">
+            <div className="flex flex-1 items-center overflow-hidden squircle border border-primary/10 bg-transparent transition-colors focus-within:border-primary/30">
               <DatePicker
                 value={
                   formData.deadline ? new Date(formData.deadline) : undefined
@@ -179,7 +153,7 @@ export function CreateDebtForm({
               setFormData({ ...formData, title: e.target.value })
             }
             className={cn(
-              "squircle w-full border border-primary/10 bg-transparent p-3 text-xs tracking-wide text-black transition-colors outline-none placeholder:text-black placeholder:opacity-25 focus:border-primary/20",
+              "w-full squircle border border-primary/10 bg-transparent p-3 text-xs tracking-wide text-black transition-colors outline-none placeholder:text-black placeholder:opacity-25 focus:border-primary/20",
               formData.title && "font-medium",
             )}
           />
@@ -199,11 +173,12 @@ export function CreateDebtForm({
             placeholder="Any extra details..."
             aria-label="Description"
             className={cn(
-              "squircle h-20 w-full resize-none border border-primary/10 bg-transparent p-3 text-xs tracking-wide text-black transition-colors outline-none placeholder:text-black placeholder:opacity-25 focus:border-primary/20",
+              "h-20 w-full resize-none squircle border border-primary/10 bg-transparent p-3 text-xs tracking-wide text-black transition-colors outline-none placeholder:text-black placeholder:opacity-25 focus:border-primary/20",
               formData.description && "font-medium",
             )}
           />
         </div>
+
         {/* actions */}
         <div className="mt-3 flex flex-col items-center gap-5">
           {(() => {
@@ -221,11 +196,11 @@ export function CreateDebtForm({
                   <span className="w-full">
                     <Button
                       type="submit"
-                      className="squircle h-12 w-full gap-2 bg-primary/90 text-xs font-normal tracking-wide hover:scale-99 hover:bg-primary/95 disabled:pointer-events-none disabled:opacity-40"
+                      className="h-12 w-full gap-2 squircle bg-primary/90 text-xs font-normal tracking-wide hover:scale-99 hover:bg-primary/95 disabled:pointer-events-none disabled:opacity-40"
                       disabled={isPending || !isValid}
                     >
-                      <Plus className="size-3.5 shrink-0 stroke-[2.5px]" />
-                      Create Debt
+                      <Check className="size-3.5 shrink-0 stroke-[2.5px]" />
+                      Save Debt
                     </Button>
                   </span>
                 </TooltipTrigger>
@@ -241,7 +216,7 @@ export function CreateDebtForm({
             className="flex items-center gap-2 text-xs font-medium tracking-wide text-primary/40 transition-colors hover:text-primary/50"
           >
             <X className="size-3 stroke-[2.5px]" />
-            Cancel
+            Discard
           </button>
         </div>
       </div>
@@ -249,81 +224,50 @@ export function CreateDebtForm({
   );
 }
 
-function TypeToggle({
-  type,
-  onChange,
-}: {
-  type: DebtType;
-  onChange: (val: DebtType) => void;
-}) {
+function TypeDisplay({ type }: { type: DebtType }) {
   const isOutgoing = type === "pay";
-  const toggle = () => onChange(isOutgoing ? "receive" : "pay");
 
   return (
-    <div className="group flex items-center gap-10 select-none">
-      <motion.button
-        layout="position"
-        type="button"
-        aria-label="Previous type"
-        onClick={toggle}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="text-foreground/30 hover:text-foreground/60 cursor-pointer transition-colors"
-      >
-        <ChevronLeft className="size-4" />
-      </motion.button>
-
-      <motion.div className="flex flex-col items-center gap-1 opacity-50 transition-opacity duration-300 group-hover:opacity-80">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.img
-            key={type}
-            src={isOutgoing ? "/outgoing-arrow.svg" : "/incoming-arrow.svg"}
-            alt=""
-            aria-hidden
-            className={cn("h-10", isOutgoing && "mt-2 -mb-2")}
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 30,
-              opacity: { type: "tween", duration: 0.08 },
-            }}
-          />
-        </AnimatePresence>
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span
-            key={type}
-            className={cn(
-              "font-heading text-4xl font-extrabold whitespace-nowrap",
-              isOutgoing ? "text-[var(--color-outgoing)]" : "text-[var(--color-incoming)]",
-            )}
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 30,
-              opacity: { type: "tween", duration: 0.08 },
-            }}
-          >
-            {isOutgoing ? "to pay" : "to receive"}
-          </motion.span>
-        </AnimatePresence>
-      </motion.div>
-
-      <motion.button
-        layout="position"
-        type="button"
-        aria-label="Next type"
-        onClick={toggle}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="text-foreground/30 hover:text-foreground/60 cursor-pointer transition-colors"
-      >
-        <ChevronRight className="size-4" />
-      </motion.button>
-    </div>
+    <motion.div className="flex flex-col items-center gap-1 opacity-50 select-none">
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.img
+          key={type}
+          src={isOutgoing ? "/outgoing-arrow.svg" : "/incoming-arrow.svg"}
+          alt=""
+          aria-hidden
+          className={cn("h-10", isOutgoing && "mt-2 -mb-2")}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 6 }}
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 30,
+            opacity: { type: "tween", duration: 0.08 },
+          }}
+        />
+      </AnimatePresence>
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={type}
+          className={cn(
+            "font-heading text-4xl font-extrabold whitespace-nowrap",
+            isOutgoing ? "text-[var(--color-outgoing)]" : "text-[var(--color-incoming)]",
+          )}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 6 }}
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 30,
+            opacity: { type: "tween", duration: 0.08 },
+          }}
+        >
+          {isOutgoing ? "to pay" : "to receive"}
+        </motion.span>
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
@@ -338,9 +282,7 @@ const CURRENCIES: Record<string, string> = {
 const SizingInput = forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>
->((props, ref) => (
-  <FieldSizingInput ref={ref} fieldSizing="content" {...props} />
-));
+>((props, ref) => <FieldSizingInput ref={ref} fieldSizing="content" {...props} />);
 
 function AmountInput({
   value,
@@ -365,7 +307,7 @@ function AmountInput({
               type="button"
               aria-label={`Change currency, currently ${currency}`}
               className={cn(
-                "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-[colors,opacity] outline-none hover:opacity-100 active:opacity-100",
+                "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-colors outline-none hover:bg-primary/5 active:bg-primary/10",
                 value
                   ? type === "pay"
                     ? "text-[var(--color-outgoing-dark)]"
@@ -473,7 +415,6 @@ function FriendsCombobox({
   const { data: friends, isLoading } = useFriends("accepted");
   const anchorRef = useComboboxAnchor();
 
-  // Keep a local state just for what the user is currently typing
   const [inputValue, setInputValue] = useState(value.name);
 
   const safeFriends = friends ?? [];
@@ -488,24 +429,18 @@ function FriendsCombobox({
 
   return (
     <Combobox
-      // the value is the ID of the friend if they picked one from the list
-      // If it's a custom name, `value` is null/undefined in the Combobox's eyes.
       value={value.id ?? null}
-      // When a user specifically CLICKS a friend from the dropdown list
       onValueChange={(selectedId) => {
         if (!selectedId) return;
 
-        // Find the full friend object using the ID
         const selectedFriend = safeFriends.find(
           (f) => f.friendId === selectedId,
         );
         if (selectedFriend) {
           const fullName = `${selectedFriend.friendFirstName} ${selectedFriend.friendLastName}`;
 
-          // Update the input box text visually
           setInputValue(fullName);
 
-          // Bubble up both the Full Name AND the ID to our overall Form State
           onChange({
             name: fullName,
             id: selectedId,
@@ -521,8 +456,6 @@ function FriendsCombobox({
             const newName = e.target.value;
             setInputValue(newName);
 
-            // If they are explicitly typing, we assume it's a completely new, unregistered person
-            // So we wipe out the ID, and just pass the name up to the Form State
             onChange({
               name: newName,
               id: undefined,
@@ -535,10 +468,6 @@ function FriendsCombobox({
         />
       </div>
 
-      {/* 
-        Only show the dropdown content if they haven't exactly matched a friend's name,
-        and there are actually friends to show.
-      */}
       {(filteredFriends.length > 0 ||
         (inputValue && inputValue.trim().length > 0)) && (
         <ComboboxContent anchor={anchorRef}>

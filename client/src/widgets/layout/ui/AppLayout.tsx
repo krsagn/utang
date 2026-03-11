@@ -2,12 +2,15 @@ import { Sidebar, RightSidebar } from "@/widgets/sidebar";
 import { Outlet, useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { FriendsSidebar, useFriendsSidebar } from "@/widgets/friends-sidebar";
+import { cn } from "@/shared/lib";
 
 export function AppLayout() {
   const { pathname } = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
   const gradientOpacity = useTransform(scrollY, [0, 20], [0, 1]);
+  const { isOpen, closeSidebar } = useFriendsSidebar();
 
   // reset scroll position on route change
   useEffect(() => {
@@ -15,7 +18,9 @@ export function AppLayout() {
       top: 0,
       behavior: "instant",
     });
-  }, [pathname]);
+    // Optional: close sidebar on route change? Sure.
+    closeSidebar();
+  }, [pathname, closeSidebar]);
 
   // exponential scrim to eliminate linear gradient banding
   const scrimGradient = `linear-gradient(to bottom, 
@@ -49,35 +54,68 @@ export function AppLayout() {
   )`;
 
   return (
-    <div className="bg-background flex h-screen w-full overflow-hidden overscroll-none">
-      <Sidebar />
-      <div
-        ref={scrollRef}
-        className="no-scrollbar relative flex flex-1 flex-col overflow-y-auto overscroll-none"
+    <div className="bg-background relative flex h-screen w-full overflow-hidden overscroll-none">
+      <FriendsSidebar />
+
+      {/* Main Blurred Canvas */}
+      <motion.div
+        initial={false}
+        animate={{
+          x: isOpen ? 320 : 0,
+        }}
+        transition={{ type: "tween", ease: [0.22, 1, 0.36, 1], duration: 0.7 }}
+        className={cn(
+          "bg-background relative z-10 flex h-screen w-full shrink-0 overflow-hidden will-change-transform",
+          isOpen && "pointer-events-none",
+        )}
       >
-        {/* top scroll shadow fades in as you scroll down */}
-        <motion.div
-          style={{ opacity: gradientOpacity, backgroundImage: scrimGradient }}
-          className="pointer-events-none sticky top-0 z-20 h-10 shrink-0"
-        />
-
-        <motion.main
-          key={pathname}
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="z-10 flex flex-1 items-center justify-center px-10 pb-10"
-        >
-          <Outlet />
-        </motion.main>
-
-        {/* bottom scroll shadow */}
+        <Sidebar />
         <div
-          style={{ backgroundImage: flippedScrimGradient }}
-          className="pointer-events-none fixed -bottom-[0.5px] z-20 h-10 w-full shrink-0"
+          ref={scrollRef}
+          className="no-scrollbar relative flex flex-1 flex-col overflow-y-auto overscroll-none"
+        >
+          {/* top scroll shadow fades in as you scroll down */}
+          <motion.div
+            style={{ opacity: gradientOpacity, backgroundImage: scrimGradient }}
+            className="pointer-events-none sticky top-0 z-20 h-10 shrink-0"
+          />
+
+          <motion.main
+            key={pathname}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="z-10 flex flex-1 items-center justify-center px-10 pb-10"
+          >
+            <Outlet />
+          </motion.main>
+
+          {/* bottom scroll shadow */}
+          <div
+            style={{ backgroundImage: flippedScrimGradient }}
+            className="pointer-events-none fixed -bottom-[0.5px] z-20 h-10 w-full shrink-0"
+          />
+        </div>
+        <RightSidebar />
+
+        {/* Tint overlay & click-to-close */}
+        <motion.div
+          initial={false}
+          animate={{ opacity: isOpen ? 1 : 0 }}
+          transition={{
+            type: "tween",
+            ease: [0.22, 1, 0.36, 1],
+            duration: 0.7,
+          }}
+          className={cn(
+            "bg-background/40 absolute inset-0 z-50 backdrop-blur-md",
+            isOpen
+              ? "pointer-events-auto cursor-pointer"
+              : "pointer-events-none",
+          )}
+          onClick={isOpen ? closeSidebar : undefined}
         />
-      </div>
-      <RightSidebar />
+      </motion.div>
     </div>
   );
 }

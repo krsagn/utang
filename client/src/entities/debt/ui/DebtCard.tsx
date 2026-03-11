@@ -45,7 +45,7 @@ export function DebtCard({
         )}
       />
       <DashedDivider
-        color={isOutgoing ? "#AF1D1D" : "#839B1A"}
+        color={isOutgoing ? "var(--color-outgoing)" : "var(--color-incoming)"}
         className="px-10"
       />
       {/* Details portion */}
@@ -60,7 +60,7 @@ export function DebtCard({
           <span
             className={cn(
               "text-sm tracking-wider",
-              isOutgoing ? "text-[#7D1313]/50" : "text-[#6A7D13]/50",
+              isOutgoing ? "text-[var(--color-outgoing-dark)]/50" : "text-[var(--color-incoming-dark)]/50",
             )}
           >
             {currency.toUpperCase()}
@@ -70,8 +70,8 @@ export function DebtCard({
             className={cn(
               "font-heading bg-linear-to-tr bg-clip-text text-5xl font-extrabold text-transparent",
               isOutgoing
-                ? "from-[#7D1313] to-[#AF1D1D]"
-                : "to-primary from-[#6A7D13]",
+                ? "from-[var(--color-outgoing-dark)] to-[var(--color-outgoing)]"
+                : "to-[var(--color-incoming)] from-[var(--color-incoming-dark)]",
             )}
           >
             {formatCompactCurrency(amount, currency)}

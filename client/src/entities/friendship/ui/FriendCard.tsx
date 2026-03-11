@@ -40,9 +40,9 @@ export function FriendCard({
             className="size-4 text-black"
           />
         </div>
-        <div className="flex items-center gap-3 text-sm font-medium text-black/50">
+        <div className="flex items-center gap-3 text-sm font-medium text-primary/50">
           <p>@{friendUsername}</p>
-          <div className="size-0.75 rounded-full bg-black/50" />
+          <div className="size-0.75 rounded-full bg-primary/50" />
           {status === "accepted" ? (
             <p>Friends since {format(new Date(updatedAt), "MMM d, yyyy")}</p>
           ) : (
@@ -59,7 +59,7 @@ export function FriendCard({
         ) : (
           <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
             <PopoverTrigger asChild>
-              <button className="flex size-8 items-center justify-center rounded-full text-black/40 transition-colors outline-none hover:bg-black/5 hover:text-black active:bg-black/10">
+              <button className="flex size-8 items-center justify-center rounded-full text-primary/40 transition-colors outline-none hover:bg-primary/5 hover:text-black active:bg-primary/10">
                 <MoreHorizontal className="size-5" strokeWidth={2.5} />
               </button>
             </PopoverTrigger>

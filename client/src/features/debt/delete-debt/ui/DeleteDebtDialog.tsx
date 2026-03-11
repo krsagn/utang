@@ -39,7 +39,7 @@ export function DeleteDebtDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-60 bg-black/40 backdrop-blur-xs"
+            className="fixed inset-0 z-60 bg-primary/40 backdrop-blur-xs"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -56,7 +56,7 @@ export function DeleteDebtDialog({
               <h2 className="font-heading text-2xl font-extrabold tracking-wide">
                 Delete this debt?
               </h2>
-              <p className="text-sm leading-5 tracking-wide text-black/50">
+              <p className="text-sm leading-5 tracking-wide text-primary/50">
                 This action cannot be undone. This will permanently delete this
                 debt record.
               </p>
@@ -64,14 +64,14 @@ export function DeleteDebtDialog({
             <div className="mt-5 flex items-center gap-3">
               <button
                 onClick={onClose}
-                className="inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-black/5 text-sm font-semibold tracking-wide text-black transition duration-300 outline-none hover:scale-98 hover:bg-black/10 active:bg-black/15"
+                className="inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-primary/5 text-sm font-semibold tracking-wide text-black transition duration-300 outline-none hover:scale-98 hover:bg-primary/10 active:bg-primary/15"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-[#AF1D1D] text-sm font-semibold tracking-wide text-white transition duration-300 outline-none hover:scale-98 hover:bg-[#8B1717] active:bg-[#6B1111] disabled:opacity-50"
+                className="inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-[var(--color-outgoing)] text-sm font-semibold tracking-wide text-white transition duration-300 outline-none hover:scale-98 hover:bg-[color-mix(in srgb, var(--color-outgoing) 75%, black)] active:bg-[color-mix(in srgb, var(--color-outgoing) 55%, black)] disabled:opacity-50"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>

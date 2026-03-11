@@ -40,7 +40,7 @@ export function ReceiptCard({
         src="/empty-receipt.webp"
         alt=""
         aria-hidden
-        className="h-full w-full object-fill"
+        className="h-full w-auto object-fill"
         draggable={false}
       />
       {/* fixed-width column matching the receipt's printable area */}

@@ -52,19 +52,19 @@ function AddFriendCard({ onClose }: { onClose: () => void }) {
           >
             Add friend
           </h2>
-          <p className="text-sm leading-5 tracking-wide text-black/50">
+          <p className="text-sm leading-5 tracking-wide text-primary/50">
             Expand your debt circle!
           </p>
         </div>
         <button
           aria-label="Close"
           onClick={onClose}
-          className="flex size-8 items-center justify-center rounded-full text-black/40 transition-colors outline-none hover:bg-black/5 hover:text-black active:bg-black/10"
+          className="flex size-8 items-center justify-center rounded-full text-primary/40 transition-colors outline-none hover:bg-primary/5 hover:text-black active:bg-primary/10"
         >
           <X className="size-5" strokeWidth={2.5} />
         </button>
       </div>
-      <InputGroup className="rounded-b-none border-b border-black/10">
+      <InputGroup className="rounded-b-none border-b border-primary/10">
         <InputGroupInput
           name="search"
           value={searchValue}
@@ -74,10 +74,10 @@ function AddFriendCard({ onClose }: { onClose: () => void }) {
           className="h-10 px-4"
         />
         <InputGroupAddon>
-          <Search className="stroke-2.5 size-3.5 text-black/50" />
+          <Search className="stroke-2.5 size-3.5 text-primary/50" />
         </InputGroupAddon>
       </InputGroup>
-      <ul className="flex h-75 w-full flex-col overflow-clip rounded-b-2xl bg-black/5">
+      <ul className="flex h-75 w-full flex-col overflow-clip rounded-b-2xl bg-primary/5">
         {users?.map((user) => {
           return <AddFriendItem key={user.id} user={user} />;
         })}
@@ -96,7 +96,7 @@ function AddFriendItem({ user }: { user: User }) {
   return (
     <li
       className={cn(
-        "flex items-center justify-between border-b border-black/10 p-3 text-xs transition duration-300 hover:bg-black/5",
+        "flex items-center justify-between border-b border-primary/10 p-3 text-xs transition duration-300 hover:bg-primary/5",
         isSuccess && "opacity-50",
       )}
     >
@@ -114,7 +114,7 @@ function AddFriendItem({ user }: { user: User }) {
         }
         className={cn(
           "flex size-6 items-center justify-center rounded-full transition duration-300 hover:scale-95",
-          !isSuccess && "hover:bg-black/10",
+          !isSuccess && "hover:bg-primary/10",
         )}
         onClick={handleAddFriend}
         disabled={isPending || isSuccess}

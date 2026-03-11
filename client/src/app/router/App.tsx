@@ -8,8 +8,8 @@ import AuthRedirect from "@/app/router/guards/AuthRedirect";
 import { Outgoing } from "@/pages/debts/outgoing";
 import { Incoming } from "@/pages/debts/incoming";
 import { CreateDebtPage } from "@/pages/debts/new";
+import { EditDebtPage } from "@/pages/debts/edit";
 import { AppLayout } from "@/widgets/layout";
-import { Friends, FriendRequests } from "@/pages/friends";
 
 function App() {
   return (
@@ -26,8 +26,7 @@ function App() {
                 <Route path="/debts/outgoing" element={<Outgoing />} />
                 <Route path="/debts/incoming" element={<Incoming />} />
                 <Route path="/debts/new" element={<CreateDebtPage />} />
-                <Route path="/friends" element={<Friends />} />
-                <Route path="/friends/requests" element={<FriendRequests />} />
+                <Route path="/debts/:id/edit" element={<EditDebtPage />} />
               </Route>
             </Route>
           </Routes>
