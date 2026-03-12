@@ -27,34 +27,34 @@ export function FriendsSidebar() {
             ease: [0.22, 1, 0.36, 1],
             duration: 0.7,
           }}
-          className="absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col px-6 py-7 text-[#333]"
+          className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col px-6 py-7"
         >
           {/* Top Action */}
           <div
             onClick={() => modal.open("add-friend")}
-            className="mb-12 flex cursor-pointer items-center gap-3 pl-2 text-xs font-medium tracking-wider text-black opacity-50 transition-opacity hover:opacity-100"
+            className="text-primary/50 hover:text-primary mb-12 flex cursor-pointer items-center gap-3 pl-2 text-xs font-medium tracking-wider transition-colors"
           >
             <Plus className="size-3" />
             <span>Add Friend</span>
           </div>
 
-          <div className="no-scrollbar my-auto flex flex-1 flex-col justify-center gap-10 overflow-y-auto pb-10">
+          <div className="no-scrollbar flex flex-1 flex-col justify-center gap-10 overflow-y-auto pb-10">
             {/* Friends Section */}
             <div className="flex flex-col gap-5">
-              <h3 className="flex items-center gap-2 pl-2 text-xs font-medium tracking-widest text-black opacity-30">
+              <h3 className="text-primary/30 flex items-center gap-2 pl-2 text-xs font-medium tracking-widest">
                 Friends <span className="text-primary/20">|</span>{" "}
                 {acceptedFriends?.length || 0}
               </h3>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-6">
                 {acceptedFriends?.map((f) => (
                   <div
                     key={f.id}
                     className="flex flex-col justify-center px-2 tracking-wide"
                   >
-                    <span className="mb-1 text-xs leading-tight font-semibold text-black">
+                    <span className="text-primary mb-1 text-xs leading-tight font-semibold">
                       {f.friendFirstName} {f.friendLastName}
                     </span>
-                    <span className="text-xs font-medium text-black opacity-50">
+                    <span className="text-primary/50 text-xs font-medium">
                       @{f.friendUsername}
                     </span>
                   </div>
@@ -65,11 +65,11 @@ export function FriendsSidebar() {
             {/* Requests Section */}
             {pendingRequests && pendingRequests.length > 0 && (
               <div className="flex flex-col gap-5">
-                <h3 className="flex items-center gap-2 pl-2 text-xs font-medium tracking-widest text-black opacity-30">
+                <h3 className="text-primary/30 flex items-center gap-2 pl-2 text-xs font-medium tracking-widest">
                   Requests <span className="text-primary/20">|</span>{" "}
                   {pendingRequests.length}
                 </h3>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-6">
                   {pendingRequests.map((f) => (
                     <RequestItem key={f.id} request={f} />
                   ))}
@@ -82,7 +82,7 @@ export function FriendsSidebar() {
           <div className="mt-auto pt-6">
             <button
               onClick={closeSidebar}
-              className="flex size-8 items-center justify-center rounded-full text-black opacity-30 transition-all outline-none hover:bg-primary/5 hover:opacity-100 active:bg-primary/10"
+              className="hover:bg-primary/5 active:bg-primary/10 text-primary/30 hover:text-primary flex size-8 items-center justify-center rounded-full transition-all outline-none"
             >
               <X className="size-5" />
             </button>
@@ -111,10 +111,10 @@ function RequestItem({ request }: { request: Friendship }) {
       )}
     >
       <div className="flex flex-col justify-center">
-        <span className="mb-1 text-xs leading-tight font-bold text-black opacity-50">
+        <span className="text-primary/50 mb-1 text-xs leading-tight font-bold">
           {request.friendFirstName} {request.friendLastName}
         </span>
-        <span className="text-xs font-medium text-black opacity-30">
+        <span className="text-primary/30 text-xs font-medium">
           @{request.friendUsername}
         </span>
       </div>
@@ -122,14 +122,14 @@ function RequestItem({ request }: { request: Friendship }) {
         <button
           onClick={() => acceptFriend(request.id)}
           disabled={isPending}
-          className="flex size-8 items-center justify-center rounded-full text-black opacity-70 transition-all outline-none hover:bg-primary/5 hover:opacity-100"
+          className="hover:bg-primary/5 text-primary/70 hover:text-primary flex size-8 items-center justify-center rounded-full transition-all outline-none"
         >
           <Check className="size-4 stroke-[2.5px]" />
         </button>
         <button
           onClick={() => rejectFriend(request.id)}
           disabled={isPending}
-          className="flex size-8 items-center justify-center rounded-full text-black opacity-70 transition-all outline-none hover:bg-primary/5 hover:opacity-100"
+          className="hover:bg-primary/5 text-primary/70 hover:text-primary flex size-8 items-center justify-center rounded-full transition-all outline-none"
         >
           <X className="size-4 stroke-[2.5px]" />
         </button>

@@ -52,19 +52,19 @@ function AddFriendCard({ onClose }: { onClose: () => void }) {
           >
             Add friend
           </h2>
-          <p className="text-sm leading-5 tracking-wide text-primary/50">
+          <p className="text-primary/50 text-sm leading-5 tracking-wide">
             Expand your debt circle!
           </p>
         </div>
         <button
           aria-label="Close"
           onClick={onClose}
-          className="flex size-8 items-center justify-center rounded-full text-primary/40 transition-colors outline-none hover:bg-primary/5 hover:text-black active:bg-primary/10"
+          className="text-primary/40 hover:bg-primary/5 hover:text-primary active:bg-primary/10 flex size-8 items-center justify-center rounded-full transition-colors outline-none"
         >
           <X className="size-5" strokeWidth={2.5} />
         </button>
       </div>
-      <InputGroup className="rounded-b-none border-b border-primary/10">
+      <InputGroup className="border-primary/10 rounded-b-none border-b">
         <InputGroupInput
           name="search"
           value={searchValue}
@@ -74,10 +74,10 @@ function AddFriendCard({ onClose }: { onClose: () => void }) {
           className="h-10 px-4"
         />
         <InputGroupAddon>
-          <Search className="stroke-2.5 size-3.5 text-primary/50" />
+          <Search className="stroke-2.5 text-primary/50 size-3.5" />
         </InputGroupAddon>
       </InputGroup>
-      <ul className="flex h-75 w-full flex-col overflow-clip rounded-b-2xl bg-primary/5">
+      <ul className="bg-primary/5 flex h-75 w-full flex-col overflow-clip rounded-b-2xl">
         {users?.map((user) => {
           return <AddFriendItem key={user.id} user={user} />;
         })}
@@ -96,7 +96,7 @@ function AddFriendItem({ user }: { user: User }) {
   return (
     <li
       className={cn(
-        "flex items-center justify-between border-b border-primary/10 p-3 text-xs transition duration-300 hover:bg-primary/5",
+        "border-primary/10 hover:bg-primary/5 flex items-center justify-between border-b p-3 text-xs transition duration-300",
         isSuccess && "opacity-50",
       )}
     >

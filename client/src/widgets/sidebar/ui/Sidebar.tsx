@@ -68,7 +68,7 @@ function SidebarLogo({
       <motion.div
         animate={{ rotate: collapsed ? 180 : 0 }}
         transition={TWEEN_TRANSITION}
-        className="text-black opacity-30 transition-opacity hover:opacity-100"
+        className="text-primary opacity-30 transition-opacity hover:opacity-100"
       >
         <ChevronLeft className="size-4" />
       </motion.div>
@@ -93,7 +93,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
       animate={{ opacity: collapsed ? 0 : 1 }}
       transition={FADE_TRANSITION}
       style={{ pointerEvents: collapsed ? "none" : "auto" }}
-      className="my-auto flex w-full flex-col justify-center space-y-6 text-xs tracking-wider whitespace-nowrap text-black"
+      className="text-primary my-auto flex w-full flex-col justify-center space-y-6 text-xs tracking-wider whitespace-nowrap"
     >
       {SIDEBAR_LINKS.map((link) => (
         <SidebarNavItem
@@ -131,7 +131,7 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
             key={link.badge}
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 500, damping: 100 }}
+            transition={{ type: "spring", stiffness: 300, damping: 250 }}
             className="bg-primary flex size-5 items-center justify-center rounded-full text-[10px] font-medium text-white"
           >
             {link.badge}
@@ -183,7 +183,7 @@ function SidebarLogout({ collapsed }: { collapsed: boolean }) {
     >
       <div
         onClick={() => performLogout()}
-        className="cursor-pointer pl-2 text-xs font-medium tracking-wider whitespace-nowrap text-black opacity-50 transition-all duration-300 hover:opacity-75"
+        className="text-primary cursor-pointer pl-2 text-xs font-medium tracking-wider whitespace-nowrap opacity-50 transition-all duration-300 hover:opacity-75"
       >
         Logout
       </div>

@@ -111,11 +111,11 @@ export function CreateDebtForm({
         {/* with whom + deadline row */}
         <div className="flex gap-2">
           <div className="flex flex-1 flex-col gap-2">
-            <label className="flex items-center gap-0.5 text-xs font-semibold tracking-wide text-primary/50">
+            <label className="text-primary/50 flex items-center gap-0.5 text-xs font-semibold tracking-wide">
               With Whom?
-              <Asterisk className="size-3 stroke-[2.5px] text-primary/30" />
+              <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
             </label>
-            <div className="squircle flex flex-1 items-center overflow-hidden border border-primary/10 bg-transparent transition-colors focus-within:border-primary/20">
+            <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
               <FriendsCombobox
                 value={{
                   name:
@@ -143,10 +143,10 @@ export function CreateDebtForm({
             </div>
           </div>
           <div className="flex flex-1 flex-col gap-2">
-            <label className="px-0.5 text-xs font-semibold tracking-wide text-primary/50">
+            <label className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide">
               Deadline <span className="text-primary/30">(Optional)</span>
             </label>
-            <div className="squircle flex flex-1 items-center overflow-hidden border border-primary/10 bg-transparent transition-colors focus-within:border-primary/30">
+            <div className="squircle border-primary/10 focus-within:border-primary/30 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
               <DatePicker
                 value={
                   formData.deadline ? new Date(formData.deadline) : undefined
@@ -164,9 +164,9 @@ export function CreateDebtForm({
 
         {/* title */}
         <div className="flex flex-col gap-2">
-          <label className="flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide text-primary/50">
+          <label className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide">
             Title
-            <Asterisk className="size-3 stroke-[2.5px] text-primary/30" />
+            <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
           </label>
           <input
             type="text"
@@ -179,7 +179,7 @@ export function CreateDebtForm({
               setFormData({ ...formData, title: e.target.value })
             }
             className={cn(
-              "squircle w-full border border-primary/10 bg-transparent p-3 text-xs tracking-wide text-black transition-colors outline-none placeholder:text-black placeholder:opacity-25 focus:border-primary/20",
+              "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/25 text-primary w-full border bg-transparent p-3 text-xs tracking-wide transition-colors outline-none",
               formData.title && "font-medium",
             )}
           />
@@ -187,7 +187,7 @@ export function CreateDebtForm({
 
         {/* description */}
         <div className="flex flex-col gap-2">
-          <label className="px-0.5 text-xs font-semibold tracking-wide text-primary/50">
+          <label className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide">
             Description <span className="text-primary/30">(Optional)</span>
           </label>
           <textarea
@@ -199,7 +199,7 @@ export function CreateDebtForm({
             placeholder="Any extra details..."
             aria-label="Description"
             className={cn(
-              "squircle h-20 w-full resize-none border border-primary/10 bg-transparent p-3 text-xs tracking-wide text-black transition-colors outline-none placeholder:text-black placeholder:opacity-25 focus:border-primary/20",
+              "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/25 text-primary h-20 w-full resize-none border bg-transparent p-3 text-xs tracking-wide transition-colors outline-none",
               formData.description && "font-medium",
             )}
           />
@@ -221,7 +221,7 @@ export function CreateDebtForm({
                   <span className="w-full">
                     <Button
                       type="submit"
-                      className="squircle h-12 w-full gap-2 bg-primary/90 text-xs font-normal tracking-wide hover:scale-99 hover:bg-primary/95 disabled:pointer-events-none disabled:opacity-40"
+                      className="squircle bg-primary/90 hover:bg-primary/95 h-12 w-full gap-2 text-xs font-normal tracking-wide hover:scale-99 disabled:pointer-events-none disabled:opacity-40"
                       disabled={isPending || !isValid}
                     >
                       <Plus className="size-3.5 shrink-0 stroke-[2.5px]" />
@@ -238,7 +238,7 @@ export function CreateDebtForm({
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center gap-2 text-xs font-medium tracking-wide text-primary/40 transition-colors hover:text-primary/50"
+            className="text-primary/40 hover:text-primary/50 flex items-center gap-2 text-xs font-medium tracking-wide transition-colors"
           >
             <X className="size-3 stroke-[2.5px]" />
             Cancel
@@ -296,7 +296,7 @@ function TypeToggle({
             key={type}
             className={cn(
               "font-heading text-4xl font-extrabold whitespace-nowrap",
-              isOutgoing ? "text-[var(--color-outgoing)]" : "text-[var(--color-incoming)]",
+              isOutgoing ? "text-outgoing" : "text-incoming",
             )}
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -368,11 +368,11 @@ function AmountInput({
                 "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-[colors,opacity] outline-none hover:opacity-100 active:opacity-100",
                 value
                   ? type === "pay"
-                    ? "text-[var(--color-outgoing-dark)]"
-                    : "text-[var(--color-incoming-dark)]"
+                    ? "text-outgoing-dark"
+                    : "text-incoming-dark"
                   : type === "pay"
-                    ? "text-[var(--color-outgoing-dark)] opacity-50"
-                    : "text-[var(--color-incoming-dark)] opacity-50",
+                    ? "text-outgoing-dark opacity-50"
+                    : "text-incoming-dark opacity-50",
               )}
             >
               <div className="relative flex shrink-0 flex-col items-center justify-center">
@@ -449,12 +449,12 @@ function AmountInput({
                 ? cn(
                     "bg-linear-to-tr bg-clip-text text-transparent transition-colors",
                     type === "pay"
-                      ? "from-[var(--color-outgoing-dark)] to-[var(--color-outgoing)] caret-[var(--color-outgoing)]/30"
-                      : "to-[var(--color-incoming)] from-[var(--color-incoming-dark)] caret-[var(--color-incoming-dark)]/30",
+                      ? "from-outgoing-dark to-outgoing caret-outgoing/30"
+                      : "to-incoming from-incoming-dark caret-incoming-dark/30",
                   )
                 : type === "pay"
-                  ? "text-[var(--color-outgoing-dark)]/30 placeholder:text-[var(--color-outgoing-dark)]/30"
-                  : "text-[var(--color-incoming-dark)]/30 placeholder:text-[var(--color-incoming-dark)]/30",
+                  ? "text-outgoing-dark/30 placeholder:text-outgoing-dark/30"
+                  : "text-incoming-dark/30 placeholder:text-incoming-dark/30",
             )}
           />
         </motion.div>
@@ -529,7 +529,7 @@ function FriendsCombobox({
             });
           }}
           className={cn(
-            "h-auto bg-transparent! [&_input]:h-auto [&_input]:py-3 [&_input]:text-xs [&_input]:tracking-wide [&_input]:text-black [&_input]:placeholder:text-black [&_input]:placeholder:opacity-25",
+            "[&_input]:placeholder:text-primary/25 [&_input]:text-primary h-auto bg-transparent! [&_input]:h-auto [&_input]:py-3 [&_input]:text-xs [&_input]:tracking-wide",
             inputValue && "[&_input]:font-medium",
           )}
         />
@@ -591,7 +591,7 @@ function DatePicker({
         <button
           type="button"
           className={cn(
-            "flex h-full w-full min-w-0 items-center gap-2 bg-transparent p-3 text-xs tracking-wide text-black outline-none",
+            "text-primary flex h-full w-full min-w-0 items-center gap-2 bg-transparent p-3 text-xs tracking-wide outline-none",
             value ? "font-medium" : "opacity-25",
           )}
         >

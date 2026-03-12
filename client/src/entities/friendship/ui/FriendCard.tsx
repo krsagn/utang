@@ -29,7 +29,7 @@ export function FriendCard({
   const [optionsOpen, setOptionsOpen] = useState(false);
 
   return (
-    <article className="bg-card relative flex w-full flex-1 justify-between overflow-hidden rounded-3xl p-7 tracking-wide transition duration-300">
+    <article className="bg-card relative flex w-full justify-between overflow-hidden rounded-3xl p-7 tracking-wide transition duration-300">
       <div className="flex flex-col justify-center">
         <div className="flex items-center gap-3">
           <h3 className="font-heading text-xl font-extrabold">
@@ -37,12 +37,12 @@ export function FriendCard({
           </h3>
           <UsersGroupRounded
             weight="BoldDuotone"
-            className="size-4 text-black"
+            className="text-primary size-4"
           />
         </div>
-        <div className="flex items-center gap-3 text-sm font-medium text-primary/50">
+        <div className="text-primary/50 flex items-center gap-3 text-sm font-medium">
           <p>@{friendUsername}</p>
-          <div className="size-0.75 rounded-full bg-primary/50" />
+          <div className="bg-primary/50 size-0.75 rounded-full" />
           {status === "accepted" ? (
             <p>Friends since {format(new Date(updatedAt), "MMM d, yyyy")}</p>
           ) : (
@@ -59,7 +59,7 @@ export function FriendCard({
         ) : (
           <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
             <PopoverTrigger asChild>
-              <button className="flex size-8 items-center justify-center rounded-full text-primary/40 transition-colors outline-none hover:bg-primary/5 hover:text-black active:bg-primary/10">
+              <button className="text-primary/40 hover:bg-primary/5 hover:text-primary active:bg-primary/10 flex size-8 items-center justify-center rounded-full transition-colors outline-none">
                 <MoreHorizontal className="size-5" strokeWidth={2.5} />
               </button>
             </PopoverTrigger>

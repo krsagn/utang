@@ -44,6 +44,13 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-outgoing: var(--color-outgoing);
+  --color-outgoing-dark: var(--color-outgoing-dark);
+  --color-outgoing-hover: var(--color-outgoing-hover);
+  --color-outgoing-active: var(--color-outgoing-active);
+  --color-incoming: var(--color-incoming);
+  --color-incoming-dark: var(--color-incoming-dark);
+
   --font-display: "ClashDisplay", sans-serif;
   --font-heading: "CabinetGrotesk", sans-serif;
   --font-sans: "PlusJakartaSans", sans-serif;

@@ -21,7 +21,7 @@ export function RejectFriendButton({
       variant="default"
       disabled={isPending}
       className={cn(
-        "w-30 rounded-xl bg-primary/90 p-5 hover:bg-black",
+        "bg-primary/90 hover:bg-primary w-30 rounded-xl p-5",
         isPending && "opacity-50",
       )}
     >

@@ -60,7 +60,7 @@ export function DebtCard({
           <span
             className={cn(
               "text-sm tracking-wider",
-              isOutgoing ? "text-[var(--color-outgoing-dark)]/50" : "text-[var(--color-incoming-dark)]/50",
+              isOutgoing ? "text-outgoing-dark/50" : "text-incoming-dark/50",
             )}
           >
             {currency.toUpperCase()}
@@ -70,8 +70,8 @@ export function DebtCard({
             className={cn(
               "font-heading bg-linear-to-tr bg-clip-text text-5xl font-extrabold text-transparent",
               isOutgoing
-                ? "from-[var(--color-outgoing-dark)] to-[var(--color-outgoing)]"
-                : "to-[var(--color-incoming)] from-[var(--color-incoming-dark)]",
+                ? "from-outgoing-dark to-outgoing"
+                : "to-incoming from-incoming-dark",
             )}
           >
             {formatCompactCurrency(amount, currency)}

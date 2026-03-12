@@ -251,8 +251,8 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                 className={cn(
                   "font-heading -mb-1 bg-linear-to-tr bg-clip-text text-6xl font-extrabold text-transparent",
                   isOutgoing
-                    ? "from-[var(--color-outgoing-dark)] to-[var(--color-outgoing)]"
-                    : "to-[var(--color-incoming)] from-[var(--color-incoming-dark)]",
+                    ? "from-outgoing-dark to-outgoing"
+                    : "to-incoming from-incoming-dark",
                 )}
               >
                 {formatCurrency(selectedDebt.amount, selectedDebt.currency)}
@@ -292,7 +292,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                   <span className="text-foreground/30">|</span>
                   <span
                     className={cn(
-                      isPast(deadline) && "font-bold text-[var(--color-outgoing)]",
+                      isPast(deadline) && "font-bold text-outgoing",
                     )}
                   >
                     {isPast(deadline)

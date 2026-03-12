@@ -54,7 +54,7 @@ export function AppLayout() {
   )`;
 
   return (
-    <div className="bg-background relative flex h-screen w-full overflow-hidden overscroll-none">
+    <div className="bg-background relative flex h-screen w-full overflow-hidden">
       <FriendsSidebar />
 
       {/* Main Blurred Canvas */}

@@ -66,7 +66,7 @@ function RightSidebarSearch() {
         to="/search"
         className={({ isActive }) =>
           cn(
-            "text-black transition-all duration-300",
+            "text-primary transition-all duration-300",
             isActive ? "opacity-100" : "opacity-30 hover:opacity-100",
           )
         }
@@ -93,7 +93,7 @@ function RightSidebarNav({
   const canDelete = hasActiveDebt && isCreator;
 
   return (
-    <nav className="my-auto flex w-full flex-col items-end justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap text-black">
+    <nav className="text-primary my-auto flex w-full flex-col items-end justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap">
       <NavLink
         to="/debts/new"
         className={({ isActive }) =>
@@ -155,7 +155,7 @@ function RightSidebarSettings() {
         to="/settings"
         className={({ isActive }) =>
           cn(
-            "block cursor-pointer pr-2 text-xs font-medium tracking-wider whitespace-nowrap text-black transition-all duration-300",
+            "text-primary block cursor-pointer pr-2 text-xs font-medium tracking-wider whitespace-nowrap transition-all duration-300",
             isActive
               ? "font-extrabold opacity-100"
               : "opacity-50 hover:opacity-75",
