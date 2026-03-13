@@ -1,36 +1,18 @@
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDeleteDebt } from "../model/useDeleteDebt";
-import { Trash, X } from "lucide-react";
+import { Eraser, X } from "lucide-react";
 
-interface DeleteDebtDialogProps {
+interface DiscardDebtDialogProps {
   open: boolean;
-  onClose: () => void;
-  debtId: string;
-  onDeleted?: () => void;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
-export function DeleteDebtDialog({
+export function DiscardDebtDialog({
   open,
-  onClose,
-  debtId,
-  onDeleted,
-}: DeleteDebtDialogProps) {
-  const { mutate: deleteDebt, isPending: isDeleting } = useDeleteDebt();
-
-  const handleDelete = () => {
-    deleteDebt(debtId, {
-      onSuccess: () => {
-        onClose();
-        if (onDeleted) {
-          setTimeout(() => {
-            onDeleted();
-          }, 200);
-        }
-      },
-    });
-  };
-
+  onConfirm,
+  onCancel,
+}: DiscardDebtDialogProps) {
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -53,7 +35,7 @@ export function DeleteDebtDialog({
                 duration: 0.2,
               },
             }}
-            onClick={onClose}
+            onClick={onCancel}
             className="fixed inset-0 z-60 bg-linear-to-t from-black/80 to-black/40 backdrop-blur-xs"
           />
           <motion.div
@@ -80,28 +62,26 @@ export function DeleteDebtDialog({
           >
             <div className="flex flex-col items-center gap-1 px-4 text-center">
               <h2 className="font-heading text-2xl font-extrabold tracking-wide">
-                Delete this debt?
+                Discard changes?
               </h2>
               <p className="text-primary/50 text-xs leading-5 tracking-wide">
-                Once deleted, this debt and all its history will be gone for
-                good.
+                You have unsaved changes. If you leave now, they'll be lost.
               </p>
             </div>
             <div className="mt-5 flex flex-col items-stretch justify-center gap-2.5 select-none">
               <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="bg-outgoing hover:bg-outgoing-hover active:bg-outgoing-active squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-21 text-xs font-medium tracking-wide whitespace-nowrap text-white opacity-90 transition duration-300 outline-none hover:scale-99 disabled:opacity-50"
+                onClick={onConfirm}
+                className="bg-primary squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-21 text-xs font-medium tracking-wide whitespace-nowrap text-white opacity-80 transition duration-300 outline-none hover:scale-99 hover:opacity-85 active:opacity-85 disabled:opacity-50"
               >
-                <Trash className="size-3 stroke-[2.5px] text-white" />
-                Yes, delete it
+                <Eraser className="size-3 stroke-[2.5px] text-white" />
+                Yes, discard
               </button>
               <button
-                onClick={onClose}
+                onClick={onCancel}
                 className="text-primary squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-21 text-xs font-medium tracking-wide whitespace-nowrap opacity-30 transition-[opacity,scale] duration-300 outline-none hover:scale-98 hover:opacity-50"
               >
                 <X className="mt-px size-3 stroke-[2.5px]" />
-                Keep it
+                Keep editing
               </button>
             </div>
           </motion.div>

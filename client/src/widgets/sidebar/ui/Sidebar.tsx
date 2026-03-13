@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/shared/lib";
 import { ChevronLeft } from "lucide-react";
-import { useLogout } from "@/features/auth";
+import { LogoutDialog } from "@/features/auth";
 import { NavLink } from "react-router-dom";
 import { motion, type Transition } from "framer-motion";
 import { useFriendsSidebar } from "@/widgets/friends-sidebar";
@@ -61,14 +61,14 @@ function SidebarLogo({
     <motion.div
       animate={{ x: collapsed ? 96 : 0 }}
       transition={TWEEN_TRANSITION}
-      className="flex h-8 cursor-pointer items-center gap-5 pl-2 select-none"
+      className="group flex h-8 cursor-pointer items-center gap-5 pl-2 select-none"
       onClick={() => setCollapsed(!collapsed)}
     >
       <span className="font-display text-2xl font-semibold">u!</span>
       <motion.div
         animate={{ rotate: collapsed ? 180 : 0 }}
         transition={TWEEN_TRANSITION}
-        className="text-primary opacity-30 transition-opacity hover:opacity-100"
+        className="text-primary opacity-30 transition-opacity duration-300 group-hover:opacity-100"
       >
         <ChevronLeft className="size-4" />
       </motion.div>
@@ -173,20 +173,26 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
 
 // isolated so it can own useLogout directly without lifting it up
 function SidebarLogout({ collapsed }: { collapsed: boolean }) {
-  const { mutate: performLogout } = useLogout();
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   return (
-    <motion.div
-      animate={{ opacity: collapsed ? 0 : 1 }}
-      transition={FADE_TRANSITION}
-      style={{ pointerEvents: collapsed ? "none" : "auto" }}
-    >
-      <div
-        onClick={() => performLogout()}
-        className="text-primary cursor-pointer pl-2 text-xs font-medium tracking-wider whitespace-nowrap opacity-50 transition-all duration-300 hover:opacity-75"
+    <>
+      <motion.div
+        animate={{ opacity: collapsed ? 0 : 1 }}
+        transition={FADE_TRANSITION}
+        style={{ pointerEvents: collapsed ? "none" : "auto" }}
       >
-        Logout
-      </div>
-    </motion.div>
+        <div
+          onClick={() => setIsLogoutDialogOpen(true)}
+          className="text-primary cursor-pointer pl-2 text-xs font-medium tracking-wider whitespace-nowrap opacity-50 transition-all duration-300 hover:opacity-75"
+        >
+          Logout
+        </div>
+      </motion.div>
+      <LogoutDialog
+        open={isLogoutDialogOpen}
+        onClose={() => setIsLogoutDialogOpen(false)}
+      />
+    </>
   );
 }

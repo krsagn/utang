@@ -216,7 +216,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
           >
             <motion.div
               key={selectedIndex}
-              layout
+              layout="position"
               custom={{ dir: direction, mounted: hasNavigated }}
               variants={{
                 enter: ({ dir, mounted }: { dir: number; mounted: boolean }) =>
@@ -292,7 +292,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                   <span className="text-foreground/30">|</span>
                   <span
                     className={cn(
-                      isPast(deadline) && "font-bold text-outgoing",
+                      isPast(deadline) && "text-outgoing font-bold",
                     )}
                   >
                     {isPast(deadline)
@@ -333,14 +333,14 @@ export function DebtCarousel({ type }: { type: DebtType }) {
       </div>
 
       {/* nav buttons */}
-      <div className="flex items-center justify-center gap-10">
+      <div className="flex items-center justify-center gap-17">
         <motion.button
           onClick={() => emblaApi?.scrollPrev()}
           disabled={selectedIndex === 0}
           aria-label="Previous debt"
           className="text-foreground/60 hover:text-foreground cursor-pointer transition-colors focus:outline-none disabled:pointer-events-none"
           initial={hasNavigated ? false : { x: 5, y: -15, opacity: 0 }}
-          animate={{ x: 0, y: 0, opacity: selectedIndex === 0 ? 0.5 : 1 }}
+          animate={{ x: 0, y: 0, opacity: selectedIndex === 0 ? 0.25 : 1 }}
           transition={{
             ...mountTransition(1, hasNavigated),
             x: { ...mountSpring, delay: hasNavigated ? 0 : 2 * step },
@@ -360,7 +360,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                   })
                 }
                 disabled={isMarkingDone || !isCreator}
-                className="cursor-pointer font-sans text-sm font-medium tracking-wide select-none disabled:pointer-events-none"
+                className="-m-5 cursor-pointer font-sans text-sm font-medium tracking-wide select-none disabled:pointer-events-none"
                 initial={hasNavigated ? false : { y: -15, opacity: 0 }}
                 animate={{
                   y: 0,
@@ -376,7 +376,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
               </motion.button>
             </span>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent side="bottom" sideOffset={4}>
             Only the creator can mark this as done
           </TooltipContent>
         </Tooltip>
@@ -389,7 +389,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
           animate={{
             x: 0,
             y: 0,
-            opacity: selectedIndex === debts.length - 1 ? 0.5 : 1,
+            opacity: selectedIndex === debts.length - 1 ? 0.25 : 1,
           }}
           transition={{
             ...mountTransition(1, hasNavigated),

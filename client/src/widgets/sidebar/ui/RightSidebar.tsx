@@ -1,6 +1,11 @@
 import { cn } from "@/shared/lib";
 import { Search } from "lucide-react";
-import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  NavLink,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { motion, type Transition } from "framer-motion";
 import { useState } from "react";
 import { DeleteDebtDialog } from "@/features/debt/delete-debt";
@@ -89,13 +94,24 @@ function RightSidebarNav({
   openDeleteDialog: () => void;
   navigateToEdit: () => void;
 }) {
+  const location = useLocation();
   const canEdit = hasActiveDebt && isCreator;
   const canDelete = hasActiveDebt && isCreator;
+
+  const isOnOutgoingPage = location.pathname.startsWith("/debts/outgoing");
+  const isOnIncomingPage = location.pathname.startsWith("/debts/incoming");
+
+  const createInitialType = isOnIncomingPage
+    ? "receive"
+    : isOnOutgoingPage
+      ? "pay"
+      : "pay";
 
   return (
     <nav className="text-primary my-auto flex w-full flex-col items-end justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap">
       <NavLink
         to="/debts/new"
+        state={{ initialType: createInitialType }}
         className={({ isActive }) =>
           cn(
             "pr-2 transition-all duration-300",

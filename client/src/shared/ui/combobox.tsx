@@ -27,13 +27,13 @@ function ComboboxTrigger({
   return (
     <ComboboxPrimitive.Trigger
       data-slot="combobox-trigger"
-      className={cn("[&_svg:not([class*='size-'])]:size-4", className)}
+      className={cn("group [&_svg:not([class*='size-'])]:size-4", className)}
       {...props}
     >
       {children}
       <ChevronDownIcon
         data-slot="combobox-trigger-icon"
-        className="text-primary/50 pointer-events-none size-4"
+        className="text-primary/30 pointer-events-none size-4 stroke-[1.5px] transition duration-300 group-data-popup-open:rotate-180"
       />
     </ComboboxPrimitive.Trigger>
   );
@@ -160,7 +160,7 @@ function ComboboxItem({
           <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center" />
         }
       >
-        <CheckIcon className="pointer-events-none size-4 pointer-coarse:size-5" />
+        <CheckIcon className="pointer-events-none mt-0.5 size-3 pointer-coarse:size-5" />
       </ComboboxPrimitive.ItemIndicator>
     </ComboboxPrimitive.Item>
   );

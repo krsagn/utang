@@ -63,7 +63,7 @@ export function AppLayout() {
         animate={{
           x: isOpen ? 320 : 0,
         }}
-        transition={{ type: "tween", ease: [0.22, 1, 0.36, 1], duration: 0.7 }}
+        transition={{ type: "tween", ease: [0.42, 0, 0.58, 1], duration: 0.5 }}
         className={cn(
           "bg-background relative z-10 flex h-screen w-full shrink-0 overflow-hidden will-change-transform",
           isOpen && "pointer-events-none",
@@ -82,7 +82,7 @@ export function AppLayout() {
 
           <motion.main
             key={pathname}
-            initial={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="z-10 flex flex-1 items-center justify-center px-10 pb-10"
@@ -104,8 +104,8 @@ export function AppLayout() {
           animate={{ opacity: isOpen ? 1 : 0 }}
           transition={{
             type: "tween",
-            ease: [0.22, 1, 0.36, 1],
-            duration: 0.7,
+            ease: [0.42, 0, 0.58, 1],
+            duration: 0.5,
           }}
           className={cn(
             "bg-background/40 absolute inset-0 z-50 backdrop-blur-md",

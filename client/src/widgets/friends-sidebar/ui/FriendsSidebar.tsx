@@ -1,6 +1,6 @@
 import { useFriendsSidebar } from "../model/useFriendsSidebar";
 import { useFriends, type Friendship } from "@/entities/friendship";
-import { X, Check, Plus } from "lucide-react";
+import { X, Check, Plus, ChevronLeft } from "lucide-react";
 import { useAcceptFriend } from "@/features/friendship/accept-friend/model/useAcceptFriend";
 import { useDeleteFriend } from "@/features/friendship/delete-friend/model/useDeleteFriend";
 import { useModal } from "@/shared/lib";
@@ -24,24 +24,24 @@ export function FriendsSidebar() {
           exit={{ x: "-100%" }}
           transition={{
             type: "tween",
-            ease: [0.22, 1, 0.36, 1],
-            duration: 0.7,
+            ease: [0.42, 0, 0.58, 1],
+            duration: 0.5,
           }}
           className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col px-6 py-7"
         >
           {/* Top Action */}
           <div
             onClick={() => modal.open("add-friend")}
-            className="text-primary/50 hover:text-primary mb-12 flex cursor-pointer items-center gap-3 pl-2 text-xs font-medium tracking-wider transition-colors"
+            className="text-primary/50 hover:text-primary/80 flex w-fit cursor-pointer items-center gap-3 text-xs font-medium tracking-wider transition-colors duration-300"
           >
-            <Plus className="size-3" />
+            <Plus className="size-3 stroke-[2.5px]" />
             <span>Add Friend</span>
           </div>
 
           <div className="no-scrollbar flex flex-1 flex-col justify-center gap-10 overflow-y-auto pb-10">
             {/* Friends Section */}
             <div className="flex flex-col gap-5">
-              <h3 className="text-primary/30 flex items-center gap-2 pl-2 text-xs font-medium tracking-widest">
+              <h3 className="text-primary/30 flex items-center gap-2 pl-2 text-xs font-medium tracking-wider">
                 Friends <span className="text-primary/20">|</span>{" "}
                 {acceptedFriends?.length || 0}
               </h3>
@@ -65,7 +65,7 @@ export function FriendsSidebar() {
             {/* Requests Section */}
             {pendingRequests && pendingRequests.length > 0 && (
               <div className="flex flex-col gap-5">
-                <h3 className="text-primary/30 flex items-center gap-2 pl-2 text-xs font-medium tracking-widest">
+                <h3 className="text-primary/30 flex items-center gap-2 pl-2 text-xs font-medium tracking-wider">
                   Requests <span className="text-primary/20">|</span>{" "}
                   {pendingRequests.length}
                 </h3>
@@ -82,9 +82,10 @@ export function FriendsSidebar() {
           <div className="mt-auto pt-6">
             <button
               onClick={closeSidebar}
-              className="hover:bg-primary/5 active:bg-primary/10 text-primary/30 hover:text-primary flex size-8 items-center justify-center rounded-full transition-all outline-none"
+              className="text-primary/50 hover:text-primary/80 flex w-fit cursor-pointer items-center gap-2.5 text-xs font-medium tracking-wider transition-colors duration-300"
             >
-              <X className="size-5" />
+              <ChevronLeft className="size-3 stroke-[2.5px]" />
+              <span>Back</span>
             </button>
           </div>
 

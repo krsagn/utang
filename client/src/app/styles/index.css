@@ -186,9 +186,19 @@
   .squircle {
     border-radius: var(--radius-sm);
   }
+
+  .squircle-dialog {
+    border-radius: var(--radius-xl);
+  }
+
   @supports (corner-shape: squircle) {
     .squircle {
       border-radius: var(--radius-xl);
+      corner-shape: squircle;
+    }
+
+    .squircle-dialog {
+      border-radius: var(--radius-4xl);
       corner-shape: squircle;
     }
   }

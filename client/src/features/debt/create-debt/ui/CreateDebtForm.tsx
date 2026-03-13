@@ -14,9 +14,8 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/shared/ui";
-import { useState, forwardRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Input as FieldSizingInput } from "react-field-sizing-content";
 
 import {
   ChevronDownIcon,
@@ -25,12 +24,15 @@ import {
   X,
   Plus,
   Asterisk,
+  Check,
 } from "lucide-react";
 import { cn } from "@/shared/lib";
+import { useUnsavedChanges } from "@/shared/lib";
 import type { NewDebt } from "../model/types";
 import type { DebtType } from "@/entities/debt";
 import { NumericFormat } from "react-number-format";
 import { useFriends } from "@/entities/friendship";
+import { DiscardDebtDialog } from "../../update-debt/ui/DiscardDebtDialog";
 
 export function CreateDebtForm({
   onClose,
@@ -45,31 +47,57 @@ export function CreateDebtForm({
 }) {
   const [type, setType] = useState<DebtType>(initialType);
 
-  const [formData, setFormData] = useState<NewDebt>({
+  const initialFormData: NewDebt = {
     lenderName: "",
     lendeeName: "",
+    lenderId: null,
+    lendeeId: null,
     currency: "AUD",
     amount: "",
     title: "",
     description: undefined,
     deadline: undefined,
-  });
+  };
+
+  const [formData, setFormData] = useState<NewDebt>(initialFormData);
+  const withWhom = type === "pay" ? formData.lenderName : formData.lendeeName;
+
+  const isDirty =
+    !!formData.amount ||
+    !!formData.title ||
+    !!formData.description ||
+    !!formData.lenderName ||
+    !!formData.lendeeName ||
+    !!formData.lenderId ||
+    !!formData.lendeeId ||
+    !!formData.deadline;
+
+  const { showDialog, confirmDiscard, cancelDiscard, requestDiscard } =
+    useUnsavedChanges({ enabled: !isPending, isDirty });
+
+  const handleDiscard = () => {
+    if (isDirty) {
+      requestDiscard(onClose);
+    } else {
+      onClose();
+    }
+  };
 
   const handleTypeChange = (newType: DebtType) => {
     setType(newType);
     if (newType === "pay") {
       setFormData((prev) => ({
         ...prev,
-        lenderName: prev.lendeeName || prev.lenderName,
-        lenderId: prev.lendeeId || prev.lenderId,
+        lenderName: prev.lendeeName,
+        lenderId: prev.lendeeId,
         lendeeName: "",
         lendeeId: null,
       }));
     } else {
       setFormData((prev) => ({
         ...prev,
-        lendeeName: prev.lenderName || prev.lendeeName,
-        lendeeId: prev.lenderId || prev.lenderId,
+        lendeeName: prev.lenderName,
+        lendeeId: prev.lenderId,
         lenderName: "",
         lenderId: null,
       }));
@@ -77,76 +105,111 @@ export function CreateDebtForm({
   };
 
   return (
-    <form
-      className="flex w-full flex-col items-center justify-center gap-7"
-      onKeyDown={(e) => {
-        if (
-          e.key === "Enter" &&
-          (e.target as HTMLElement).tagName.toLowerCase() !== "textarea"
-        ) {
-          e.preventDefault();
-        }
-      }}
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(formData, type);
-      }}
-    >
-      {/* type toggle + amount */}
-      <div className="flex flex-col items-center justify-center gap-5">
-        <TypeToggle type={type} onChange={handleTypeChange} />
-        <AmountInput
-          value={formData.amount}
-          onChange={(val) => setFormData({ ...formData, amount: val })}
-          currency={formData.currency}
-          onCurrencyChange={(val) =>
-            setFormData({ ...formData, currency: val })
+    <>
+      <form
+        className="flex w-full flex-col items-center justify-center gap-7"
+        onKeyDown={(e) => {
+          if (
+            e.key === "Enter" &&
+            (e.target as HTMLElement).tagName.toLowerCase() !== "textarea"
+          ) {
+            e.preventDefault();
           }
-          type={type}
-        />
-      </div>
+        }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit(formData, type);
+        }}
+      >
+        {/* type toggle + amount */}
+        <div className="flex flex-col items-center justify-center gap-5">
+          <TypeToggle type={type} onChange={handleTypeChange} />
+          <AmountInput
+            value={formData.amount}
+            onChange={(val) => setFormData({ ...formData, amount: val })}
+            currency={formData.currency}
+            onCurrencyChange={(val) =>
+              setFormData({ ...formData, currency: val })
+            }
+            type={type}
+          />
+        </div>
 
-      {/* fields */}
-      <div className="flex w-xs flex-col gap-5">
-        {/* with whom + deadline row */}
-        <div className="flex gap-2">
-          <div className="flex flex-1 flex-col gap-2">
-            <label className="text-primary/50 flex items-center gap-0.5 text-xs font-semibold tracking-wide">
-              With Whom?
-              <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
-            </label>
-            <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
-              <FriendsCombobox
-                value={{
-                  name:
-                    type === "pay" ? formData.lenderName : formData.lendeeName,
-                  id:
-                    (type === "pay" ? formData.lenderId : formData.lendeeId) ??
-                    undefined,
-                }}
-                onChange={({ name, id }) => {
-                  if (type === "pay") {
-                    setFormData({
-                      ...formData,
-                      lenderName: name,
-                      lenderId: id,
-                    });
-                  } else {
-                    setFormData({
-                      ...formData,
-                      lendeeName: name,
-                      lendeeId: id,
-                    });
-                  }
-                }}
-              />
+        {/* fields */}
+        <div className="flex w-xs flex-col gap-5">
+          {/* with whom + deadline row */}
+          <div className="flex gap-2">
+            <div className="flex flex-1 flex-col gap-2">
+              <label className="text-primary/50 flex items-center gap-0.5 text-xs font-semibold tracking-wide">
+                With Whom?
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {withWhom.trim() ? (
+                    <motion.span
+                      key="with-whom-check"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                        opacity: { type: "tween", duration: 0.08 },
+                      }}
+                    >
+                      <Check className="text-primary/40 ml-px size-2.5 stroke-3" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="with-whom-asterisk"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                        opacity: { type: "tween", duration: 0.08 },
+                      }}
+                    >
+                      <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </label>
+              <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
+                <FriendsCombobox
+                  value={{
+                    name:
+                      type === "pay"
+                        ? formData.lenderName
+                        : formData.lendeeName,
+                    id:
+                      (type === "pay"
+                        ? formData.lenderId
+                        : formData.lendeeId) ?? undefined,
+                  }}
+                  onChange={({ name, id }) => {
+                    if (type === "pay") {
+                      setFormData({
+                        ...formData,
+                        lenderName: name,
+                        lenderId: id,
+                      });
+                    } else {
+                      setFormData({
+                        ...formData,
+                        lendeeName: name,
+                        lendeeId: id,
+                      });
+                    }
+                  }}
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex flex-1 flex-col gap-2">
-            <label className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide">
-              Deadline <span className="text-primary/30">(Optional)</span>
-            </label>
-            <div className="squircle border-primary/10 focus-within:border-primary/30 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
+            <div className="flex flex-1 flex-col gap-2">
+              <label className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide">
+                Deadline <span className="text-primary/30">(Optional)</span>
+              </label>
               <DatePicker
                 value={
                   formData.deadline ? new Date(formData.deadline) : undefined
@@ -160,92 +223,139 @@ export function CreateDebtForm({
               />
             </div>
           </div>
-        </div>
 
-        {/* title */}
-        <div className="flex flex-col gap-2">
-          <label className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide">
-            Title
-            <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
-          </label>
-          <input
-            type="text"
-            maxLength={30}
-            value={formData.title}
-            placeholder="e.g. Dinner last Friday"
-            aria-label="Title"
-            aria-required="true"
-            onChange={(e) =>
-              setFormData({ ...formData, title: e.target.value })
-            }
-            className={cn(
-              "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/25 text-primary w-full border bg-transparent p-3 text-xs tracking-wide transition-colors outline-none",
-              formData.title && "font-medium",
-            )}
-          />
-        </div>
-
-        {/* description */}
-        <div className="flex flex-col gap-2">
-          <label className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide">
-            Description <span className="text-primary/30">(Optional)</span>
-          </label>
-          <textarea
-            value={formData.description ?? ""}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            maxLength={100}
-            placeholder="Any extra details..."
-            aria-label="Description"
-            className={cn(
-              "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/25 text-primary h-20 w-full resize-none border bg-transparent p-3 text-xs tracking-wide transition-colors outline-none",
-              formData.description && "font-medium",
-            )}
-          />
-        </div>
-        {/* actions */}
-        <div className="mt-3 flex flex-col items-center gap-5">
-          {(() => {
-            const withWhom =
-              type === "pay" ? formData.lenderName : formData.lendeeName;
-            const missing: string[] = [];
-            if (!formData.amount || parseFloat(formData.amount) <= 0)
-              missing.push("amount");
-            if (!withWhom.trim()) missing.push("who it's with");
-            if (!formData.title.trim()) missing.push("title");
-            const isValid = missing.length === 0;
-            return (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="w-full">
-                    <Button
-                      type="submit"
-                      className="squircle bg-primary/90 hover:bg-primary/95 h-12 w-full gap-2 text-xs font-normal tracking-wide hover:scale-99 disabled:pointer-events-none disabled:opacity-40"
-                      disabled={isPending || !isValid}
-                    >
-                      <Plus className="size-3.5 shrink-0 stroke-[2.5px]" />
-                      Create Debt
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {!isValid && (
-                  <TooltipContent>Missing: {missing.join(", ")}</TooltipContent>
+          {/* title */}
+          <div className="flex flex-col gap-2">
+            <label className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide">
+              Title
+              <AnimatePresence mode="popLayout" initial={false}>
+                {formData.title.trim() ? (
+                  <motion.span
+                    key="title-check"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 30,
+                      opacity: { type: "tween", duration: 0.08 },
+                    }}
+                  >
+                    <Check className="text-primary/40 ml-px size-2.5 stroke-3" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="title-asterisk"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 30,
+                      opacity: { type: "tween", duration: 0.08 },
+                    }}
+                  >
+                    <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
+                  </motion.span>
                 )}
-              </Tooltip>
-            );
-          })()}
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-primary/40 hover:text-primary/50 flex items-center gap-2 text-xs font-medium tracking-wide transition-colors"
-          >
-            <X className="size-3 stroke-[2.5px]" />
-            Cancel
-          </button>
+              </AnimatePresence>
+            </label>
+            <input
+              type="text"
+              maxLength={30}
+              value={formData.title}
+              placeholder="e.g. Dinner last Friday"
+              aria-label="Title"
+              aria-required="true"
+              spellCheck={false}
+              autoCorrect="off"
+              autoCapitalize="off"
+              data-gramm="false"
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+              className={cn(
+                "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/25 text-primary w-full border bg-transparent p-3 text-xs tracking-wide transition-colors outline-none",
+                formData.title && "font-medium",
+              )}
+            />
+          </div>
+
+          {/* description */}
+          <div className="flex flex-col gap-2">
+            <label className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide">
+              Description <span className="text-primary/30">(Optional)</span>
+            </label>
+            <textarea
+              value={formData.description ?? ""}
+              spellCheck={false}
+              autoCorrect="off"
+              autoCapitalize="off"
+              data-gramm="false"
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              maxLength={100}
+              placeholder="Any extra details..."
+              aria-label="Description"
+              className={cn(
+                "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/25 text-primary h-20 w-full resize-none border bg-transparent p-3 text-xs tracking-wide transition-colors outline-none",
+                formData.description && "font-medium",
+              )}
+            />
+          </div>
+          {/* actions */}
+          <div className="mt-3 flex flex-col items-center gap-5">
+            {(() => {
+              const withWhom =
+                type === "pay" ? formData.lenderName : formData.lendeeName;
+              const missing: string[] = [];
+              if (!formData.amount || parseFloat(formData.amount) <= 0)
+                missing.push("amount");
+              if (!withWhom.trim()) missing.push("who it's with");
+              if (!formData.title.trim()) missing.push("title");
+              const isValid = missing.length === 0;
+              return (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="w-full">
+                      <Button
+                        type="submit"
+                        className="squircle bg-primary/90 hover:bg-primary/95 h-12 w-full gap-2 text-xs font-normal tracking-wide hover:scale-99 disabled:pointer-events-none disabled:opacity-40"
+                        disabled={isPending || !isValid}
+                      >
+                        <Plus className="size-3.5 shrink-0 stroke-[2.5px]" />
+                        Create Debt
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!isValid && (
+                    <TooltipContent>
+                      Missing: {missing.join(", ")}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              );
+            })()}
+            <button
+              type="button"
+              onClick={handleDiscard}
+              className="text-primary/40 hover:text-primary/50 flex items-center gap-2 text-xs font-medium tracking-wide transition-colors"
+            >
+              <X className="size-3 stroke-[2.5px]" />
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+      <DiscardDebtDialog
+        open={showDialog}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   );
 }
 
@@ -260,19 +370,17 @@ function TypeToggle({
   const toggle = () => onChange(isOutgoing ? "receive" : "pay");
 
   return (
-    <div className="group flex items-center gap-10 select-none">
-      <motion.button
-        layout="position"
+    <div className="group flex w-75 items-center justify-between select-none">
+      <button
         type="button"
         aria-label="Previous type"
         onClick={toggle}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
         className="text-foreground/30 hover:text-foreground/60 cursor-pointer transition-colors"
       >
         <ChevronLeft className="size-4" />
-      </motion.button>
+      </button>
 
-      <motion.div className="flex flex-col items-center gap-1 opacity-50 transition-opacity duration-300 group-hover:opacity-80">
+      <div className="flex flex-col items-center gap-1 opacity-50 transition-opacity duration-300 group-hover:opacity-90">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.img
             key={type}
@@ -280,9 +388,8 @@ function TypeToggle({
             alt=""
             aria-hidden
             className={cn("h-10", isOutgoing && "mt-2 -mb-2")}
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
+            initial={{ scale: 0.98, y: isOutgoing ? 6 : -6 }}
+            animate={{ scale: 1, y: 0 }}
             transition={{
               type: "spring",
               stiffness: 400,
@@ -298,9 +405,9 @@ function TypeToggle({
               "font-heading text-4xl font-extrabold whitespace-nowrap",
               isOutgoing ? "text-outgoing" : "text-incoming",
             )}
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
             transition={{
               type: "spring",
               stiffness: 400,
@@ -311,18 +418,16 @@ function TypeToggle({
             {isOutgoing ? "to pay" : "to receive"}
           </motion.span>
         </AnimatePresence>
-      </motion.div>
+      </div>
 
-      <motion.button
-        layout="position"
+      <button
         type="button"
         aria-label="Next type"
         onClick={toggle}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
         className="text-foreground/30 hover:text-foreground/60 cursor-pointer transition-colors"
       >
         <ChevronRight className="size-4" />
-      </motion.button>
+      </button>
     </div>
   );
 }
@@ -334,13 +439,6 @@ const CURRENCIES: Record<string, string> = {
   EUR: "€",
   GBP: "£",
 };
-
-const SizingInput = forwardRef<
-  HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement>
->((props, ref) => (
-  <FieldSizingInput ref={ref} fieldSizing="content" {...props} />
-));
 
 function AmountInput({
   value,
@@ -355,17 +453,22 @@ function AmountInput({
   onCurrencyChange: (val: string) => void;
   type: DebtType;
 }) {
+  const minChars = 4;
+  const effectiveValue = value && value.length > 0 ? value : "0.00";
+  const widthCh = Math.max(effectiveValue.length, minChars);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
+
   return (
     <div className="relative flex w-full flex-col items-center justify-center">
       <div className="relative flex max-w-full items-center justify-center gap-3">
-        <Popover>
+        <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
           <PopoverTrigger asChild>
             <motion.button
               layout="position"
               type="button"
               aria-label={`Change currency, currently ${currency}`}
               className={cn(
-                "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 transition-[colors,opacity] outline-none hover:opacity-100 active:opacity-100",
+                "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 opacity-85 transition-[color,opacity] duration-300 outline-none hover:opacity-100 active:opacity-100",
                 value
                   ? type === "pay"
                     ? "text-outgoing-dark"
@@ -390,7 +493,12 @@ function AmountInput({
                 </AnimatePresence>
               </div>
               <motion.div layout="position">
-                <ChevronDownIcon className="size-5 opacity-75" />
+                <ChevronDownIcon
+                  className={cn(
+                    "size-5 opacity-75 transition-transform duration-300",
+                    currencyOpen && "rotate-180",
+                  )}
+                />
               </motion.div>
             </motion.button>
           </PopoverTrigger>
@@ -420,10 +528,10 @@ function AmountInput({
           className="flex max-w-full min-w-0 shrink items-center"
         >
           <NumericFormat
-            customInput={SizingInput}
             id="amount"
             aria-label="Amount"
             aria-required="true"
+            style={{ width: `${widthCh}ch`, maxWidth: "100%" }}
             value={value}
             onValueChange={(val) => onChange(val.value)}
             thousandSeparator=","
@@ -444,10 +552,10 @@ function AmountInput({
             }}
             placeholder="0.00"
             className={cn(
-              "font-heading max-w-full min-w-[4ch] shrink bg-transparent text-6xl font-extrabold outline-none",
+              "font-heading max-w-full shrink bg-transparent text-center text-6xl font-extrabold outline-none",
               value
                 ? cn(
-                    "bg-linear-to-tr bg-clip-text text-transparent transition-colors",
+                    "bg-linear-to-tr bg-clip-text text-transparent transition-colors duration-300",
                     type === "pay"
                       ? "from-outgoing-dark to-outgoing caret-outgoing/30"
                       : "to-incoming from-incoming-dark caret-incoming-dark/30",
@@ -473,8 +581,12 @@ function FriendsCombobox({
   const { data: friends, isLoading } = useFriends("accepted");
   const anchorRef = useComboboxAnchor();
 
-  // Keep a local state just for what the user is currently typing
   const [inputValue, setInputValue] = useState(value.name);
+  const [prevName, setPrevName] = useState(value.name);
+  if (value.name !== prevName) {
+    setPrevName(value.name);
+    setInputValue(value.name);
+  }
 
   const safeFriends = friends ?? [];
   const filteredFriends = safeFriends.filter((friend) => {
@@ -585,36 +697,47 @@ function DatePicker({
   value?: Date;
   onChange: (date?: Date) => void;
 }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "text-primary flex h-full w-full min-w-0 items-center gap-2 bg-transparent p-3 text-xs tracking-wide outline-none",
-            value ? "font-medium" : "opacity-25",
-          )}
-        >
-          {value ? (
-            value.toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })
-          ) : (
-            <span>Deadline (Optional)</span>
-          )}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start" side="bottom">
-        <Calendar
-          mode="single"
-          selected={value}
-          onSelect={onChange}
-          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-          autoFocus
-        />
-      </PopoverContent>
-    </Popover>
+    <div
+      className={cn(
+        "squircle border-primary/10 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors",
+        open && "border-primary/20",
+      )}
+    >
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              "text-primary flex h-full w-full min-w-0 items-center gap-2 bg-transparent p-3 text-xs tracking-wide outline-none",
+              value ? "font-medium" : "opacity-25",
+            )}
+          >
+            {value ? (
+              value.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })
+            ) : (
+              <span>Deadline (Optional)</span>
+            )}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start" side="bottom">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={onChange}
+            disabled={(date) =>
+              date < new Date(new Date().setHours(0, 0, 0, 0))
+            }
+            autoFocus
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }

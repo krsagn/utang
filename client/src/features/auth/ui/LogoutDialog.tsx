@@ -1,34 +1,18 @@
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDeleteDebt } from "../model/useDeleteDebt";
-import { Trash, X } from "lucide-react";
+import { LogOut, X } from "lucide-react";
+import { useLogout } from "../model/useLogout";
 
-interface DeleteDebtDialogProps {
+interface LogoutDialogProps {
   open: boolean;
   onClose: () => void;
-  debtId: string;
-  onDeleted?: () => void;
 }
 
-export function DeleteDebtDialog({
-  open,
-  onClose,
-  debtId,
-  onDeleted,
-}: DeleteDebtDialogProps) {
-  const { mutate: deleteDebt, isPending: isDeleting } = useDeleteDebt();
+export function LogoutDialog({ open, onClose }: LogoutDialogProps) {
+  const { mutate: performLogout, isPending: isLoggingOut } = useLogout();
 
-  const handleDelete = () => {
-    deleteDebt(debtId, {
-      onSuccess: () => {
-        onClose();
-        if (onDeleted) {
-          setTimeout(() => {
-            onDeleted();
-          }, 200);
-        }
-      },
-    });
+  const handleLogout = () => {
+    performLogout();
   };
 
   return createPortal(
@@ -80,28 +64,28 @@ export function DeleteDebtDialog({
           >
             <div className="flex flex-col items-center gap-1 px-4 text-center">
               <h2 className="font-heading text-2xl font-extrabold tracking-wide">
-                Delete this debt?
+                Already leaving?
               </h2>
               <p className="text-primary/50 text-xs leading-5 tracking-wide">
-                Once deleted, this debt and all its history will be gone for
-                good.
+                Everything's saved and ready for when you come back. You can
+                always log back in anytime!
               </p>
             </div>
             <div className="mt-5 flex flex-col items-stretch justify-center gap-2.5 select-none">
               <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="bg-outgoing hover:bg-outgoing-hover active:bg-outgoing-active squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-21 text-xs font-medium tracking-wide whitespace-nowrap text-white opacity-90 transition duration-300 outline-none hover:scale-99 disabled:opacity-50"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="bg-primary squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-26 text-xs font-medium tracking-wide whitespace-nowrap text-white opacity-90 transition duration-300 outline-none hover:scale-99 hover:opacity-95 active:opacity-95 disabled:opacity-50"
               >
-                <Trash className="size-3 stroke-[2.5px] text-white" />
-                Yes, delete it
+                <LogOut className="size-3 rotate-180 stroke-[2.5px] text-white" />
+                Yes, log out
               </button>
               <button
                 onClick={onClose}
-                className="text-primary squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-21 text-xs font-medium tracking-wide whitespace-nowrap opacity-30 transition-[opacity,scale] duration-300 outline-none hover:scale-98 hover:opacity-50"
+                className="text-primary squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-26 text-xs font-medium tracking-wide whitespace-nowrap opacity-30 transition-[opacity,scale] duration-300 outline-none hover:scale-98 hover:opacity-50"
               >
                 <X className="mt-px size-3 stroke-[2.5px]" />
-                Keep it
+                No, I'm staying
               </button>
             </div>
           </motion.div>
