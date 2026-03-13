@@ -101,12 +101,11 @@ export function DebtCarousel({ type }: { type: DebtType }) {
   const isInitialSelectRef = useRef(true);
   const selectedIndexRef = useRef(0); // avoids stale closure when computing direction
   const debtsRef = useRef(debts); // always-fresh ref for use inside embla callbacks
+  const reInitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     debtsRef.current = debts;
   }, [debts]);
-
-  const reInitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // if image wasn't complete at first render, wait for it
   useEffect(() => {
@@ -155,6 +154,16 @@ export function DebtCarousel({ type }: { type: DebtType }) {
       emblaApi.scrollTo(clampedIndex, true);
     }
   }, [clampedIndex, emblaApi]);
+
+  // ensure URL stays fresh when debts array changes (e.g., deletion, mark as done)
+  // this catches cases where Embla doesn't fire 'select' when the carousel repositions
+  useEffect(() => {
+    if (!debts || debts.length === 0) return;
+    const currentDebt = debts[clampedIndex];
+    if (currentDebt) {
+      navigate({ search: `?debtId=${currentDebt.id}` }, { replace: true });
+    }
+  }, [debts, clampedIndex, navigate]);
 
   // reinit Embla after mount stagger settles so slide positions are accurate
   useEffect(() => {
@@ -249,7 +258,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
             >
               <h2
                 className={cn(
-                  "font-heading -mb-1 bg-linear-to-tr bg-clip-text text-6xl font-extrabold text-transparent",
+                  "font-heading -mb-1 bg-linear-to-tr bg-clip-text text-6xl font-extrabold text-transparent select-none",
                   isOutgoing
                     ? "from-outgoing-dark to-outgoing"
                     : "to-incoming from-incoming-dark",
@@ -263,45 +272,47 @@ export function DebtCarousel({ type }: { type: DebtType }) {
 
         {/* "to/from" + counterparty */}
         <motion.p
-          className="text-foreground/70 flex items-center text-sm tracking-wide"
+          className="text-primary flex items-center text-sm font-medium tracking-wide select-none"
           initial={hasNavigated ? false : { y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={mountTransition(1, hasNavigated)}
         >
           <motion.span
             layout
-            transition={{ type: "spring", stiffness: 350, damping: 35 }}
+            transition={{ type: "spring", stiffness: 400, damping: 35 }}
             className="relative z-0"
           >
             {isOutgoing ? "to" : "from"}
           </motion.span>
-          <div className="from-background relative z-10 w-1.5 self-stretch bg-linear-to-l to-transparent" />
+          <div className="from-background via-background/25 relative z-10 w-1 self-stretch bg-linear-to-l to-transparent" />
           <AnimatePresence mode="popLayout">
-            <motion.span
-              key={selectedIndex}
-              initial={hasNavigated ? { scale: 0.95 } : false}
-              animate={{
-                scale: 1,
-                transition: mountTransition(1, hasNavigated),
-              }}
-              className="bg-background relative z-10 inline-flex items-center gap-1.5"
-            >
-              {counterparty}
-              {deadline && (
-                <>
-                  <span className="text-foreground/30">|</span>
-                  <span
-                    className={cn(
-                      isPast(deadline) && "text-outgoing font-bold",
-                    )}
-                  >
-                    {isPast(deadline)
-                      ? `overdue by ${formatDistanceToNow(deadline)}`
-                      : `due in ${formatDistanceToNow(deadline)}`}
-                  </span>
-                </>
-              )}
-            </motion.span>
+            <span className="bg-background relative z-10">
+              <motion.span
+                key={selectedIndex}
+                initial={hasNavigated ? { scale: 0.95 } : false}
+                animate={{
+                  scale: 1,
+                  transition: mountTransition(1, hasNavigated),
+                }}
+                className="inline-flex items-center gap-1.5"
+              >
+                {counterparty}
+                {deadline && (
+                  <>
+                    <span className="text-foreground/30">|</span>
+                    <span
+                      className={cn(
+                        isPast(deadline) && "text-outgoing font-bold",
+                      )}
+                    >
+                      {isPast(deadline)
+                        ? `overdue by ${formatDistanceToNow(deadline)}`
+                        : `due in ${formatDistanceToNow(deadline)}`}
+                    </span>
+                  </>
+                )}
+              </motion.span>
+            </span>
           </AnimatePresence>
         </motion.p>
       </div>

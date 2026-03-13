@@ -109,9 +109,7 @@ export function AppLayout() {
           }}
           className={cn(
             "bg-background/40 absolute inset-0 z-50 backdrop-blur-md",
-            isOpen
-              ? "pointer-events-auto cursor-pointer"
-              : "pointer-events-none",
+            isOpen ? "pointer-events-auto" : "pointer-events-none",
           )}
           onClick={isOpen ? closeSidebar : undefined}
         />

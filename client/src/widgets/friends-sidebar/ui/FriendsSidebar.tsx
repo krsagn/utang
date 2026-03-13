@@ -27,7 +27,7 @@ export function FriendsSidebar() {
             ease: [0.42, 0, 0.58, 1],
             duration: 0.5,
           }}
-          className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col px-6 py-7"
+          className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col justify-between gap-10 p-7"
         >
           {/* Top Action */}
           <div
@@ -38,18 +38,18 @@ export function FriendsSidebar() {
             <span>Add Friend</span>
           </div>
 
-          <div className="no-scrollbar flex flex-1 flex-col justify-center gap-10 overflow-y-auto pb-10">
+          <div className="no-scrollbar flex flex-col gap-10 overflow-y-auto">
             {/* Friends Section */}
             <div className="flex flex-col gap-5">
-              <h3 className="text-primary/30 flex items-center gap-2 pl-2 text-xs font-medium tracking-wider">
-                Friends <span className="text-primary/20">|</span>{" "}
+              <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wider">
+                Friends <span className="text-primary/20 select-none">|</span>{" "}
                 {acceptedFriends?.length || 0}
               </h3>
               <div className="flex flex-col gap-6">
                 {acceptedFriends?.map((f) => (
                   <div
                     key={f.id}
-                    className="flex flex-col justify-center px-2 tracking-wide"
+                    className="flex flex-col justify-center tracking-wide"
                   >
                     <span className="text-primary mb-1 text-xs leading-tight font-semibold">
                       {f.friendFirstName} {f.friendLastName}
@@ -65,8 +65,9 @@ export function FriendsSidebar() {
             {/* Requests Section */}
             {pendingRequests && pendingRequests.length > 0 && (
               <div className="flex flex-col gap-5">
-                <h3 className="text-primary/30 flex items-center gap-2 pl-2 text-xs font-medium tracking-wider">
-                  Requests <span className="text-primary/20">|</span>{" "}
+                <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wider">
+                  Requests{" "}
+                  <span className="text-primary/20 select-none">|</span>{" "}
                   {pendingRequests.length}
                 </h3>
                 <div className="flex flex-col gap-6">
@@ -79,7 +80,7 @@ export function FriendsSidebar() {
           </div>
 
           {/* Bottom Action */}
-          <div className="mt-auto pt-6">
+          <div>
             <button
               onClick={closeSidebar}
               className="text-primary/50 hover:text-primary/80 flex w-fit cursor-pointer items-center gap-2.5 text-xs font-medium tracking-wider transition-colors duration-300"
@@ -107,7 +108,7 @@ function RequestItem({ request }: { request: Friendship }) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between px-2 tracking-wide",
+        "flex items-center justify-between tracking-wide",
         isPending && "pointer-events-none opacity-50",
       )}
     >
@@ -119,18 +120,18 @@ function RequestItem({ request }: { request: Friendship }) {
           @{request.friendUsername}
         </span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center">
         <button
           onClick={() => acceptFriend(request.id)}
           disabled={isPending}
-          className="hover:bg-primary/5 text-primary/70 hover:text-primary flex size-8 items-center justify-center rounded-full transition-all outline-none"
+          className="text-primary/50 hover:text-primary flex size-8 items-center justify-center transition-all duration-300 outline-none hover:scale-90"
         >
           <Check className="size-4 stroke-[2.5px]" />
         </button>
         <button
           onClick={() => rejectFriend(request.id)}
           disabled={isPending}
-          className="hover:bg-primary/5 text-primary/70 hover:text-primary flex size-8 items-center justify-center rounded-full transition-all outline-none"
+          className="text-primary/50 hover:text-primary flex size-8 items-center justify-center transition-all duration-300 outline-none hover:scale-90"
         >
           <X className="size-4 stroke-[2.5px]" />
         </button>

@@ -552,10 +552,10 @@ function AmountInput({
             }}
             placeholder="0.00"
             className={cn(
-              "font-heading max-w-full shrink bg-transparent text-center text-6xl font-extrabold outline-none",
+              "font-heading max-w-full shrink bg-transparent text-center text-6xl font-extrabold transition-colors duration-300 outline-none placeholder:transition-colors placeholder:duration-300",
               value
                 ? cn(
-                    "bg-linear-to-tr bg-clip-text text-transparent transition-colors duration-300",
+                    "bg-linear-to-tr bg-clip-text text-transparent",
                     type === "pay"
                       ? "from-outgoing-dark to-outgoing caret-outgoing/30"
                       : "to-incoming from-incoming-dark caret-incoming-dark/30",
