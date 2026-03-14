@@ -6,6 +6,7 @@ import { useDeleteFriend } from "@/features/friendship/delete-friend/model/useDe
 import { useModal } from "@/shared/lib";
 import { AddFriendModal } from "@/features/friendship/add-friend";
 import { cn } from "@/shared/lib";
+import { useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -14,6 +15,43 @@ export function FriendsSidebar() {
   const { data: acceptedFriends } = useFriends("accepted");
   const { data: pendingRequests } = useFriends("pending");
   const modal = useModal();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showTopGradient, setShowTopGradient] = useState(false);
+  const [showBottomGradient, setShowBottomGradient] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const updateGradientVisibility = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const hasOverflow = scrollHeight - clientHeight > 1;
+
+      if (!hasOverflow) {
+        setShowTopGradient(false);
+        setShowBottomGradient(false);
+        return;
+      }
+
+      const epsilon = 1;
+      setShowTopGradient(scrollTop > epsilon);
+      setShowBottomGradient(scrollTop + clientHeight < scrollHeight - epsilon);
+    };
+
+    updateGradientVisibility();
+    const rafId = requestAnimationFrame(updateGradientVisibility);
+
+    el.addEventListener("scroll", updateGradientVisibility, { passive: true });
+    window.addEventListener("resize", updateGradientVisibility);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      el.removeEventListener("scroll", updateGradientVisibility);
+      window.removeEventListener("resize", updateGradientVisibility);
+    };
+  }, [isOpen, acceptedFriends?.length, pendingRequests?.length]);
 
   return (
     <AnimatePresence>
@@ -38,45 +76,68 @@ export function FriendsSidebar() {
             <span>Add Friend</span>
           </div>
 
-          <div className="no-scrollbar flex flex-col gap-10 overflow-y-auto">
-            {/* Friends Section */}
-            <div className="flex flex-col gap-5">
-              <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wider">
-                Friends <span className="text-primary/20 select-none">|</span>{" "}
-                {acceptedFriends?.length || 0}
-              </h3>
-              <div className="flex flex-col gap-6">
-                {acceptedFriends?.map((f) => (
-                  <div
-                    key={f.id}
-                    className="flex flex-col justify-center tracking-wide"
-                  >
-                    <span className="text-primary mb-1 text-xs leading-tight font-semibold">
-                      {f.friendFirstName} {f.friendLastName}
-                    </span>
-                    <span className="text-primary/50 text-xs font-medium">
-                      @{f.friendUsername}
-                    </span>
+          <div className="relative min-h-0 flex-1">
+            <div
+              ref={scrollContainerRef}
+              className="no-scrollbar h-full overflow-y-auto"
+            >
+              <div className="flex flex-col gap-10">
+                {/* Friends Section */}
+                <div className="flex flex-col gap-5">
+                  <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wider">
+                    Friends{" "}
+                    <span className="text-primary/20 select-none">|</span>{" "}
+                    {acceptedFriends?.length || 0}
+                  </h3>
+                  <div className="flex flex-col gap-6">
+                    {acceptedFriends?.map((f) => (
+                      <div
+                        key={f.id}
+                        className="flex flex-col justify-center tracking-wide"
+                      >
+                        <span className="text-primary mb-1 text-xs leading-tight font-semibold">
+                          {f.friendFirstName} {f.friendLastName}
+                        </span>
+                        <span className="text-primary/50 text-xs font-medium">
+                          @{f.friendUsername}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* Requests Section */}
+                {pendingRequests && pendingRequests.length > 0 && (
+                  <div className="flex flex-col gap-5">
+                    <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wider">
+                      Requests{" "}
+                      <span className="text-primary/20 select-none">|</span>{" "}
+                      {pendingRequests.length}
+                    </h3>
+                    <div className="flex flex-col gap-6">
+                      {pendingRequests.map((f) => (
+                        <RequestItem key={f.id} request={f} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Requests Section */}
-            {pendingRequests && pendingRequests.length > 0 && (
-              <div className="flex flex-col gap-5">
-                <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wider">
-                  Requests{" "}
-                  <span className="text-primary/20 select-none">|</span>{" "}
-                  {pendingRequests.length}
-                </h3>
-                <div className="flex flex-col gap-6">
-                  {pendingRequests.map((f) => (
-                    <RequestItem key={f.id} request={f} />
-                  ))}
-                </div>
-              </div>
-            )}
+            <div
+              aria-hidden
+              className={cn(
+                "from-background pointer-events-none absolute top-0 right-0 left-0 h-10 bg-linear-to-b to-transparent transition-opacity duration-200",
+                showTopGradient ? "opacity-100" : "opacity-0",
+              )}
+            />
+            <div
+              aria-hidden
+              className={cn(
+                "from-background pointer-events-none absolute right-0 bottom-0 left-0 h-10 bg-linear-to-t to-transparent transition-opacity duration-200",
+                showBottomGradient ? "opacity-100" : "opacity-0",
+              )}
+            />
           </div>
 
           {/* Bottom Action */}
