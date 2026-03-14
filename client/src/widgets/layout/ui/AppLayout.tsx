@@ -84,7 +84,7 @@ export function AppLayout() {
             key={pathname}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="z-10 flex flex-1 items-center justify-center px-10 pb-10"
           >
             <Outlet />

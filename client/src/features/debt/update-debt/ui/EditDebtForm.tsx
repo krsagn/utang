@@ -309,7 +309,12 @@ export function EditDebtForm({
                     <span className="w-full">
                       <Button
                         type="submit"
-                        className="squircle bg-primary/90 hover:bg-primary/95 h-12 w-full gap-2.5 text-xs font-normal tracking-wide hover:scale-99 disabled:pointer-events-none disabled:opacity-40"
+                        className={cn(
+                          "squircle bg-primary/90 hover:bg-primary/95 h-12 w-full gap-2.5 text-xs font-normal tracking-wide hover:scale-99 disabled:pointer-events-none disabled:opacity-40",
+                          isPending
+                            ? "disabled:cursor-progress"
+                            : "cursor-pointer",
+                        )}
                         disabled={isPending || !isValid || !isDirty}
                       >
                         <Pen className="size-3 shrink-0 stroke-[2.5px]" />
@@ -328,7 +333,7 @@ export function EditDebtForm({
             <button
               type="button"
               onClick={handleDiscard}
-              className="text-primary/40 hover:text-primary/50 flex items-center gap-2 text-xs font-medium tracking-wide transition-colors"
+              className="text-primary/40 hover:text-primary/50 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide transition-colors"
             >
               <X className="size-3 stroke-[2.5px]" />
               Discard
@@ -420,7 +425,7 @@ function AmountInput({
 
   return (
     <div className="relative flex w-full flex-col items-center justify-center">
-      <div className="relative flex max-w-full items-center justify-center gap-3">
+      <div className="relative flex max-w-full items-center justify-center gap-1">
         <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
           <PopoverTrigger asChild>
             <motion.button
@@ -428,7 +433,7 @@ function AmountInput({
               type="button"
               aria-label={`Change currency, currently ${currency}`}
               className={cn(
-                "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 opacity-85 transition-[color,opacity] duration-300 outline-none hover:opacity-100 active:opacity-100",
+                "flex shrink-0 items-center justify-center gap-1 rounded-2xl py-2 pr-2 pl-3 opacity-85 transition-[color,opacity] duration-300 outline-none hover:opacity-100",
                 value
                   ? type === "pay"
                     ? "text-outgoing-dark"
@@ -436,6 +441,7 @@ function AmountInput({
                   : type === "pay"
                     ? "text-outgoing-dark opacity-50"
                     : "text-incoming-dark opacity-50",
+                currencyOpen && "opacity-100",
               )}
             >
               <div className="relative flex shrink-0 flex-col items-center justify-center">
