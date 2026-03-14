@@ -1,5 +1,5 @@
 import { useBlocker } from "react-router-dom";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface UseUnsavedChangesOptions {
   enabled?: boolean;
@@ -10,7 +10,6 @@ export function useUnsavedChanges({
   enabled = true,
   isDirty = false,
 }: UseUnsavedChangesOptions = {}) {
-  const [showDialog, setShowDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const bypassBlocker = useRef(false);
 
@@ -22,35 +21,41 @@ export function useUnsavedChanges({
     return enabled && isDirty;
   });
 
-  useEffect(() => {
-    if (blocker.state === "blocked" && !showDialog) {
-      setShowDialog(true);
-      setPendingAction(() => blocker.proceed);
-    }
-  }, [blocker.state, blocker.proceed, showDialog]);
+  const showDialog = blocker.state === "blocked" || pendingAction !== null;
 
   const confirmDiscard = useCallback(() => {
-    setShowDialog(false);
-    bypassBlocker.current = true;
-    pendingAction?.();
-    setPendingAction(null);
-  }, [pendingAction]);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    } else {
+      bypassBlocker.current = true;
+      blocker.proceed?.();
+    }
+  }, [blocker, pendingAction]);
 
   const cancelDiscard = useCallback(() => {
-    setShowDialog(false);
-    blocker.reset?.();
     setPendingAction(null);
+    blocker.reset?.();
   }, [blocker]);
 
   const requestDiscard = useCallback((onConfirm: () => void) => {
-    setShowDialog(true);
     setPendingAction(() => onConfirm);
   }, []);
+
+  const bypassDiscard = useCallback(() => {
+    setPendingAction(null);
+    bypassBlocker.current = true;
+
+    if (blocker.state === "blocked") {
+      blocker.proceed?.();
+    }
+  }, [blocker]);
 
   return {
     showDialog,
     confirmDiscard,
     cancelDiscard,
     requestDiscard,
+    bypassDiscard,
   };
 }

@@ -24,14 +24,15 @@ const TWEEN_TRANSITION: Transition = {
 export function RightSidebar() {
   const [searchParams] = useSearchParams();
   const activeDebtId = searchParams.get("debtId") ?? undefined;
-  const navigate = useNavigate();
+
   const { data: currentUser } = useSession();
   const { data: activeDebt } = useDebt(activeDebtId ?? "");
-
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   const isCreator = activeDebt
-    ? activeDebt.createdBy === currentUser?.id
+    ? activeDebt?.createdBy === currentUser?.id
     : false;
 
   return (
@@ -95,12 +96,10 @@ function RightSidebarNav({
   navigateToEdit: () => void;
 }) {
   const location = useLocation();
-  const canEdit = hasActiveDebt && isCreator;
-  const canDelete = hasActiveDebt && isCreator;
+  const canMutate = hasActiveDebt && isCreator;
 
   const isOnOutgoingPage = location.pathname.startsWith("/debts/outgoing");
   const isOnIncomingPage = location.pathname.startsWith("/debts/incoming");
-
   const createInitialType = isOnIncomingPage
     ? "receive"
     : isOnOutgoingPage
@@ -126,10 +125,10 @@ function RightSidebarNav({
       <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
         <TooltipTrigger asChild>
           <div
-            onClick={canEdit ? navigateToEdit : undefined}
+            onClick={canMutate ? navigateToEdit : undefined}
             className={cn(
               "w-fit px-2 font-medium transition-all duration-300",
-              canEdit
+              canMutate
                 ? "cursor-pointer opacity-50 hover:opacity-75"
                 : "cursor-not-allowed opacity-20",
             )}
@@ -144,10 +143,10 @@ function RightSidebarNav({
       <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
         <TooltipTrigger asChild>
           <div
-            onClick={canDelete ? openDeleteDialog : undefined}
+            onClick={canMutate ? openDeleteDialog : undefined}
             className={cn(
               "w-fit px-2 font-medium transition-all duration-300",
-              canDelete
+              canMutate
                 ? "cursor-pointer opacity-50 hover:opacity-75"
                 : "cursor-not-allowed opacity-20",
             )}

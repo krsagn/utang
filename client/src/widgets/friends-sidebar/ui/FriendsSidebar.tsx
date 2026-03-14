@@ -65,7 +65,7 @@ export function FriendsSidebar() {
             ease: [0.42, 0, 0.58, 1],
             duration: 0.5,
           }}
-          className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col justify-between gap-10 p-7"
+          className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col justify-between gap-15 p-7"
         >
           {/* Top Action */}
           <div
@@ -76,7 +76,7 @@ export function FriendsSidebar() {
             <span>Add Friend</span>
           </div>
 
-          <div className="relative min-h-0 flex-1">
+          <div className="relative min-h-0">
             <div
               ref={scrollContainerRef}
               className="no-scrollbar h-full overflow-y-auto"

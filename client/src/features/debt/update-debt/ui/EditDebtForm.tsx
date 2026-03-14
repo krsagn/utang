@@ -83,19 +83,13 @@ export function EditDebtForm({
     JSON.stringify(getComparableFormData(formData)) !==
     JSON.stringify(getComparableFormData(initialValues));
 
-  const { showDialog, confirmDiscard, cancelDiscard, requestDiscard } =
-    useUnsavedChanges({ enabled: !isPending, isDirty });
+  const { showDialog, confirmDiscard, cancelDiscard } = useUnsavedChanges({
+    enabled: !isPending,
+    isDirty,
+  });
 
   const updateFormData = (updates: Partial<UpdateDebtForm>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
-  };
-
-  const handleDiscard = () => {
-    if (isDirty) {
-      requestDiscard(onClose);
-    } else {
-      onClose();
-    }
   };
 
   return (
@@ -332,7 +326,7 @@ export function EditDebtForm({
             })()}
             <button
               type="button"
-              onClick={handleDiscard}
+              onClick={onClose}
               className="text-primary/40 hover:text-primary/50 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide transition-colors"
             >
               <X className="size-3 stroke-[2.5px]" />

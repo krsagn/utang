@@ -72,16 +72,10 @@ export function CreateDebtForm({
     !!formData.lendeeId ||
     !!formData.deadline;
 
-  const { showDialog, confirmDiscard, cancelDiscard, requestDiscard } =
-    useUnsavedChanges({ enabled: !isPending, isDirty });
-
-  const handleDiscard = () => {
-    if (isDirty) {
-      requestDiscard(onClose);
-    } else {
-      onClose();
-    }
-  };
+  const { showDialog, confirmDiscard, cancelDiscard } = useUnsavedChanges({
+    enabled: !isPending,
+    isDirty,
+  });
 
   const handleTypeChange = (newType: DebtType) => {
     setType(newType);
@@ -346,7 +340,7 @@ export function CreateDebtForm({
             })()}
             <button
               type="button"
-              onClick={handleDiscard}
+              onClick={onClose}
               className="text-primary/40 hover:text-primary/50 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide transition-colors"
             >
               <X className="size-3 stroke-[2.5px]" />
