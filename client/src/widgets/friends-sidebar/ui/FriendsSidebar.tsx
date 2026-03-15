@@ -84,7 +84,7 @@ export function FriendsSidebar() {
               <div className="flex flex-col gap-10">
                 {/* Friends Section */}
                 <div className="flex flex-col gap-5">
-                  <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wider">
+                  <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wide">
                     Friends{" "}
                     <span className="text-primary/20 select-none">|</span>{" "}
                     {acceptedFriends?.length || 0}
@@ -109,7 +109,7 @@ export function FriendsSidebar() {
                 {/* Requests Section */}
                 {pendingRequests && pendingRequests.length > 0 && (
                   <div className="flex flex-col gap-5">
-                    <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wider">
+                    <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wide">
                       Requests{" "}
                       <span className="text-primary/20 select-none">|</span>{" "}
                       {pendingRequests.length}
@@ -127,14 +127,14 @@ export function FriendsSidebar() {
             <div
               aria-hidden
               className={cn(
-                "from-background pointer-events-none absolute top-0 right-0 left-0 h-10 bg-linear-to-b to-transparent transition-opacity duration-200",
+                "from-background pointer-events-none absolute top-0 right-0 left-0 h-15 bg-linear-to-b to-transparent transition-opacity duration-200",
                 showTopGradient ? "opacity-100" : "opacity-0",
               )}
             />
             <div
               aria-hidden
               className={cn(
-                "from-background pointer-events-none absolute right-0 bottom-0 left-0 h-10 bg-linear-to-t to-transparent transition-opacity duration-200",
+                "from-background pointer-events-none absolute right-0 bottom-0 left-0 h-15 bg-linear-to-t to-transparent transition-opacity duration-200",
                 showBottomGradient ? "opacity-100" : "opacity-0",
               )}
             />
@@ -169,7 +169,7 @@ function RequestItem({ request }: { request: Friendship }) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between tracking-wide",
+        "flex items-center justify-between pr-6 tracking-wide",
         isPending && "pointer-events-none opacity-50",
       )}
     >
@@ -185,14 +185,14 @@ function RequestItem({ request }: { request: Friendship }) {
         <button
           onClick={() => acceptFriend(request.id)}
           disabled={isPending}
-          className="text-primary/50 hover:text-primary flex size-8 items-center justify-center transition-all duration-300 outline-none hover:scale-90"
+          className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90"
         >
           <Check className="size-4 stroke-[2.5px]" />
         </button>
         <button
           onClick={() => rejectFriend(request.id)}
           disabled={isPending}
-          className="text-primary/50 hover:text-primary flex size-8 items-center justify-center transition-all duration-300 outline-none hover:scale-90"
+          className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90"
         >
           <X className="size-4 stroke-[2.5px]" />
         </button>

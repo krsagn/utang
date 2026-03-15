@@ -170,7 +170,7 @@ function RightSidebarSettings() {
         to="/settings"
         className={({ isActive }) =>
           cn(
-            "text-primary block cursor-pointer pr-2 text-xs font-medium tracking-wider whitespace-nowrap transition-all duration-300",
+            "text-primary block cursor-pointer px-2 text-xs font-medium tracking-wider whitespace-nowrap transition-all duration-300",
             isActive
               ? "font-extrabold opacity-100"
               : "opacity-50 hover:opacity-75",

@@ -18,7 +18,7 @@ export function AppLayout() {
       top: 0,
       behavior: "instant",
     });
-    // Optional: close sidebar on route change? Sure.
+    // close friends sidebar on route change
     closeSidebar();
   }, [pathname, closeSidebar]);
 
