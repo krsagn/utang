@@ -464,7 +464,7 @@ function AmountInput({
                 currencyOpen && "opacity-100",
               )}
             >
-              <div className="relative flex shrink-0 flex-col items-center justify-center">
+              <div className="relative w-10 flex shrink-0 flex-col items-center justify-center">
                 <AnimatePresence mode="popLayout" initial={false}>
                   <motion.span
                     key={currency}
@@ -478,14 +478,14 @@ function AmountInput({
                   </motion.span>
                 </AnimatePresence>
               </div>
-              <motion.div layout="position">
+              <div>
                 <ChevronDownIcon
                   className={cn(
                     "size-5 opacity-75 transition-transform duration-300",
                     currencyOpen && "rotate-180",
                   )}
                 />
-              </motion.div>
+              </div>
             </motion.button>
           </PopoverTrigger>
           <PopoverContent className="w-fit p-2" align="center" side="bottom">

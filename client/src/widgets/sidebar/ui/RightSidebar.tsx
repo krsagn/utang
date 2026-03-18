@@ -10,7 +10,7 @@ import {
 import { motion, type Transition } from "framer-motion";
 import { useState } from "react";
 import { DeleteDebtDialog } from "@/features/debt/delete-debt";
-import { useDebt } from "@/entities/debt";
+import { useDebt, type Debt } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui";
 
@@ -56,6 +56,8 @@ export function RightSidebar() {
       <RightSidebarSearch />
       <RightSidebarNav
         activeDebtId={activeDebtId}
+        activeDebt={activeDebt}
+        currentUser={currentUser}
         isCreator={isCreator}
         openDeleteDialog={() => setIsDeleteDialogOpen(true)}
       />
@@ -95,10 +97,14 @@ function RightSidebarSearch() {
 // middle section: full list of action routes aligned to the right edge
 function RightSidebarNav({
   activeDebtId,
+  activeDebt,
+  currentUser,
   isCreator,
   openDeleteDialog,
 }: {
   activeDebtId: string | undefined;
+  activeDebt: Debt | undefined | null;
+  currentUser: { id: string } | undefined | null;
   isCreator: boolean;
   openDeleteDialog: () => void;
 }) {
@@ -112,13 +118,20 @@ function RightSidebarNav({
     activeDebtId ? `/debts/${activeDebtId}/edit` : "__never__",
   );
 
+  const activeDebtType =
+    activeDebt && currentUser?.id
+      ? currentUser.id === activeDebt.lendeeId
+        ? "pay"
+        : "receive"
+      : undefined;
+
   const isOnOutgoingPage = location.pathname.startsWith("/debts/outgoing");
   const isOnIncomingPage = location.pathname.startsWith("/debts/incoming");
   const createInitialType = isOnIncomingPage
     ? "receive"
     : isOnOutgoingPage
       ? "pay"
-      : "pay";
+      : (activeDebtType ?? "pay");
 
   return (
     <nav className="text-primary my-auto flex w-full flex-col items-end justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap">
