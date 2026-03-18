@@ -13,6 +13,10 @@ export function CreateDebtPage() {
   const locationState = location.state as { initialType?: DebtType } | null;
   const initialType: DebtType = locationState?.initialType ?? "pay";
 
+  const handleCancel = () => {
+    navigate(initialType === "receive" ? "/debts/incoming" : "/debts/outgoing");
+  };
+
   const handleSubmit = (formData: NewDebt, type: DebtType) => {
     if (!user) return;
 
@@ -40,7 +44,7 @@ export function CreateDebtPage() {
   return (
     <div className="w-full">
       <CreateDebtForm
-        onClose={() => navigate(-1)}
+        onClose={handleCancel}
         onSubmit={handleSubmit}
         isPending={isPending}
         initialType={initialType}

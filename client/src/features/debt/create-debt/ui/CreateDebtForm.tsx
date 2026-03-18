@@ -338,14 +338,40 @@ export function CreateDebtForm({
                 </Tooltip>
               );
             })()}
-            <button
+            <motion.button
               type="button"
               onClick={onClose}
               className="text-primary/40 hover:text-primary/50 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide transition-colors"
             >
-              <X className="size-3 stroke-[2.5px]" />
-              Cancel
-            </button>
+              <motion.span
+                layout
+                transition={{
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 30,
+                  opacity: { type: "tween", duration: 0.08 },
+                }}
+              >
+                <X className="mt-px size-3 stroke-[2.5px]" />
+              </motion.span>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  layout
+                  key={isDirty ? "discard" : "cancel"}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 30,
+                    opacity: { type: "tween", duration: 0.08 },
+                  }}
+                >
+                  {isDirty ? "Discard" : "Cancel"}
+                </motion.span>
+              </AnimatePresence>
+            </motion.button>
           </div>
         </div>
       </form>
@@ -654,7 +680,7 @@ function FriendsCombobox({
       {(filteredFriends.length > 0 ||
         (inputValue && inputValue.trim().length > 0)) && (
         <ComboboxContent anchor={anchorRef}>
-          <ComboboxList className="overflow-hidden">
+          <ComboboxList className="no-scrollbar overflow-y-auto">
             {filteredFriends.length > 0 ? (
               filteredFriends.map((friend) => (
                 <ComboboxItem

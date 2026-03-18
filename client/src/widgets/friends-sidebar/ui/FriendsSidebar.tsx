@@ -82,45 +82,69 @@ export function FriendsSidebar() {
               className="no-scrollbar h-full overflow-y-auto"
             >
               <div className="flex flex-col gap-10">
-                {/* Friends Section */}
-                <div className="flex flex-col gap-5">
-                  <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wide">
-                    Friends{" "}
-                    <span className="text-primary/20 select-none">|</span>{" "}
-                    {acceptedFriends?.length || 0}
-                  </h3>
-                  <div className="flex flex-col gap-6">
-                    {acceptedFriends?.map((f) => (
-                      <div
-                        key={f.id}
-                        className="flex flex-col justify-center tracking-wide"
+                <AnimatePresence>
+                  {/* Requests Section */}
+                  {pendingRequests && pendingRequests.length > 0 ? (
+                    <motion.div
+                      key="requests-section"
+                      layout="position"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: "tween", duration: 0.2 }}
+                      className="flex flex-col gap-5"
+                    >
+                      <motion.h3
+                        layout="position"
+                        className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wide"
                       >
-                        <span className="text-primary mb-1 text-xs leading-tight font-semibold">
-                          {f.friendFirstName} {f.friendLastName}
-                        </span>
-                        <span className="text-primary/50 text-xs font-medium">
-                          @{f.friendUsername}
-                        </span>
+                        Requests{" "}
+                        <span className="text-primary/20 select-none">|</span>{" "}
+                        {pendingRequests.length}
+                      </motion.h3>
+                      <div className="flex flex-col gap-6">
+                        {pendingRequests.map((f) => (
+                          <motion.div
+                            layout="position"
+                            key={f.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                          >
+                            <RequestItem request={f} />
+                          </motion.div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </motion.div>
+                  ) : null}
 
-                {/* Requests Section */}
-                {pendingRequests && pendingRequests.length > 0 && (
-                  <div className="flex flex-col gap-5">
+                  {/* Friends Section */}
+                  <motion.div layout="position" className="flex flex-col gap-5">
                     <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wide">
-                      Requests{" "}
+                      Friends{" "}
                       <span className="text-primary/20 select-none">|</span>{" "}
-                      {pendingRequests.length}
+                      {acceptedFriends?.length || 0}
                     </h3>
                     <div className="flex flex-col gap-6">
-                      {pendingRequests.map((f) => (
-                        <RequestItem key={f.id} request={f} />
+                      {acceptedFriends?.map((f) => (
+                        <motion.div
+                          key={f.id}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          className="flex flex-col justify-center tracking-wide"
+                        >
+                          <span className="text-primary mb-1 text-xs leading-tight font-semibold">
+                            {f.friendFirstName} {f.friendLastName}
+                          </span>
+                          <span className="text-primary/50 text-xs font-medium">
+                            @{f.friendUsername}
+                          </span>
+                        </motion.div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </div>
 

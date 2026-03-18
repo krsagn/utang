@@ -21,6 +21,10 @@ export function EditDebtPage() {
 
   const type: DebtType = user?.id === debt?.lendeeId ? "pay" : "receive";
 
+  const handleCancel = () => {
+    navigate(type === "receive" ? "/debts/incoming" : "/debts/outgoing");
+  };
+
   const handleSubmit = (formData: UpdateDebtForm, debtType: DebtType) => {
     if (!user || !id) return;
 
@@ -38,7 +42,11 @@ export function EditDebtPage() {
       { id, updates: payload },
       {
         onSuccess: () => {
-          navigate(-1);
+          if (debtType === "pay") {
+            navigate("/debts/outgoing");
+          } else {
+            navigate("/debts/incoming");
+          }
         },
       },
     );
@@ -68,7 +76,7 @@ export function EditDebtPage() {
         </p>
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={handleCancel}
           className="text-primary/60 hover:text-primary text-xs tracking-wide transition-colors"
         >
           Go back
@@ -88,7 +96,7 @@ export function EditDebtPage() {
   return (
     <div className="w-full">
       <EditDebtForm
-        onClose={() => navigate(-1)}
+        onClose={handleCancel}
         onSubmit={handleSubmit}
         isPending={isPending}
         debt={debt}

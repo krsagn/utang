@@ -26,6 +26,8 @@ import { Eye, EyeClosed, DangerCircle } from "@solar-icons/react";
 import { useLogin } from "../model/useLogin";
 import { useSignup } from "../model/useSignup";
 
+const REMEMBERED_EMAIL_KEY = "utang:rememberedEmail";
+
 export function LoginForm() {
   const {
     mutate: performLogin,
@@ -45,12 +47,23 @@ export function LoginForm() {
     lastName: "",
     password: "",
   });
-  const [loginDetails, setLoginDetails] = useState<LoginCredentials>({
-    email: "",
-    password: "",
+  const [loginDetails, setLoginDetails] = useState<LoginCredentials>(() => {
+    const rememberedEmail =
+      typeof window === "undefined"
+        ? ""
+        : (localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? "");
+
+    return {
+      email: rememberedEmail,
+      password: "",
+    };
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return Boolean(localStorage.getItem(REMEMBERED_EMAIL_KEY));
+  });
 
   const isLoading = isLoggingIn || isSigningUp;
   const error = isSignup ? signupError : loginError;
@@ -60,6 +73,12 @@ export function LoginForm() {
     if (isSignup) {
       performSignup(signupDetails);
     } else {
+      if (rememberMe && loginDetails.email.trim()) {
+        localStorage.setItem(REMEMBERED_EMAIL_KEY, loginDetails.email.trim());
+      } else {
+        localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+      }
+
       performLogin(loginDetails);
     }
   };
@@ -121,6 +140,7 @@ export function LoginForm() {
                     onChange={handleChange}
                     placeholder="First Name"
                     aria-label="First Name"
+                    autoComplete="given-name"
                     required
                   />
                 </Field>
@@ -131,6 +151,7 @@ export function LoginForm() {
                     onChange={handleChange}
                     placeholder="Last Name"
                     aria-label="Last Name"
+                    autoComplete="family-name"
                     required
                   />
                 </Field>
@@ -143,6 +164,7 @@ export function LoginForm() {
                   onChange={handleChange}
                   placeholder="Username"
                   aria-label="Username"
+                  autoComplete="username"
                   required
                 />
               </Field>
@@ -155,6 +177,7 @@ export function LoginForm() {
                   onChange={handleChange}
                   placeholder="Email"
                   aria-label="Email"
+                  autoComplete="email"
                   required
                 />
               </Field>
@@ -168,6 +191,7 @@ export function LoginForm() {
                     onChange={handleChange}
                     placeholder="Password"
                     aria-label="Password"
+                    autoComplete="new-password"
                     required
                     className="pr-10"
                   />
@@ -196,6 +220,7 @@ export function LoginForm() {
                   onChange={handleChange}
                   placeholder="Email"
                   aria-label="Email"
+                  autoComplete="email"
                   required
                 />
               </Field>
@@ -209,6 +234,7 @@ export function LoginForm() {
                     onChange={handleChange}
                     placeholder="Password"
                     aria-label="Password"
+                    autoComplete="current-password"
                     required
                     className="pr-10"
                   />
@@ -230,7 +256,18 @@ export function LoginForm() {
 
           {!isSignup && (
             <Field orientation="horizontal" className="mb-10">
-              <Checkbox id="remember" />
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
+                onCheckedChange={(checked) => {
+                  const shouldRemember = checked === true;
+                  setRememberMe(shouldRemember);
+
+                  if (!shouldRemember) {
+                    localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+                  }
+                }}
+              />
               <Label htmlFor="remember" className="cursor-pointer text-sm">
                 Remember me
               </Label>

@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import {
   NavLink,
   useLocation,
+  useMatch,
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
@@ -23,17 +24,27 @@ const TWEEN_TRANSITION: Transition = {
 // static right sidebar; no collapsed state
 export function RightSidebar() {
   const [searchParams] = useSearchParams();
-  const activeDebtId = searchParams.get("debtId") ?? undefined;
+  const editMatch = useMatch("/debts/:debtId/edit");
+  // On the edit page the debtId lives in the path, not the search params.
+  const activeDebtId =
+    searchParams.get("debtId") ?? editMatch?.params.debtId ?? undefined;
+  const navigate = useNavigate();
 
   const { data: currentUser } = useSession();
   const { data: activeDebt } = useDebt(activeDebtId ?? "");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const navigate = useNavigate();
-
   const isCreator = activeDebt
     ? activeDebt?.createdBy === currentUser?.id
     : false;
+
+  const handleDeleted = () => {
+    // Only intercept and explicitly navigate if they were on the edit page
+    if (editMatch && currentUser && activeDebt) {
+      const type = currentUser.id === activeDebt.lendeeId ? "pay" : "receive";
+      navigate(type === "receive" ? "/debts/incoming" : "/debts/outgoing");
+    }
+  };
 
   return (
     <motion.aside
@@ -44,12 +55,9 @@ export function RightSidebar() {
     >
       <RightSidebarSearch />
       <RightSidebarNav
-        hasActiveDebt={!!activeDebtId}
+        activeDebtId={activeDebtId}
         isCreator={isCreator}
         openDeleteDialog={() => setIsDeleteDialogOpen(true)}
-        navigateToEdit={() =>
-          activeDebtId && navigate(`/debts/${activeDebtId}/edit`)
-        }
       />
       <RightSidebarSettings />
 
@@ -58,6 +66,7 @@ export function RightSidebar() {
           open={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
           debtId={activeDebtId}
+          onDeleted={handleDeleted}
         />
       )}
     </motion.aside>
@@ -85,18 +94,23 @@ function RightSidebarSearch() {
 
 // middle section: full list of action routes aligned to the right edge
 function RightSidebarNav({
-  hasActiveDebt,
+  activeDebtId,
   isCreator,
   openDeleteDialog,
-  navigateToEdit,
 }: {
-  hasActiveDebt: boolean;
+  activeDebtId: string | undefined;
   isCreator: boolean;
   openDeleteDialog: () => void;
-  navigateToEdit: () => void;
 }) {
   const location = useLocation();
+  const hasActiveDebt = !!activeDebtId;
   const canMutate = hasActiveDebt && isCreator;
+
+  // useMatch resolves active state as a plain boolean so that NavLink's className
+  // can be a string — required for Radix asChild (cloneElement can't call a function className).
+  const isEditActive = !!useMatch(
+    activeDebtId ? `/debts/${activeDebtId}/edit` : "__never__",
+  );
 
   const isOnOutgoingPage = location.pathname.startsWith("/debts/outgoing");
   const isOnIncomingPage = location.pathname.startsWith("/debts/incoming");
@@ -124,17 +138,22 @@ function RightSidebarNav({
       </NavLink>
       <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
         <TooltipTrigger asChild>
-          <div
-            onClick={canMutate ? navigateToEdit : undefined}
+          <NavLink
+            to={activeDebtId ? `/debts/${activeDebtId}/edit` : "/debts"}
+            onClick={(e) => {
+              if (!canMutate) e.preventDefault();
+            }}
             className={cn(
-              "w-fit px-2 font-medium transition-all duration-300",
-              canMutate
-                ? "cursor-pointer opacity-50 hover:opacity-75"
-                : "cursor-not-allowed opacity-20",
+              "w-fit pr-2 transition-all duration-300",
+              !canMutate
+                ? "cursor-not-allowed opacity-20"
+                : isEditActive
+                  ? "font-bold opacity-100"
+                  : "font-medium opacity-50 hover:opacity-75",
             )}
           >
             <span>Edit Debt</span>
-          </div>
+          </NavLink>
         </TooltipTrigger>
         <TooltipContent side="left">
           Only the creator can edit this debt

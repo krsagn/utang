@@ -212,7 +212,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
           src={isOutgoing ? "/outgoing-arrow.svg" : "/incoming-arrow.svg"}
           alt=""
           aria-hidden
-          className={cn("h-12", isOutgoing && "-mb-2")}
+          className={cn("h-12 select-none", isOutgoing && "-mb-2")}
           initial={hasNavigated ? false : { y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={mountTransition(3, hasNavigated)}
@@ -284,7 +284,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
           >
             {isOutgoing ? "to" : "from"}
           </motion.span>
-          <div className="from-background via-background/25 relative z-10 w-1 self-stretch bg-linear-to-l to-transparent" />
+          <span className="from-background via-background/25 relative z-10 w-1 self-stretch bg-linear-to-l to-transparent" />
           <AnimatePresence mode="popLayout">
             <span className="bg-background relative z-10">
               <motion.span
