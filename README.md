@@ -7,9 +7,9 @@
 
 "Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose of this application: simplifying how you track shared expenses among friends.
 
-![App Screenshot](.github/assets/utange-outgoing-page.png)
-![App Screenshot](.github/assets/utang-incoming-page.png)
-![App Screenshot](.github/assets/utang-create-debt-page.png)
+![Outgoing transactions page](.github/assets/utange-outgoing-page.png)
+![Incoming transactions page](.github/assets/utang-incoming-page.png)
+![Create debt page](.github/assets/utang-create-debt-page.png)
 
 ---
 
