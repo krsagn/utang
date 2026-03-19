@@ -2,7 +2,7 @@
 
 [![CI Pipeline](https://github.com/krsagn/utang/actions/workflows/ci.yml/badge.svg)](https://github.com/krsagn/utang/actions/workflows/ci.yml)
 [![CodeRabbit](https://img.shields.io/badge/CodeRabbit-Reviewed-4940FC.svg)](https://coderabbit.ai/)
-[![Total Coverage](https://img.shields.io/badge/Total_Coverage-80%25-brightgreen.svg)](https://github.com/krsagn/utang/actions/workflows/ci.yml)
+[![Codecov Coverage](https://img.shields.io/codecov/c/github/krsagn/utang.svg)](https://codecov.io/gh/krsagn/utang)
 
 > **A minimalist debt tracking application.** Track who owes you, and who you owe.
 
@@ -106,7 +106,7 @@ The frontend application should now be accessible in your web browser, typically
 
 ## Testing
 
-The backend has a comprehensive integration test suite achieving **100% API endpoint coverage** and **82% business logic coverage** (**80% total project coverage**) across 36 tests.
+The backend has a comprehensive integration test suite that thoroughly tests API endpoints and core business logic. Total project coverage is dynamically tracked and continuously integrated via the Codecov badge above.
 
 Run the test suite:
 
