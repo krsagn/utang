@@ -2,12 +2,13 @@
 
 [![CI Pipeline](https://github.com/krsagn/utang/actions/workflows/ci.yml/badge.svg)](https://github.com/krsagn/utang/actions/workflows/ci.yml)
 [![CodeRabbit](https://img.shields.io/badge/CodeRabbit-Reviewed-4940FC.svg)](https://coderabbit.ai/)
+[![Total Coverage](https://img.shields.io/badge/Total_Coverage-80%25-brightgreen.svg)](https://github.com/krsagn/utang/actions/workflows/ci.yml)
 
 > **A minimalist debt tracking application.** Track who owes you, and who you owe.
 
 "Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose of this application: simplifying how you track shared expenses among friends.
 
-![Outgoing transactions page](.github/assets/utange-outgoing-page.png)
+![Outgoing transactions page](.github/assets/utang-outgoing-page.png)
 ![Incoming transactions page](.github/assets/utang-incoming-page.png)
 ![Create debt page](.github/assets/utang-create-debt-page.png)
 
@@ -27,7 +28,7 @@
 ### Frontend
 
 - **Framework**: React 19, React Router v7
-- **Styling**: Tailwind CSS v4, Shadcn/UI, Radix UI
+- **Styling**: Tailwind CSS v4, Base UI, Radix UI (Shadcn CLI for scaffolding)
 - **State & Data Fetching**: TanStack React Query, Axios
 - **Animations**: Framer Motion
 - **Tooling**: Vite, TypeScript, CodeRabbit (AI PR Reviews)
@@ -55,7 +56,7 @@ Navigate to the `server` directory and start the local PostgreSQL database using
 
 ```bash
 cd server
-docker-compose up -d
+docker compose up -d
 ```
 
 ### 2. Backend Setup
@@ -93,17 +94,19 @@ The frontend application should now be accessible in your web browser, typically
 - `npm run test` - Runs backend tests.
 - `npm run db:reset` - Resets and wipes the database.
 - `npm run db:fresh` - Resets the database and runs the seed script.
+- `npm run test:coverage` - Runs backend tests with a detailed coverage report.
 
 ### Client
 
 - `npm run build` - Builds the frontend for production.
 - `npm run lint` - Runs eslint linting to enforce code quality.
+- `npm run test` - Runs frontend unit tests.
 
 ---
 
 ## Testing
 
-The backend has a comprehensive integration test suite achieving **100% API endpoint coverage** and **82% business logic coverage** across 36 tests.
+The backend has a comprehensive integration test suite achieving **100% API endpoint coverage** and **82% business logic coverage** (**80% total project coverage**) across 36 tests.
 
 Run the test suite:
 
@@ -116,11 +119,11 @@ Run with a detailed coverage report:
 
 ```bash
 cd server
-npx vitest run --coverage
+npm run test:coverage
 ```
 
 ---
 
-## Licence
+## License
 
 MIT License. See [LICENSE](LICENSE) for details.
