@@ -26,6 +26,8 @@ import { Eye, EyeClosed, DangerCircle } from "@solar-icons/react";
 import { useLogin } from "../model/useLogin";
 import { useSignup } from "../model/useSignup";
 
+const REMEMBERED_EMAIL_KEY = "utang:rememberedEmail";
+
 export function LoginForm() {
   const {
     mutate: performLogin,
@@ -45,12 +47,23 @@ export function LoginForm() {
     lastName: "",
     password: "",
   });
-  const [loginDetails, setLoginDetails] = useState<LoginCredentials>({
-    email: "",
-    password: "",
+  const [loginDetails, setLoginDetails] = useState<LoginCredentials>(() => {
+    const rememberedEmail =
+      typeof window === "undefined"
+        ? ""
+        : (localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? "");
+
+    return {
+      email: rememberedEmail,
+      password: "",
+    };
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return Boolean(localStorage.getItem(REMEMBERED_EMAIL_KEY));
+  });
 
   const isLoading = isLoggingIn || isSigningUp;
   const error = isSignup ? signupError : loginError;
@@ -60,6 +73,12 @@ export function LoginForm() {
     if (isSignup) {
       performSignup(signupDetails);
     } else {
+      if (rememberMe && loginDetails.email.trim()) {
+        localStorage.setItem(REMEMBERED_EMAIL_KEY, loginDetails.email.trim());
+      } else {
+        localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+      }
+
       performLogin(loginDetails);
     }
   };
@@ -87,13 +106,13 @@ export function LoginForm() {
     <section className="flex shrink-0 items-center justify-center px-40 text-left">
       <div className="flex w-xs min-w-[320px] flex-col items-start">
         <header>
-          <h1 className="font-display to-primary mb-10 bg-linear-to-tr from-[#6A7D13] bg-clip-text text-7xl font-semibold tracking-wide text-transparent select-none">
+          <h1 className="font-display to-incoming from-incoming-dark mb-10 bg-linear-to-tr bg-clip-text text-7xl font-semibold tracking-wide text-transparent select-none">
             utang!
           </h1>
           <h2 className="font-heading text-2xl font-bold tracking-wide select-none">
             {title}
           </h2>
-          <p className="mb-7 text-xs tracking-wide text-black/50 select-none">
+          <p className="text-primary/50 mb-7 text-xs tracking-wide select-none">
             {subtitle}
           </p>
         </header>
@@ -121,6 +140,7 @@ export function LoginForm() {
                     onChange={handleChange}
                     placeholder="First Name"
                     aria-label="First Name"
+                    autoComplete="given-name"
                     required
                   />
                 </Field>
@@ -131,6 +151,7 @@ export function LoginForm() {
                     onChange={handleChange}
                     placeholder="Last Name"
                     aria-label="Last Name"
+                    autoComplete="family-name"
                     required
                   />
                 </Field>
@@ -143,6 +164,7 @@ export function LoginForm() {
                   onChange={handleChange}
                   placeholder="Username"
                   aria-label="Username"
+                  autoComplete="username"
                   required
                 />
               </Field>
@@ -155,6 +177,7 @@ export function LoginForm() {
                   onChange={handleChange}
                   placeholder="Email"
                   aria-label="Email"
+                  autoComplete="email"
                   required
                 />
               </Field>
@@ -168,13 +191,14 @@ export function LoginForm() {
                     onChange={handleChange}
                     placeholder="Password"
                     aria-label="Password"
+                    autoComplete="new-password"
                     required
                     className="pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-black/50 hover:text-black/75 focus:outline-none"
+                    className="text-primary/50 hover:text-primary/75 absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
                   >
                     {showPassword ? (
                       <EyeClosed className="size-4" />
@@ -196,6 +220,7 @@ export function LoginForm() {
                   onChange={handleChange}
                   placeholder="Email"
                   aria-label="Email"
+                  autoComplete="email"
                   required
                 />
               </Field>
@@ -209,13 +234,14 @@ export function LoginForm() {
                     onChange={handleChange}
                     placeholder="Password"
                     aria-label="Password"
+                    autoComplete="current-password"
                     required
                     className="pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-black/50 hover:text-black/75 focus:outline-none"
+                    className="text-primary/50 hover:text-primary/75 absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
                   >
                     {showPassword ? (
                       <EyeClosed className="-mb-2 size-4" />
@@ -230,7 +256,18 @@ export function LoginForm() {
 
           {!isSignup && (
             <Field orientation="horizontal" className="mb-10">
-              <Checkbox id="remember" />
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
+                onCheckedChange={(checked) => {
+                  const shouldRemember = checked === true;
+                  setRememberMe(shouldRemember);
+
+                  if (!shouldRemember) {
+                    localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+                  }
+                }}
+              />
               <Label htmlFor="remember" className="cursor-pointer text-sm">
                 Remember me
               </Label>
@@ -240,7 +277,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-xl py-6 select-none hover:bg-[#6A7D13] disabled:pointer-events-none disabled:opacity-50"
+            className="hover:bg-incoming-dark w-full rounded-xl py-6 select-none"
           >
             {isLoading ? (
               <>
@@ -256,7 +293,7 @@ export function LoginForm() {
         <footer className="mt-8 w-full text-center text-sm select-none">
           {toggleText}{" "}
           <span
-            className="cursor-pointer font-bold text-[#6A7D13] hover:underline"
+            className="text-incoming-dark cursor-pointer font-bold hover:underline"
             onClick={() => setIsSignup(!isSignup)}
           >
             {toggleLink}

@@ -1,3 +1,2 @@
-export { CreateDebtModal } from "./ui/CreateDebtModal";
-export { CreateDebtButton } from "./ui/CreateDebtButton";
+export { CreateDebtForm } from "./ui/CreateDebtForm";
 export { useCreateDebt } from "./model/useCreateDebt";

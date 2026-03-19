@@ -1,62 +1,28 @@
-import { Sidebar } from "@/widgets/sidebar";
+import { Sidebar, RightSidebar } from "@/widgets/sidebar";
 import { Outlet, useLocation } from "react-router-dom";
-import {
-  AnimatePresence,
-  motion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
-import { Navbar } from "@/widgets/navbar";
-import { useEffect, useRef, type ReactNode } from "react";
-import { CreateDebtButton } from "@/features/debt/create-debt";
-import { AddFriendButton } from "@/features/friendship/add-friend";
-import { FriendsTabs } from "@/features/friendship/tabs";
-
-interface NavbarConfig {
-  titleKey: string;
-  title: ReactNode;
-  actionKey?: string;
-  actionButton?: ReactNode;
-}
-
-function getNavbarConfig(pathname: string): NavbarConfig {
-  if (pathname.startsWith("/friends")) {
-    return {
-      titleKey: "/friends",
-      title: <FriendsTabs />,
-      actionKey: "add-friend-button",
-      actionButton: <AddFriendButton />,
-    };
-  }
-
-  const titleMap: Record<string, string> = {
-    "/home": "Home",
-    "/debts/outgoing": "To Pay",
-    "/debts/incoming": "To Receive",
-  };
-
-  return {
-    titleKey: pathname,
-    title: titleMap[pathname] ?? "",
-    actionKey: "create-debt-button",
-    actionButton: <CreateDebtButton />,
-  };
-}
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { FriendsSidebar, useFriendsSidebar } from "@/widgets/friends-sidebar";
+import { cn } from "@/shared/lib";
 
 export function AppLayout() {
   const { pathname } = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
   const gradientOpacity = useTransform(scrollY, [0, 20], [0, 1]);
+  const { isOpen, closeSidebar } = useFriendsSidebar();
 
+  // reset scroll position on route change
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: 0,
       behavior: "instant",
     });
-  }, [pathname]);
+    // close friends sidebar on route change
+    closeSidebar();
+  }, [pathname, closeSidebar]);
 
-  // An exponential 'scrim' gradient to completely eliminate linear banding.
+  // exponential scrim to eliminate linear gradient banding
   const scrimGradient = `linear-gradient(to bottom, 
     var(--background) 0%, 
     color-mix(in oklch, var(--background) 73.8%, transparent) 19%, 
@@ -87,51 +53,67 @@ export function AppLayout() {
     transparent 100%
   )`;
 
-  const { titleKey, title, actionKey, actionButton } =
-    getNavbarConfig(pathname);
-
   return (
-    <div className="bg-background flex h-screen w-full overflow-hidden overscroll-none">
-      <Sidebar />
-      <div
-        ref={scrollRef}
-        className="relative flex flex-1 flex-col overflow-y-auto overscroll-none [scrollbar-gutter:stable]"
+    <div className="bg-background relative flex h-screen w-full overflow-hidden">
+      <FriendsSidebar />
+
+      {/* Main Blurred Canvas */}
+      <motion.div
+        initial={false}
+        animate={{
+          x: isOpen ? 320 : 0,
+        }}
+        transition={{ type: "tween", ease: [0.42, 0, 0.58, 1], duration: 0.5 }}
+        className={cn(
+          "bg-background relative z-10 flex h-screen w-full shrink-0 overflow-hidden will-change-transform",
+          isOpen && "pointer-events-none",
+        )}
       >
-        <div className="bg-background sticky top-0 z-20 mb-5 flex flex-col">
-          <Navbar titleKey={titleKey} title={title}>
-            <AnimatePresence mode="popLayout">
-              {actionButton && (
-                <motion.div
-                  key={actionKey}
-                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                >
-                  {actionButton}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Navbar>
+        <Sidebar />
+        <div
+          ref={scrollRef}
+          className="no-scrollbar relative flex flex-1 flex-col overflow-y-auto overscroll-none"
+        >
+          {/* top scroll shadow fades in as you scroll down */}
           <motion.div
             style={{ opacity: gradientOpacity, backgroundImage: scrimGradient }}
-            className="pointer-events-none absolute right-0 -bottom-[39.5px] left-0 h-10"
+            className="pointer-events-none sticky top-0 z-20 h-10 shrink-0"
+          />
+
+          <motion.main
+            key={pathname}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="z-10 flex flex-1 items-center justify-center px-10 pb-10"
+          >
+            <Outlet />
+          </motion.main>
+
+          {/* bottom scroll shadow */}
+          <div
+            style={{ backgroundImage: flippedScrimGradient }}
+            className="pointer-events-none fixed -bottom-[0.5px] z-20 h-10 w-full shrink-0"
           />
         </div>
-        <motion.main
-          key={pathname}
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="z-10 -mb-15 flex-1 px-10 pb-10"
-        >
-          <Outlet />
-        </motion.main>
+        <RightSidebar />
 
-        {/* Bottom Scroll Shadow */}
-        <div
-          style={{ backgroundImage: flippedScrimGradient }}
-          className="pointer-events-none fixed -bottom-[0.5px] z-20 h-10 w-full shrink-0"
+        {/* Tint overlay & click-to-close */}
+        <motion.div
+          initial={false}
+          animate={{ opacity: isOpen ? 1 : 0 }}
+          transition={{
+            type: "tween",
+            ease: [0.42, 0, 0.58, 1],
+            duration: 0.5,
+          }}
+          className={cn(
+            "bg-background/40 absolute inset-0 z-50 backdrop-blur-md",
+            isOpen ? "pointer-events-auto" : "pointer-events-none",
+          )}
+          onClick={isOpen ? closeSidebar : undefined}
         />
-      </div>
+      </motion.div>
     </div>
   );
 }

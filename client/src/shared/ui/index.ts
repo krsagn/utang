@@ -11,6 +11,7 @@ export { Input } from "./input";
 export { Label } from "./label";
 export { Separator } from "./separator";
 export { Spinner } from "./spinner";
-export { Modal, ModalBackdrop } from "./modal";
+export { Modal } from "./modal";
 export * from "./alert-dialog";
 export * from "./context-menu";
+export * from "./tooltip";

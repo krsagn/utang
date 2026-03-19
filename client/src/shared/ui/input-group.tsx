@@ -13,7 +13,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
       role="group"
       className={cn(
         "group/input-group relative flex w-full items-center transition-all outline-none",
-        "h-9 min-w-0 rounded-xl bg-black/5 text-base text-black shadow-none has-[>textarea]:h-auto md:text-sm",
+        "h-9 min-w-0 rounded-xl bg-primary/5 text-base text-primary shadow-none has-[>textarea]:h-auto md:text-sm",
 
         // Variants based on alignment.
         "has-[>[data-align=inline-start]]:[&>input]:pl-2",
@@ -22,7 +22,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
         "has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3",
 
         // Focus state.
-        "has-[[data-slot=input-group-control]:focus-visible]:bg-black/10",
+        "has-[[data-slot=input-group-control]:focus-visible]:bg-primary/10",
 
         // Error state.
         "has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[[data-slot][aria-invalid=true]]:border-destructive dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40",

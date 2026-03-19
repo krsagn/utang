@@ -18,6 +18,8 @@ async function seed() {
     const jasId = crypto.randomUUID();
     const eunjunId = crypto.randomUUID();
     const emId = crypto.randomUUID();
+    const marcusId = crypto.randomUUID();
+    const senecaId = crypto.randomUUID();
 
     const userList = [
       {
@@ -64,14 +66,14 @@ async function seed() {
       },
       // --- Stranger Users (Not friends with Kristian by default) ---
       {
-        id: crypto.randomUUID(),
+        id: marcusId,
         username: 'marcus',
         email: 'marcus@example.com',
         firstName: 'Marcus',
         lastName: 'Aurelius',
       },
       {
-        id: crypto.randomUUID(),
+        id: senecaId,
         username: 'seneca',
         email: 'seneca@example.com',
         firstName: 'Lucius',
@@ -756,6 +758,7 @@ async function seed() {
     console.log('Creating friendships...');
 
     const allUserIds = [kristianId, rominaId, jadenId, jasId, eunjunId, emId];
+    const strangerUserIds = userList.slice(6).map((u) => u.id);
     let friendshipCount = 0;
 
     for (let i = 0; i < allUserIds.length; i++) {
@@ -770,6 +773,19 @@ async function seed() {
         friendshipCount++;
       }
     }
+
+    // pending friend requests to Kristian from all non-friend users
+    for (const requesterId of strangerUserIds) {
+      const [userId1, userId2] = [kristianId, requesterId].sort();
+      await db.insert(friendships).values({
+        userId1,
+        userId2,
+        requesterId,
+        status: 'pending',
+      });
+      friendshipCount++;
+    }
+
     console.log(`Created ${friendshipCount} friendships`);
 
     console.log('✅ Database seeded successfully!');
