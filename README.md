@@ -4,13 +4,19 @@
 [![CodeRabbit](https://img.shields.io/badge/CodeRabbit-Reviewed-4940FC.svg)](https://coderabbit.ai/)
 [![Codecov Coverage](https://img.shields.io/codecov/c/github/krsagn/utang.svg)](https://codecov.io/gh/krsagn/utang)
 
-> **A minimalist debt tracking application.** Track who owes you, and who you owe.
+> **Full-stack debt tracker with session auth, a 36-test integration suite, and a Framer Motion-animated React 19 frontend.**
 
-"Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose of this application: simplifying how you track shared expenses among friends.
+<!-- [Live Demo](https://your-domain.com) -->
 
-![Outgoing transactions page](.github/assets/utang-outgoing-page.png)
-![Incoming transactions page](.github/assets/utang-incoming-page.png)
-![Create debt page](.github/assets/utang-create-debt-page.png)
+_"Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose of this application: simplifying how you track shared expenses among friends._
+
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+  <img src=".github/assets/utang-outgoing-page.png" width="32%" alt="Outgoing transactions page" />
+  <img src=".github/assets/utang-incoming-page.png" width="32%" alt="Incoming transactions page" />
+  <img src=".github/assets/utang-create-debt-page.png" width="32%" alt="Create debt page" />
+</p>
+<!-- markdownlint-enable MD033 -->
 
 ---
 
@@ -84,6 +90,8 @@ npm run dev
 
 The frontend application should now be accessible in your web browser, typically at `http://localhost:5173`.
 
+> **Tip:** The three services (database, backend, frontend) each run in separate terminals.
+
 ---
 
 ## Scripts
@@ -106,7 +114,7 @@ The frontend application should now be accessible in your web browser, typically
 
 ## Testing
 
-The backend has a comprehensive integration test suite that thoroughly tests API endpoints and core business logic. Total project coverage is dynamically tracked and continuously integrated via the Codecov badge above.
+The backend has an integration test suite covering all API endpoints and core business logic, with total project coverage tracked via Codecov. The frontend also has a Vitest unit test suite covering shared utility logic.
 
 Run the test suite:
 
