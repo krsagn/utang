@@ -1,14 +1,15 @@
 # Utang
 
 [![CI Pipeline](https://github.com/krsagn/utang/actions/workflows/ci.yml/badge.svg)](https://github.com/krsagn/utang/actions/workflows/ci.yml)
+[![CodeRabbit](https://img.shields.io/badge/CodeRabbit-Reviewed-4940FC.svg)](https://coderabbit.ai/)
 
 > **A minimalist debt tracking application.** Track who owes you, and who you owe.
 
 "Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose of this application: simplifying how you track shared expenses among friends.
 
-![App Screenshot](.github/assets/outgoing-page.png)
-![App Screenshot](.github/assets/debt-detail.png)
-![App Screenshot](.github/assets/create-debt.png)
+![App Screenshot](.github/assets/utange-outgoing-page.png)
+![App Screenshot](.github/assets/utang-incoming-page.png)
+![App Screenshot](.github/assets/utang-create-debt-page.png)
 
 ---
 
@@ -29,7 +30,7 @@
 - **Styling**: Tailwind CSS v4, Shadcn/UI, Radix UI
 - **State & Data Fetching**: TanStack React Query, Axios
 - **Animations**: Framer Motion
-- **Tooling**: Vite, TypeScript
+- **Tooling**: Vite, TypeScript, CodeRabbit (AI PR Reviews)
 
 ### Backend
 
@@ -91,6 +92,7 @@ The frontend application should now be accessible in your web browser, typically
 - `npm run db:studio` - Launches Drizzle Studio.
 - `npm run test` - Runs backend tests.
 - `npm run db:reset` - Resets and wipes the database.
+- `npm run db:fresh` - Resets the database and runs the seed script.
 
 ### Client
 

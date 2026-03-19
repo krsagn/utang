@@ -58,10 +58,13 @@ function SidebarLogo({
   setCollapsed: (val: boolean) => void;
 }) {
   return (
-    <motion.div
+    <motion.button
+      type="button"
+      aria-label="Toggle sidebar"
+      aria-expanded={!collapsed}
       animate={{ x: collapsed ? 96 : 0 }}
       transition={TWEEN_TRANSITION}
-      className="group flex h-8 cursor-pointer items-center gap-5 pl-2 select-none"
+      className="group flex h-8 cursor-pointer items-center gap-5 pl-2 select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm"
       onClick={() => setCollapsed(!collapsed)}
     >
       <span className="font-display text-2xl font-semibold">u!</span>
@@ -72,7 +75,7 @@ function SidebarLogo({
       >
         <ChevronLeft className="size-4" />
       </motion.div>
-    </motion.div>
+    </motion.button>
   );
 }
 
@@ -98,6 +101,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
       {SIDEBAR_LINKS.map((link) => (
         <SidebarNavItem
           key={link.label}
+          collapsed={collapsed}
           link={{
             ...link,
             badge: link.path ? badgeCounts[link.path] : undefined,
@@ -109,7 +113,13 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
 }
 
 // one link: handles active styles, badge, and layout
-function SidebarNavItem({ link }: { link: SidebarLink }) {
+function SidebarNavItem({
+  link,
+  collapsed,
+}: {
+  link: SidebarLink;
+  collapsed: boolean;
+}) {
   const { toggleSidebar, isOpen } = useFriendsSidebar();
 
   if (link.action === "toggleFriends") {
@@ -117,6 +127,7 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
       <button
         type="button"
         onClick={toggleSidebar}
+        tabIndex={collapsed ? -1 : 0}
         className={cn(
           "focus-visible:ring-primary/30 w-full cursor-pointer rounded-sm pl-2 text-left transition-all duration-300 outline-none focus-visible:ring-2",
           link.badge !== undefined &&
@@ -145,6 +156,7 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
   return (
     <NavLink
       to={link.path!}
+      tabIndex={collapsed ? -1 : 0}
       className={({ isActive }) =>
         cn(
           "focus-visible:ring-primary/30 rounded-sm pl-2 transition-all duration-300 outline-none focus-visible:ring-2",

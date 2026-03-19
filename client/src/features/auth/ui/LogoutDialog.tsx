@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, X } from "lucide-react";
 import { useLogout } from "../model/useLogout";
 import { useEffect, useRef } from "react";
+import { cn } from "@/shared/lib";
 
 interface LogoutDialogProps {
   open: boolean;
@@ -96,8 +97,11 @@ export function LogoutDialog({ open, onClose }: LogoutDialogProps) {
                 duration: 0.2,
               },
             }}
-            onClick={onClose}
-            className="fixed inset-0 z-60 cursor-pointer bg-linear-to-t from-black/80 to-black/40 backdrop-blur-xs"
+            onClick={() => { if (!isLoggingOut) onClose(); }}
+            className={cn(
+              "fixed inset-0 z-60 bg-linear-to-t from-black/80 to-black/40 backdrop-blur-xs transition-[cursor] duration-200",
+              isLoggingOut ? "cursor-default" : "cursor-pointer",
+            )}
           />
           <motion.div
             ref={dialogRef}
@@ -152,8 +156,9 @@ export function LogoutDialog({ open, onClose }: LogoutDialogProps) {
               </button>
               <button
                 ref={cancelRef}
-                onClick={onClose}
-                className="text-primary squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-26 text-xs font-medium tracking-wide whitespace-nowrap opacity-30 transition-[opacity,scale] duration-300 outline-none hover:scale-98 hover:opacity-50 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                onClick={() => { if (!isLoggingOut) onClose(); }}
+                disabled={isLoggingOut}
+                className="text-primary squircle inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-26 text-xs font-medium tracking-wide whitespace-nowrap opacity-30 transition-[opacity,scale] duration-300 outline-none hover:scale-98 hover:opacity-50 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-10"
               >
                 <X className="mt-px size-3 stroke-[2.5px]" />
                 No, I'm staying

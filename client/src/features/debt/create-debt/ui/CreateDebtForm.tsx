@@ -59,18 +59,14 @@ export function CreateDebtForm({
     deadline: undefined,
   };
 
+  // stable initial snapshot — includes type so toggling pay/receive marks the form dirty
+  const initialSnapshot = { type: initialType, ...initialFormData };
+
   const [formData, setFormData] = useState<NewDebt>(initialFormData);
   const withWhom = type === "pay" ? formData.lenderName : formData.lendeeName;
 
   const isDirty =
-    !!formData.amount ||
-    !!formData.title ||
-    !!formData.description ||
-    !!formData.lenderName ||
-    !!formData.lendeeName ||
-    !!formData.lenderId ||
-    !!formData.lendeeId ||
-    !!formData.deadline;
+    JSON.stringify({ type, ...formData }) !== JSON.stringify(initialSnapshot);
 
   const { showDialog, confirmDiscard, cancelDiscard } = useUnsavedChanges({
     enabled: !isPending,
