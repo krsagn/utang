@@ -114,15 +114,16 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
 
   if (link.action === "toggleFriends") {
     return (
-      <div
+      <button
+        type="button"
         onClick={toggleSidebar}
         className={cn(
-          "cursor-pointer pl-2 transition-all duration-300",
+          "focus-visible:ring-primary/30 w-full cursor-pointer rounded-sm pl-2 text-left transition-all duration-300 outline-none focus-visible:ring-2",
           link.badge !== undefined &&
             "group flex items-center justify-between pr-1",
           isOpen
             ? "font-bold opacity-100"
-            : "font-medium opacity-50 hover:opacity-75",
+            : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
         )}
       >
         <span>{link.label}</span>
@@ -137,7 +138,7 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
             {link.badge}
           </motion.span>
         )}
-      </div>
+      </button>
     );
   }
 
@@ -146,12 +147,12 @@ function SidebarNavItem({ link }: { link: SidebarLink }) {
       to={link.path!}
       className={({ isActive }) =>
         cn(
-          "pl-2 transition-all duration-300",
+          "focus-visible:ring-primary/30 rounded-sm pl-2 transition-all duration-300 outline-none focus-visible:ring-2",
           link.badge !== undefined &&
             "group flex items-center justify-between pr-1",
           isActive
             ? "font-bold opacity-100"
-            : "font-medium opacity-50 hover:opacity-75",
+            : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
         )
       }
     >
@@ -182,12 +183,14 @@ function SidebarLogout({ collapsed }: { collapsed: boolean }) {
         transition={FADE_TRANSITION}
         style={{ pointerEvents: collapsed ? "none" : "auto" }}
       >
-        <div
+        <button
+          type="button"
           onClick={() => setIsLogoutDialogOpen(true)}
-          className="text-primary cursor-pointer pl-2 text-xs font-medium tracking-wider whitespace-nowrap opacity-50 transition-all duration-300 hover:opacity-75"
+          tabIndex={collapsed ? -1 : 0}
+          className="text-primary focus-visible:ring-primary/30 w-full cursor-pointer rounded-sm pl-2 text-left text-xs font-medium tracking-wider whitespace-nowrap opacity-50 transition-all duration-300 outline-none hover:opacity-75 focus-visible:opacity-100 focus-visible:ring-2"
         >
           Logout
-        </div>
+        </button>
       </motion.div>
       <LogoutDialog
         open={isLogoutDialogOpen}

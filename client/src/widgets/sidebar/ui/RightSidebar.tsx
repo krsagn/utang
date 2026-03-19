@@ -140,10 +140,10 @@ function RightSidebarNav({
         state={{ initialType: createInitialType }}
         className={({ isActive }) =>
           cn(
-            "pr-2 transition-all duration-300",
+            "pr-2 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm",
             isActive
               ? "font-bold opacity-100"
-              : "font-medium opacity-50 hover:opacity-75",
+              : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
           )
         }
       >
@@ -153,16 +153,18 @@ function RightSidebarNav({
         <TooltipTrigger asChild>
           <NavLink
             to={activeDebtId ? `/debts/${activeDebtId}/edit` : "/debts"}
+            aria-disabled={!canMutate}
+            tabIndex={canMutate ? undefined : -1}
             onClick={(e) => {
               if (!canMutate) e.preventDefault();
             }}
             className={cn(
-              "w-fit pr-2 transition-all duration-300",
+              "pr-2 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm",
               !canMutate
-                ? "cursor-not-allowed opacity-20"
+                ? "pointer-events-none cursor-not-allowed opacity-20"
                 : isEditActive
                   ? "font-bold opacity-100"
-                  : "font-medium opacity-50 hover:opacity-75",
+                  : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
             )}
           >
             <span>Edit Debt</span>
@@ -174,17 +176,19 @@ function RightSidebarNav({
       </Tooltip>
       <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
         <TooltipTrigger asChild>
-          <div
-            onClick={canMutate ? openDeleteDialog : undefined}
+          <button
+            type="button"
+            onClick={openDeleteDialog}
+            disabled={!canMutate}
             className={cn(
-              "w-fit px-2 font-medium transition-all duration-300",
+              "pr-2 font-medium transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm focus-visible:opacity-100",
               canMutate
                 ? "cursor-pointer opacity-50 hover:opacity-75"
                 : "cursor-not-allowed opacity-20",
             )}
           >
             <span>Delete Debt</span>
-          </div>
+          </button>
         </TooltipTrigger>
         <TooltipContent side="left">
           Only the creator can delete this debt

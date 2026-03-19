@@ -70,7 +70,7 @@ export function ReceiptCard({
         {/* plain toFixed(2), no symbol — intentional receipt aesthetic */}
         <div className="flex justify-between">
           <span>Total:</span>
-          <span>{parseFloat(amount).toFixed(2)}</span>
+          <span>{(parseFloat(amount) || 0).toFixed(2)}</span>
         </div>
 
         <hr className="my-5 border-t-2 border-dashed border-neutral-500" />

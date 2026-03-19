@@ -44,12 +44,12 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --color-outgoing: var(--color-outgoing);
-  --color-outgoing-dark: var(--color-outgoing-dark);
-  --color-outgoing-hover: var(--color-outgoing-hover);
-  --color-outgoing-active: var(--color-outgoing-active);
-  --color-incoming: var(--color-incoming);
-  --color-incoming-dark: var(--color-incoming-dark);
+  --color-outgoing: var(--outgoing);
+  --color-outgoing-dark: var(--outgoing-dark);
+  --color-outgoing-hover: var(--outgoing-hover);
+  --color-outgoing-active: var(--outgoing-active);
+  --color-incoming: var(--incoming);
+  --color-incoming-dark: var(--incoming-dark);
 
   --font-display: "ClashDisplay", sans-serif;
   --font-heading: "CabinetGrotesk", sans-serif;
@@ -79,12 +79,12 @@
   --ring: #000000;
 
   /* debt type semantic colors */
-  --color-outgoing: #af1d1d;
-  --color-outgoing-dark: #7d1313;
-  --color-outgoing-hover: #8b1717;
-  --color-outgoing-active: #6b1111;
-  --color-incoming: #839b1a;
-  --color-incoming-dark: #6a7d13;
+  --outgoing: #af1d1d;
+  --outgoing-dark: #7d1313;
+  --outgoing-hover: #8b1717;
+  --outgoing-active: #6b1111;
+  --incoming: #839b1a;
+  --incoming-dark: #6a7d13;
 }
 
 .dark {

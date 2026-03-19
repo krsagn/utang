@@ -97,9 +97,11 @@ export function EditDebtForm({
       <form
         className="flex w-full flex-col items-center justify-center gap-7"
         onKeyDown={(e) => {
+          const target = e.target as HTMLElement;
           if (
             e.key === "Enter" &&
-            (e.target as HTMLElement).tagName.toLowerCase() !== "textarea"
+            target.tagName.toLowerCase() !== "textarea" &&
+            target.tagName.toLowerCase() !== "button"
           ) {
             e.preventDefault();
           }
@@ -209,7 +211,10 @@ export function EditDebtForm({
 
           {/* title */}
           <div className="flex flex-col gap-2">
-            <label className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide">
+            <label
+              htmlFor="debt-title"
+              className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide"
+            >
               Title
               <AnimatePresence mode="popLayout" initial={false}>
                 {formData.title.trim() ? (
@@ -246,6 +251,7 @@ export function EditDebtForm({
               </AnimatePresence>
             </label>
             <input
+              id="debt-title"
               type="text"
               maxLength={30}
               value={formData.title}
@@ -266,10 +272,14 @@ export function EditDebtForm({
 
           {/* description */}
           <div className="flex flex-col gap-2">
-            <label className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide">
+            <label
+              htmlFor="debt-description"
+              className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide"
+            >
               Description <span className="text-primary/30">(Optional)</span>
             </label>
             <textarea
+              id="debt-description"
               value={formData.description ?? ""}
               spellCheck={false}
               autoCorrect="off"
@@ -464,7 +474,7 @@ function AmountInput({
                 currencyOpen && "opacity-100",
               )}
             >
-              <div className="relative w-10 flex shrink-0 flex-col items-center justify-center">
+              <div className="relative flex w-10 shrink-0 flex-col items-center justify-center">
                 <AnimatePresence mode="popLayout" initial={false}>
                   <motion.span
                     key={currency}
@@ -628,7 +638,7 @@ function FriendsCombobox({
       {(filteredFriends.length > 0 ||
         (inputValue && inputValue.trim().length > 0)) && (
         <ComboboxContent anchor={anchorRef}>
-          <ComboboxList className="no-scrollbar overflow-y-auto">
+          <ComboboxList className="no-scrollbar overflow-y-auto mask-[linear-gradient(to_bottom,transparent,black_10px,black_calc(100%-15px),transparent)]">
             {filteredFriends.length > 0 ? (
               filteredFriends.map((friend) => (
                 <ComboboxItem
