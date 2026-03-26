@@ -13,18 +13,25 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
+  FieldRequiredIndicator,
 } from "@/shared/ui";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { ChevronDownIcon, X, Asterisk, Check, Pen } from "lucide-react";
-import { cn } from "@/shared/lib";
+import { ChevronDownIcon, X, Pen } from "lucide-react";
+import { cn, useUnsavedChanges } from "@/shared/lib";
 import type { UpdateDebtForm } from "../model/types";
 import type { Debt, DebtType } from "@/entities/debt";
 import { NumericFormat } from "react-number-format";
 import { useFriends } from "@/entities/friendship";
-import { useUnsavedChanges } from "@/shared/lib";
 import { DiscardDebtDialog } from "./DiscardDebtDialog";
+
+const SPRING_TRANSITION = {
+  type: "spring",
+  stiffness: 500,
+  damping: 30,
+  opacity: { type: "tween", duration: 0.08 },
+} as const;
 
 function normaliseAmount(value: string): string {
   if (!value) return "";
@@ -92,6 +99,13 @@ export function EditDebtForm({
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
+  const missing: string[] = [];
+  if (!formData.amount || parseFloat(formData.amount) <= 0)
+    missing.push("amount");
+  if (!withWhom.trim()) missing.push("who it's with");
+  if (!formData.title.trim()) missing.push("title");
+  const isValid = missing.length === 0;
+
   return (
     <>
       <form
@@ -130,39 +144,7 @@ export function EditDebtForm({
             <div className="flex flex-1 flex-col gap-2">
               <label className="text-primary/50 flex items-center gap-0.5 text-xs font-semibold tracking-wide">
                 With Whom?
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {withWhom.trim() ? (
-                    <motion.span
-                      key="with-whom-check"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 30,
-                        opacity: { type: "tween", duration: 0.08 },
-                      }}
-                    >
-                      <Check className="text-primary/40 size-3 stroke-[2.5px]" />
-                    </motion.span>
-                  ) : (
-                    <motion.span
-                      key="with-whom-asterisk"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 30,
-                        opacity: { type: "tween", duration: 0.08 },
-                      }}
-                    >
-                      <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                <FieldRequiredIndicator filled={!!withWhom.trim()} />
               </label>
               <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
                 <FriendsCombobox
@@ -216,39 +198,7 @@ export function EditDebtForm({
               className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide"
             >
               Title
-              <AnimatePresence mode="popLayout" initial={false}>
-                {formData.title.trim() ? (
-                  <motion.span
-                    key="title-check"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 30,
-                      opacity: { type: "tween", duration: 0.08 },
-                    }}
-                  >
-                    <Check className="text-primary/40 size-3 stroke-[2.5px]" />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="title-asterisk"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 30,
-                      opacity: { type: "tween", duration: 0.08 },
-                    }}
-                  >
-                    <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              <FieldRequiredIndicator filled={!!formData.title.trim()} />
             </label>
             <input
               id="debt-title"
@@ -298,56 +248,32 @@ export function EditDebtForm({
 
           {/* actions */}
           <div className="mt-3 flex flex-col items-center gap-5">
-            {(() => {
-              const withWhom =
-                type === "pay" ? formData.lenderName : formData.lendeeName;
-              const missing: string[] = [];
-              if (!formData.amount || parseFloat(formData.amount) <= 0)
-                missing.push("amount");
-              if (!withWhom.trim()) missing.push("who it's with");
-              if (!formData.title.trim()) missing.push("title");
-              const isValid = missing.length === 0;
-              return (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="w-full">
-                      <Button
-                        type="submit"
-                        className={cn(
-                          "squircle bg-primary/90 hover:bg-primary/95 h-12 w-full gap-2.5 text-xs font-normal tracking-wide hover:scale-99 disabled:pointer-events-none disabled:opacity-40",
-                          isPending
-                            ? "disabled:cursor-progress"
-                            : "cursor-pointer",
-                        )}
-                        disabled={isPending || !isValid || !isDirty}
-                      >
-                        <Pen className="size-3 shrink-0 stroke-[2.5px]" />
-                        Save Changes
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  {!isValid && (
-                    <TooltipContent>
-                      Missing: {missing.join(", ")}
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              );
-            })()}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="w-full">
+                  <Button
+                    type="submit"
+                    className={cn(
+                      "squircle bg-primary/90 hover:bg-primary/95 h-12 w-full gap-2.5 text-xs font-normal tracking-wide hover:scale-99 disabled:pointer-events-none disabled:opacity-40",
+                      isPending ? "disabled:cursor-progress" : "cursor-pointer",
+                    )}
+                    disabled={isPending || !isValid || !isDirty}
+                  >
+                    <Pen className="size-3 shrink-0 stroke-[2.5px]" />
+                    Save Changes
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {!isValid && (
+                <TooltipContent>Missing: {missing.join(", ")}</TooltipContent>
+              )}
+            </Tooltip>
             <motion.button
               type="button"
               onClick={onClose}
               className="text-primary/40 hover:text-primary/50 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide transition-colors"
             >
-              <motion.span
-                layout
-                transition={{
-                  type: "spring",
-                  stiffness: 500,
-                  damping: 30,
-                  opacity: { type: "tween", duration: 0.08 },
-                }}
-              >
+              <motion.span layout transition={SPRING_TRANSITION}>
                 <X className="mt-px size-3 stroke-[2.5px]" />
               </motion.span>
               <AnimatePresence mode="popLayout" initial={false}>
@@ -357,12 +283,7 @@ export function EditDebtForm({
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30,
-                    opacity: { type: "tween", duration: 0.08 },
-                  }}
+                  transition={SPRING_TRANSITION}
                 >
                   {isDirty ? "Discard" : "Cancel"}
                 </motion.span>
@@ -591,7 +512,7 @@ function FriendsCombobox({
 
     const processedValue = value.name.toLowerCase();
 
-    return friendFullName.includes(processedValue) ? friend : null;
+    return friendFullName.includes(processedValue);
   });
 
   return (

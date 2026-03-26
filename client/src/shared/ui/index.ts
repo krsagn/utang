@@ -15,3 +15,4 @@ export { Modal } from "./modal";
 export * from "./alert-dialog";
 export * from "./context-menu";
 export * from "./tooltip";
+export { FieldRequiredIndicator } from "./field-required-indicator";
