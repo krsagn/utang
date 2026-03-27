@@ -8,12 +8,16 @@ const emailWorker = new Worker(
   'emailQueue',
   async (job: Job) => {
     const { to, name, amount, currency } = job.data;
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: to,
       subject: 'New debt created!',
       html: `<p>Hi ${name}, a debt of ${currency} ${amount} was created.</p>`,
     });
+
+    if (error) {
+      throw new Error(`Resend error: ${error.message}`);
+    }
   },
   { connection: createRedisConnection() }
 );
