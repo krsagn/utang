@@ -152,6 +152,9 @@ export const createDebt = async (req: Request, res: Response) => {
             name: finalLenderName,
             amount: body.amount,
             currency: body.currency,
+            otherPartyName: finalLendeeName,
+            title: body.title,
+            role: 'lender',
           })
         );
       }
@@ -162,6 +165,9 @@ export const createDebt = async (req: Request, res: Response) => {
             name: finalLendeeName,
             amount: body.amount,
             currency: body.currency,
+            otherPartyName: finalLenderName,
+            title: body.title,
+            role: 'lendee',
           })
         );
       }

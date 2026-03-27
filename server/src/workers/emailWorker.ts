@@ -1,18 +1,19 @@
 import { Worker, Job } from 'bullmq';
 import { Resend } from 'resend';
 import { createRedisConnection } from '../db/redis.js';
+import { debtCreatedEmail } from '../emails/debtCreatedEmail.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const emailWorker = new Worker(
   'emailQueue',
   async (job: Job) => {
-    const { to, name, amount, currency } = job.data;
+    const { to, name, amount, currency, otherPartyName, title, role } = job.data;
     const { error } = await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: to,
       subject: 'New debt created!',
-      html: `<p>Hi ${name}, a debt of ${currency} ${amount} was created.</p>`,
+      html: debtCreatedEmail(name, amount, currency, otherPartyName, title, role),
     });
 
     if (error) {
