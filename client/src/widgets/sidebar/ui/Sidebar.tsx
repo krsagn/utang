@@ -64,7 +64,7 @@ function SidebarLogo({
       aria-expanded={!collapsed}
       animate={{ x: collapsed ? 96 : 0 }}
       transition={TWEEN_TRANSITION}
-      className="group flex h-8 cursor-pointer items-center gap-5 pl-2 select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm"
+      className="group focus-visible:ring-primary/30 flex h-8 cursor-pointer items-center gap-5 rounded-sm pl-2 outline-none select-none focus-visible:ring-2"
       onClick={() => setCollapsed(!collapsed)}
     >
       <span className="font-display text-2xl font-semibold">u!</span>

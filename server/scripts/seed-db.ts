@@ -25,7 +25,7 @@ async function seed() {
       {
         id: kristianId,
         username: 'kristian',
-        email: 'kristian@example.com',
+        email: 'agenakristian@gmail.com',
         firstName: 'Kristian',
         lastName: 'Agena',
       },

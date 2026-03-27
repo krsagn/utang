@@ -4,6 +4,7 @@ import { users, debts } from '../db/schema.js';
 import { or, and, eq, desc, type InferInsertModel } from 'drizzle-orm';
 import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
 import { z } from 'zod';
+import { emailQueue } from '../queues/emailQueue.js';
 
 /**
  * GET /debts
@@ -140,6 +141,33 @@ export const createDebt = async (req: Request, res: Response) => {
     };
 
     const result = await db.insert(debts).values(newDebt).returning();
+
+    if (result.length > 0) {
+      const emailJobs = [];
+
+      if (lenderUser?.email) {
+        emailJobs.push(
+          emailQueue.add('lenderCreationEmail', {
+            to: lenderUser.email,
+            name: finalLenderName,
+            amount: body.amount,
+            currency: body.currency,
+          })
+        );
+      }
+      if (lendeeUser?.email) {
+        emailJobs.push(
+          emailQueue.add('lendeeCreationEmail', {
+            to: lendeeUser.email,
+            name: finalLendeeName,
+            amount: body.amount,
+            currency: body.currency,
+          })
+        );
+      }
+
+      await Promise.all(emailJobs);
+    }
 
     return res.status(201).json(result[0]);
   } catch (error) {
