@@ -16,3 +16,4 @@ export * from "./alert-dialog";
 export * from "./context-menu";
 export * from "./tooltip";
 export { FieldRequiredIndicator } from "./field-required-indicator";
+export { DatePicker } from "./date-picker";

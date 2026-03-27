@@ -12,9 +12,11 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export function FriendsSidebar() {
   const { closeSidebar, isOpen } = useFriendsSidebar();
+
   const { data: acceptedFriends } = useFriends("accepted");
   const { data: pendingRequests } = useFriends("pending");
   const modal = useModal();
+
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showTopGradient, setShowTopGradient] = useState(false);
   const [showBottomGradient, setShowBottomGradient] = useState(false);
@@ -41,13 +43,10 @@ export function FriendsSidebar() {
     };
 
     updateGradientVisibility();
-    const rafId = requestAnimationFrame(updateGradientVisibility);
-
     el.addEventListener("scroll", updateGradientVisibility, { passive: true });
     window.addEventListener("resize", updateGradientVisibility);
 
     return () => {
-      cancelAnimationFrame(rafId);
       el.removeEventListener("scroll", updateGradientVisibility);
       window.removeEventListener("resize", updateGradientVisibility);
     };
