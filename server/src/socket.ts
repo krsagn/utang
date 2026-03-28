@@ -1,13 +1,26 @@
 import { Server } from 'socket.io';
 import { type Server as HttpServer } from 'http';
 import { lucia } from './auth.js';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { createRedisConnection } from './db/redis.js';
 
 export let io: Server;
 
 export function initSocket(httpServer: HttpServer) {
   io = new Server(httpServer, {
-    cors: { origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true },
+    cors: {
+      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      credentials: true,
+    },
   });
+
+  const pubClient = createRedisConnection();
+  const subClient = createRedisConnection();
+
+  pubClient.on('error', (err) => console.error('Redis pub client error:', err));
+  subClient.on('error', (err) => console.error('Redis sub client error:', err));
+
+  io.adapter(createAdapter(pubClient, subClient));
 
   io.use(async (socket, next) => {
     try {
