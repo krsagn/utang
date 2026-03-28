@@ -102,4 +102,15 @@ describe('GET /users', () => {
 
     expect(response.status).toBe(400);
   });
+
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.select).mockReturnValueOnce({
+      from: vi.fn().mockRejectedValue(new Error('Unexpected')),
+    } as any);
+
+    const response = await request(app).get('/users?q=alice');
+
+    expect(response.status).toBe(500);
+    expect(response.body).toHaveProperty('error');
+  });
 });

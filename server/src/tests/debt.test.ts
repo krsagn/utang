@@ -40,6 +40,10 @@ vi.mock('../db/index.js', () => {
   };
 });
 
+vi.mock('../queues/emailQueue.js', () => ({
+  emailQueue: { add: vi.fn().mockResolvedValue({}) },
+}));
+
 vi.mock('../auth.js', () => ({
   lucia: {
     createSession: vi.fn(),
@@ -113,6 +117,74 @@ describe('POST /debts', () => {
 
     expect(response.status).toBe(400);
   });
+
+  it('should return 500 if insert returns empty', async () => {
+    vi.mocked(db.insert).mockReturnValueOnce({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([]),
+      }),
+    } as any);
+
+    const response = await request(app)
+      .post('/debts')
+      .send(createMockDebt({ lenderId: mockUserId }));
+
+    expect(response.status).toBe(500);
+  });
+
+  it('should return 400 if referenced user does not exist', async () => {
+    vi.mocked(db.insert).mockReturnValueOnce({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockRejectedValue({ code: '23503' }),
+      }),
+    } as any);
+
+    const response = await request(app)
+      .post('/debts')
+      .send(createMockDebt({ lenderId: mockUserId }));
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Referenced user does not exist');
+  });
+
+  it('should return 409 on duplicate entry', async () => {
+    vi.mocked(db.insert).mockReturnValueOnce({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockRejectedValue({ code: '23505' }),
+      }),
+    } as any);
+
+    const response = await request(app)
+      .post('/debts')
+      .send(createMockDebt({ lenderId: mockUserId }));
+
+    expect(response.status).toBe(409);
+    expect(response.body.error).toBe('Duplicate entry');
+  });
+
+  it('should queue an email if lender is a registered user', async () => {
+    const { emailQueue } = await import('../queues/emailQueue.js');
+
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: mockUserId,
+      firstName: 'Alice',
+      email: 'alice@example.com',
+    } as any);
+
+    const response = await request(app)
+      .post('/debts')
+      .send(createMockDebt({ lenderId: mockUserId }));
+
+    expect(response.status).toBe(201);
+    expect(emailQueue.add).toHaveBeenCalledTimes(1);
+    expect(emailQueue.add).toHaveBeenCalledWith(
+      'lenderCreationEmail',
+      expect.objectContaining({
+        to: 'alice@example.com',
+        role: 'lender',
+      })
+    );
+  });
 });
 
 describe('GET /debts', () => {
@@ -177,6 +249,43 @@ describe('PATCH /debts/:id', () => {
 
     expect(response.status).toBe(404);
   });
+
+  it('should refresh lender name if lenderId is provided', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: mockUserId,
+      firstName: 'Alice',
+      email: 'alice@example.com',
+    } as any);
+
+    const setSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'mock-debt-id' }]),
+      }),
+    });
+
+    vi.mocked(db.update).mockReturnValueOnce({ set: setSpy } as any);
+
+    const response = await request(app)
+      .patch('/debts/12345')
+      .send({ lenderId: mockUserId });
+
+    expect(response.status).toBe(200);
+    expect(setSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ lenderName: 'Alice' })
+    );
+  });
+
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.update).mockReturnValueOnce({
+      set: vi.fn().mockRejectedValue(new Error('Unexpected')),
+    } as any);
+
+    const response = await request(app)
+      .patch('/debts/12345')
+      .send({ status: 'paid' });
+
+    expect(response.status).toBe(500);
+  });
 });
 
 describe('DELETE /debts/:id', () => {
@@ -196,6 +305,16 @@ describe('DELETE /debts/:id', () => {
     const response = await request(app).delete('/debts/12345');
 
     expect(response.status).toBe(404);
+  });
+
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.delete).mockReturnValueOnce({
+      where: vi.fn().mockRejectedValue(new Error('Unexpected')),
+    } as any);
+
+    const response = await request(app).delete('/debts/12345');
+
+    expect(response.status).toBe(500);
   });
 });
 

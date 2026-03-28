@@ -6,6 +6,7 @@ import { users } from '../db/schema.js';
 import { lucia } from '../auth.js';
 import * as argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
+import { isDbError } from '../lib/utils.js';
 
 /**
  * POST /auth/users
@@ -42,7 +43,7 @@ export const signUp = async (req: Request, res: Response) => {
       message: 'User created',
       user: { id: userId, ...userData },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return res
         .status(400)
@@ -50,10 +51,12 @@ export const signUp = async (req: Request, res: Response) => {
     }
 
     // Handle Unique Key violations (Postgres Error 23505)
-    if (error.code === '23505') {
-      return res
-        .status(409)
-        .json({ error: 'Email or username already exists' });
+    if (isDbError(error)) {
+      if (error.code === '23505') {
+        return res
+          .status(409)
+          .json({ error: 'Email or username already exists' });
+      }
     }
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });

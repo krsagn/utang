@@ -1,5 +1,5 @@
 {
-  "name": "pern-learning",
+  "name": "utang",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,7 +13,8 @@
     "db:reset": "tsx -r dotenv/config scripts/reset-db.ts",
     "db:seed": "tsx -r dotenv/config scripts/seed-db.ts",
     "db:fresh": "npm run db:reset && npm run db:seed",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "worker": "tsx -r dotenv/config src/workers/emailWorker.ts"
   },
   "keywords": [],
   "author": "",
@@ -22,12 +23,15 @@
   "dependencies": {
     "@lucia-auth/adapter-drizzle": "^1.1.0",
     "argon2": "^0.44.0",
+    "bullmq": "^5.71.1",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
+    "ioredis": "^5.10.1",
     "lucia": "^3.2.2",
     "pg": "^8.18.0",
+    "resend": "^6.9.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {

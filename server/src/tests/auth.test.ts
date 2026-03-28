@@ -82,6 +82,17 @@ describe('POST /auth/users', () => {
     expect(response.status).toBe(409);
     expect(response.body.error).toBe('Email or username already exists');
   });
+
+  it('should return 500 on unexpected error', async () => {
+    const { db } = await import('../db/index.js');
+    vi.mocked(db.insert).mockImplementationOnce(() => {
+      throw new Error('Unexpected');
+    });
+
+    const response = await request(app).post('/auth/users').send(createMockUser());
+
+    expect(response.status).toBe(500);
+  });
 });
 
 describe('POST /auth/sessions', () => {
@@ -126,6 +137,17 @@ describe('POST /auth/sessions', () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('Invalid email or password');
+  });
+
+  it('should return 500 on unexpected error', async () => {
+    const { db } = await import('../db/index.js');
+    vi.mocked(db.query.users.findFirst).mockRejectedValueOnce(new Error('Unexpected'));
+
+    const response = await request(app)
+      .post('/auth/sessions')
+      .send({ email: 'alice@example.com', password: 'password123' });
+
+    expect(response.status).toBe(500);
   });
 
   it('should return 400 if password is wrong', async () => {

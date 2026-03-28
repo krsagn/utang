@@ -83,6 +83,23 @@ describe('GET /friendships', () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual([{ id: 'mock-friendship-id' }]);
   });
+
+  it('should return 200 with type=pending filter', async () => {
+    const response = await request(app).get('/friendships?type=pending');
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.select).mockReturnValueOnce({
+      from: vi.fn().mockRejectedValue(new Error('Unexpected')),
+    } as any);
+
+    const response = await request(app).get('/friendships');
+
+    expect(response.status).toBe(500);
+  });
 });
 
 describe('POST /friendships', () => {
@@ -144,6 +161,38 @@ describe('POST /friendships', () => {
     );
   });
 
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: createMockFriendship().id,
+    } as any);
+
+    vi.mocked(db.insert).mockImplementationOnce(() => {
+      throw new Error('Unexpected');
+    });
+
+    const response = await request(app)
+      .post('/friendships')
+      .send(createMockFriendship());
+
+    expect(response.status).toBe(500);
+  });
+
+  it('should return 500 if db error code is unhandled', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: createMockFriendship().id,
+    } as any);
+
+    vi.mocked(db.insert).mockImplementationOnce(() => {
+      throw { code: '99999' };
+    });
+
+    const response = await request(app)
+      .post('/friendships')
+      .send(createMockFriendship());
+
+    expect(response.status).toBe(500);
+  });
+
   it('should return 409 if friendship already exists', async () => {
     const redundantFriendship = createMockFriendship();
 
@@ -203,6 +252,16 @@ describe('PATCH /friendships/:id', () => {
       })
     );
   });
+
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.update).mockReturnValueOnce({
+      set: vi.fn().mockRejectedValue(new Error('Unexpected')),
+    } as any);
+
+    const response = await request(app).patch('/friendships/12345');
+
+    expect(response.status).toBe(500);
+  });
 });
 
 describe('DELETE /friendships/:id', () => {
@@ -223,5 +282,15 @@ describe('DELETE /friendships/:id', () => {
     const response = await request(app).delete('/friendships/12345');
 
     expect(response.status).toBe(204);
+  });
+
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.delete).mockReturnValueOnce({
+      where: vi.fn().mockRejectedValue(new Error('Unexpected')),
+    } as any);
+
+    const response = await request(app).delete('/friendships/12345');
+
+    expect(response.status).toBe(500);
   });
 });

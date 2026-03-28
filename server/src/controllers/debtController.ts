@@ -4,6 +4,8 @@ import { users, debts } from '../db/schema.js';
 import { or, and, eq, desc, type InferInsertModel } from 'drizzle-orm';
 import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
 import { z } from 'zod';
+import { emailQueue } from '../queues/emailQueue.js';
+import { handleDbErrorResponse } from '../lib/utils.js';
 
 /**
  * GET /debts
@@ -141,11 +143,54 @@ export const createDebt = async (req: Request, res: Response) => {
 
     const result = await db.insert(debts).values(newDebt).returning();
 
+    if (!result[0]) {
+      return res.status(500).json({ error: 'Insert failed' });
+    } else {
+      const emailJobs = [];
+
+      if (lenderUser?.email) {
+        emailJobs.push(
+          emailQueue.add('lenderCreationEmail', {
+            to: lenderUser.email,
+            name: finalLenderName,
+            amount: body.amount,
+            currency: body.currency,
+            otherPartyName: finalLendeeName,
+            title: body.title,
+            role: 'lender',
+          })
+        );
+      }
+      if (lendeeUser?.email) {
+        emailJobs.push(
+          emailQueue.add('lendeeCreationEmail', {
+            to: lendeeUser.email,
+            name: finalLendeeName,
+            amount: body.amount,
+            currency: body.currency,
+            otherPartyName: finalLenderName,
+            title: body.title,
+            role: 'lendee',
+          })
+        );
+      }
+
+      Promise.allSettled(emailJobs).then((results) => {
+        results.forEach((result) => {
+          if (result.status === 'rejected') {
+            console.error('Failed to queue email:', result.reason);
+          }
+        });
+      });
+    }
+
     return res.status(201).json(result[0]);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ errors: error.issues });
     }
+
+    if (handleDbErrorResponse(error, res)) return;
 
     console.error(error);
     return res.status(500).json({ error: 'Server error' });
@@ -214,6 +259,8 @@ export const updateDebt = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ errors: error.issues });
     }
+
+    if (handleDbErrorResponse(error, res)) return;
 
     console.error(error);
     return res.status(500).json({ error: 'Server error' });

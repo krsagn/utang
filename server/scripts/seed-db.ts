@@ -25,7 +25,7 @@ async function seed() {
       {
         id: kristianId,
         username: 'kristian',
-        email: 'kristian@example.com',
+        email: process.env.SEED_USER_EMAIL ?? 'kristian@example.com',
         firstName: 'Kristian',
         lastName: 'Agena',
       },
