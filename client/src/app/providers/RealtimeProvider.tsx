@@ -6,8 +6,12 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const onDebtChange = () => queryClient.invalidateQueries({ queryKey: ["debts"] });
-    const onFriendshipChange = () => queryClient.invalidateQueries({ queryKey: ["friendships"] });
+    const onDebtChange = () =>
+      queryClient.invalidateQueries({ queryKey: ["debts"] });
+    const onFriendshipChange = () =>
+      queryClient.invalidateQueries({ queryKey: ["friendships"] });
+    const onConnectError = (err: Error) =>
+      console.error("Socket connection error:", err);
 
     socket.on("debt:created", onDebtChange);
     socket.on("debt:updated", onDebtChange);
@@ -15,6 +19,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     socket.on("friendship:requested", onFriendshipChange);
     socket.on("friendship:accepted", onFriendshipChange);
     socket.on("friendship:deleted", onFriendshipChange);
+    socket.on("connect_error", onConnectError);
 
     return () => {
       socket.off("debt:created", onDebtChange);
@@ -23,6 +28,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       socket.off("friendship:requested", onFriendshipChange);
       socket.off("friendship:accepted", onFriendshipChange);
       socket.off("friendship:deleted", onFriendshipChange);
+      socket.off("connect_error", onConnectError);
     };
   }, [queryClient]);
 
