@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { lucia } from '../auth.js';
 import { db } from '../db/index.js';
+import { io } from '../socket.js';
 
 // Mock database
 vi.mock('../db/index.js', () => {
@@ -55,6 +56,14 @@ vi.mock('../auth.js', () => ({
   },
 }));
 
+vi.mock('../socket.js', () => ({
+  io: {
+    to: vi.fn().mockReturnValue({
+      emit: vi.fn(),
+    }),
+  },
+}));
+
 const { default: app } = await import('../app.js');
 const { default: request } = await import('supertest');
 
@@ -63,6 +72,7 @@ const mockUserId = '00000000-0000-0000-0000-000000000000';
 beforeEach(() => {
   vi.clearAllMocks();
 
+  vi.mocked(io.to).mockReturnValue({ emit: vi.fn() } as any);
   vi.mocked(lucia.readSessionCookie).mockReturnValue(
     'auth-session=mock-cookie'
   );
@@ -185,6 +195,26 @@ describe('POST /debts', () => {
       })
     );
   });
+
+  it('should emit debt:created to lender', async () => {
+    vi.mocked(db.insert).mockReturnValueOnce({
+      values: vi.fn().mockReturnValue({
+        returning: vi
+          .fn()
+          .mockResolvedValue([{ id: 'mock-debt-id', lenderId: mockUserId }]),
+      }),
+    } as any);
+
+    await request(app)
+      .post('/debts')
+      .send(createMockDebt({ lenderId: mockUserId }));
+
+    expect(io.to).toHaveBeenCalledWith(mockUserId);
+    expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
+      'debt:created',
+      expect.objectContaining({ id: 'mock-debt-id' })
+    );
+  });
 });
 
 describe('GET /debts', () => {
@@ -286,6 +316,26 @@ describe('PATCH /debts/:id', () => {
 
     expect(response.status).toBe(500);
   });
+
+  it('should emit debt:updated to lender', async () => {
+    vi.mocked(db.update).mockReturnValueOnce({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi
+            .fn()
+            .mockResolvedValue([{ id: 'mock-debt-id', lenderId: mockUserId }]),
+        }),
+      }),
+    } as any);
+
+    await request(app).patch('/debts/12345').send({ status: 'paid' });
+
+    expect(io.to).toHaveBeenCalledWith(mockUserId);
+    expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
+      'debt:updated',
+      expect.objectContaining({ id: 'mock-debt-id' })
+    );
+  });
 });
 
 describe('DELETE /debts/:id', () => {
@@ -315,6 +365,24 @@ describe('DELETE /debts/:id', () => {
     const response = await request(app).delete('/debts/12345');
 
     expect(response.status).toBe(500);
+  });
+
+  it('should emit debt:deleted to lender', async () => {
+    vi.mocked(db.delete).mockReturnValueOnce({
+      where: vi.fn().mockReturnValue({
+        returning: vi
+          .fn()
+          .mockResolvedValue([{ id: 'mock-debt-id', lenderId: mockUserId }]),
+      }),
+    } as any);
+
+    await request(app).delete('/debts/12345');
+
+    expect(io.to).toHaveBeenCalledWith(mockUserId);
+    expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
+      'debt:deleted',
+      expect.objectContaining({ id: 'mock-debt-id' })
+    );
   });
 });
 

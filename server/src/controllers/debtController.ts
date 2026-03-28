@@ -6,6 +6,7 @@ import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
 import { z } from 'zod';
 import { emailQueue } from '../queues/emailQueue.js';
 import { handleDbErrorResponse } from '../lib/utils.js';
+import { io } from '../socket.js';
 
 /**
  * GET /debts
@@ -143,9 +144,18 @@ export const createDebt = async (req: Request, res: Response) => {
 
     const result = await db.insert(debts).values(newDebt).returning();
 
-    if (!result[0]) {
+    // email jobs added if result returns a non-empty array
+    if (result.length === 0) {
       return res.status(500).json({ error: 'Insert failed' });
     } else {
+      // socket updates to each party
+      if (result[0]?.lenderId) {
+        io.to(result[0].lenderId).emit('debt:created', result[0]);
+      }
+      if (result[0]?.lendeeId) {
+        io.to(result[0].lendeeId).emit('debt:created', result[0]);
+      }
+
       const emailJobs = [];
 
       if (lenderUser?.email) {
@@ -252,9 +262,17 @@ export const updateDebt = async (req: Request, res: Response) => {
 
     if (result.length === 0) {
       return res.status(404).json({ error: 'Debt not found or unauthorized' });
-    }
+    } else {
+      // socket updates to each party
+      if (result[0]?.lenderId) {
+        io.to(result[0].lenderId).emit('debt:updated', result[0]);
+      }
+      if (result[0]?.lendeeId) {
+        io.to(result[0].lendeeId).emit('debt:updated', result[0]);
+      }
 
-    return res.json(result[0]);
+      return res.json(result[0]);
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ errors: error.issues });
@@ -287,6 +305,14 @@ export const deleteDebt = async (req: Request, res: Response) => {
     if (result.length === 0) {
       return res.status(404).json({ error: 'Debt not found or unauthorized' });
     } else {
+      // socket updates to each party
+      if (result[0]?.lenderId) {
+        io.to(result[0].lenderId).emit('debt:deleted', result[0]);
+      }
+      if (result[0]?.lendeeId) {
+        io.to(result[0].lendeeId).emit('debt:deleted', result[0]);
+      }
+
       return res.status(204).send();
     }
   } catch (error) {
