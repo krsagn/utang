@@ -88,6 +88,7 @@ describe('GET /friendships', () => {
     const response = await request(app).get('/friendships?type=pending');
 
     expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
   });
 
   it('should return 500 on unexpected error', async () => {

@@ -153,12 +153,12 @@ export function EditDebtForm({
                     if (type === "pay") {
                       updateFormData({
                         lenderName: name,
-                        lenderId: id,
+                        lenderId: id ?? null,
                       });
                     } else {
                       updateFormData({
                         lendeeName: name,
-                        lendeeId: id,
+                        lendeeId: id ?? null,
                       });
                     }
                   }}

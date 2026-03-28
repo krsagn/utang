@@ -111,5 +111,6 @@ describe('GET /users', () => {
     const response = await request(app).get('/users?q=alice');
 
     expect(response.status).toBe(500);
+    expect(response.body).toHaveProperty('error');
   });
 });

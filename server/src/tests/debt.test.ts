@@ -144,6 +144,7 @@ describe('POST /debts', () => {
       .send(createMockDebt({ lenderId: mockUserId }));
 
     expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Referenced user does not exist');
   });
 
   it('should return 409 on duplicate entry', async () => {
@@ -158,6 +159,7 @@ describe('POST /debts', () => {
       .send(createMockDebt({ lenderId: mockUserId }));
 
     expect(response.status).toBe(409);
+    expect(response.body.error).toBe('Duplicate entry');
   });
 
   it('should queue an email if lender is a registered user', async () => {
@@ -174,6 +176,7 @@ describe('POST /debts', () => {
       .send(createMockDebt({ lenderId: mockUserId }));
 
     expect(response.status).toBe(201);
+    expect(emailQueue.add).toHaveBeenCalledTimes(1);
     expect(emailQueue.add).toHaveBeenCalledWith(
       'lenderCreationEmail',
       expect.objectContaining({

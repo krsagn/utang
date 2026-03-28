@@ -14,14 +14,12 @@ export const debtCreatedEmail = (
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Utang — New Debt</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
-  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,500&f[]=clash-display@600&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       background-color: #f0ece4;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       padding: 40px 16px;
       color: #1a1a1a;
     }
@@ -40,7 +38,7 @@ export const debtCreatedEmail = (
     }
 
     .logo-text {
-      font-family: 'Clash Display', sans-serif;
+      font-family: 'Clash Display', Georgia, 'Times New Roman', serif;
       font-weight: 600;
       font-size: 20px;
       letter-spacing: 0.08em;
@@ -85,7 +83,7 @@ export const debtCreatedEmail = (
     }
 
     .card-top-label {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       font-size: 11px;
       font-weight: 500;
       letter-spacing: 1.5px;
@@ -95,7 +93,7 @@ export const debtCreatedEmail = (
     }
 
     .card-top-amount {
-      font-family: 'Cabinet Grotesk', sans-serif;
+      font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       font-size: 52px;
       font-weight: 800;
       color: #ffffff;
@@ -121,7 +119,7 @@ export const debtCreatedEmail = (
     }
 
     .greeting {
-      font-family: 'Cabinet Grotesk', sans-serif;
+      font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       font-size: 22px;
       font-weight: 700;
       letter-spacing: 0.08em;
@@ -213,7 +211,7 @@ export const debtCreatedEmail = (
       color: #ffffff;
       text-decoration: none;
       text-align: center;
-      font-family: 'Cabinet Grotesk', sans-serif;
+      font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       font-size: 15px;
       font-weight: 700;
       letter-spacing: 0.3px;
@@ -232,7 +230,7 @@ export const debtCreatedEmail = (
     }
 
     .footer-brand {
-      font-family: 'Cabinet Grotesk', sans-serif;
+      font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       font-size: 13px;
       font-weight: 700;
       color: #aaa;

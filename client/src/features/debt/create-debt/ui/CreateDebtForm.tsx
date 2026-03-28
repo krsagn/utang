@@ -56,7 +56,12 @@ export function CreateDebtForm({
   const withWhom = type === "pay" ? formData.lenderName : formData.lendeeName;
 
   const isDirty =
-    JSON.stringify({ type, ...formData }) !== JSON.stringify(initialSnapshot);
+    JSON.stringify({
+      type,
+      ...formData,
+      description: formData.description || undefined,
+      deadline: formData.deadline || undefined,
+    }) !== JSON.stringify(initialSnapshot);
 
   const { showDialog, confirmDiscard, cancelDiscard } = useUnsavedChanges({
     enabled: !isPending,
@@ -100,7 +105,8 @@ export function CreateDebtForm({
           if (
             e.key === "Enter" &&
             target.tagName.toLowerCase() !== "textarea" &&
-            target.tagName.toLowerCase() !== "button"
+            target.tagName.toLowerCase() !== "button" &&
+            !target.closest("[data-combobox]")
           ) {
             e.preventDefault();
           }
@@ -133,7 +139,7 @@ export function CreateDebtForm({
                 With Whom?
                 <FieldRequiredIndicator filled={Boolean(withWhom.trim())} />
               </label>
-              <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
+              <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors" data-combobox>
                 <FriendSelectCombobox
                   value={{
                     name:
