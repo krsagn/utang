@@ -32,7 +32,7 @@ export function FriendSelectCombobox({
     const friendFullName =
       `${friend.friendFirstName} ${friend.friendLastName}`.toLowerCase();
 
-    const processedValue = value.name.toLowerCase();
+    const processedValue = inputValue.toLowerCase();
 
     return friendFullName.includes(processedValue);
   });
@@ -45,6 +45,12 @@ export function FriendSelectCombobox({
       // When a user specifically CLICKS a friend from the dropdown list
       onValueChange={(selectedId) => {
         if (!selectedId) return;
+
+        // Stranger sentinel — user clicked the fallback item, commit the typed name as-is
+        if (selectedId === '__stranger__') {
+          onChange({ name: inputValue, id: undefined });
+          return;
+        }
 
         // Find the full friend object using the ID
         const selectedFriend = safeFriends.find(
@@ -111,7 +117,7 @@ export function FriendSelectCombobox({
               ))
             ) : (
               <ComboboxItem
-                value={inputValue}
+                value="__stranger__"
                 className="group flex flex-col items-start gap-0 text-xs"
               >
                 <span className="opacity-50 transition-opacity group-hover:opacity-100 group-data-[selected=true]:opacity-100">

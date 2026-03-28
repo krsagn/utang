@@ -1,3 +1,5 @@
+import { escapeHtml } from '../lib/utils.js';
+
 export const debtCreatedEmail = (
   name: string,
   amount: number,
@@ -264,8 +266,8 @@ export const debtCreatedEmail = (
       <!-- Dark top section -->
       <div class="card-top">
         <div class="card-top-label">New debt recorded</div>
-        <div class="card-top-amount">${currency} ${amount}</div>
-        <div class="card-top-between">between <strong>you</strong> and <strong>${otherPartyName}</strong></div>
+        <div class="card-top-amount">${escapeHtml(currency)} ${amount}</div>
+        <div class="card-top-between">between <strong>you</strong> and <strong>${escapeHtml(otherPartyName)}</strong></div>
       </div>
 
       <div class="divider"></div>
@@ -273,10 +275,10 @@ export const debtCreatedEmail = (
       <!-- Body -->
       <div class="card-body">
 
-        <div class="greeting">Hey ${name} 👋</div>
+        <div class="greeting">Hey ${escapeHtml(name)} 👋</div>
 
         <p class="message">
-          No stress, but it's on the books! A debt of <strong>${currency} ${amount}</strong> has been recorded between you and <strong>${otherPartyName}</strong>. You currently <strong>${role === 'lendee' ? 'owe' : 'are owed'}</strong> this amount.
+          No stress, but it's on the books! A debt of <strong>${escapeHtml(currency)} ${amount}</strong> has been recorded between you and <strong>${escapeHtml(otherPartyName)}</strong>. You currently <strong>${role === 'lendee' ? 'owe' : 'are owed'}</strong> this amount.
         </p>
 
         <!-- Description detail -->
@@ -289,7 +291,7 @@ export const debtCreatedEmail = (
           </div>
           <div>
             <div class="detail-label">Description</div>
-            <div class="detail-value">${title}</div>
+            <div class="detail-value">${escapeHtml(title)}</div>
           </div>
         </div>
 
@@ -299,7 +301,7 @@ export const debtCreatedEmail = (
           Pending
         </div>
 
-        <!-- CTA -->
+        <!-- TODO: Replace href with real debt URL once frontend routing is stable -->
         <a href="#" class="cta-button">View Debt →</a>
 
       </div>

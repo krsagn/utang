@@ -9,12 +9,7 @@ import {
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Plus,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Plus } from "lucide-react";
 import { cn, useUnsavedChanges } from "@/shared/lib";
 import type { NewDebt } from "../model/types";
 import { AmountInput } from "@/entities/debt";
@@ -136,9 +131,7 @@ export function CreateDebtForm({
             <div className="flex flex-1 flex-col gap-2">
               <label className="text-primary/50 flex items-center gap-0.5 text-xs font-semibold tracking-wide">
                 With Whom?
-                <FieldRequiredIndicator
-                  filled={withWhom.trim() ? true : false}
-                />
+                <FieldRequiredIndicator filled={Boolean(withWhom.trim())} />
               </label>
               <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
                 <FriendSelectCombobox
@@ -157,13 +150,13 @@ export function CreateDebtForm({
                       setFormData({
                         ...formData,
                         lenderName: name,
-                        lenderId: id,
+                        lenderId: id ?? null,
                       });
                     } else {
                       setFormData({
                         ...formData,
                         lendeeName: name,
-                        lendeeId: id,
+                        lendeeId: id ?? null,
                       });
                     }
                   }}
@@ -195,9 +188,7 @@ export function CreateDebtForm({
               className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide"
             >
               Title
-              <FieldRequiredIndicator
-                filled={formData.title.trim() ? true : false}
-              />
+              <FieldRequiredIndicator filled={Boolean(formData.title.trim())} />
             </label>
             <input
               id="debt-title"

@@ -3,6 +3,11 @@ import { Resend } from 'resend';
 import { createRedisConnection } from '../db/redis.js';
 import { debtCreatedEmail } from '../emails/debtCreatedEmail.js';
 
+if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {
+  console.error('Missing required env vars: RESEND_API_KEY and EMAIL_FROM must be set');
+  process.exit(1);
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const emailWorker = new Worker(

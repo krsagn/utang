@@ -135,7 +135,7 @@ export function EditDebtForm({
             <div className="flex flex-1 flex-col gap-2">
               <label className="text-primary/50 flex items-center gap-0.5 text-xs font-semibold tracking-wide">
                 With Whom?
-                <FieldRequiredIndicator filled={!!withWhom.trim()} />
+                <FieldRequiredIndicator filled={Boolean(withWhom.trim())} />
               </label>
               <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
                 <FriendSelectCombobox
@@ -189,7 +189,7 @@ export function EditDebtForm({
               className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide"
             >
               Title
-              <FieldRequiredIndicator filled={!!formData.title.trim()} />
+              <FieldRequiredIndicator filled={Boolean(formData.title.trim())} />
             </label>
             <input
               id="debt-title"
@@ -298,14 +298,12 @@ function TypeDisplay({ type }: { type: DebtType }) {
   return (
     <div className="flex flex-col items-center gap-1 opacity-50 select-none">
       <img
-        key={type}
         src={isOutgoing ? "/outgoing-arrow.svg" : "/incoming-arrow.svg"}
         alt=""
         aria-hidden
         className={cn("h-10", isOutgoing && "mt-2 -mb-2")}
       />
       <span
-        key={type}
         className={cn(
           "font-heading text-4xl font-extrabold whitespace-nowrap",
           isOutgoing ? "text-outgoing" : "text-incoming",

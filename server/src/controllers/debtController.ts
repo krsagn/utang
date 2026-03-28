@@ -5,7 +5,7 @@ import { or, and, eq, desc, type InferInsertModel } from 'drizzle-orm';
 import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
 import { z } from 'zod';
 import { emailQueue } from '../queues/emailQueue.js';
-import { isDbError } from '../lib/utils.js';
+import { handleDbErrorResponse } from '../lib/utils.js';
 
 /**
  * GET /debts
@@ -190,16 +190,7 @@ export const createDebt = async (req: Request, res: Response) => {
       return res.status(400).json({ errors: error.issues });
     }
 
-    if (isDbError(error)) {
-      if (error.code === '23503') {
-        return res
-          .status(400)
-          .json({ error: 'Referenced user does not exist' });
-      }
-      if (error.code === '23505') {
-        return res.status(409).json({ error: 'Duplicate entry' });
-      }
-    }
+    if (handleDbErrorResponse(error, res)) return;
 
     console.error(error);
     return res.status(500).json({ error: 'Server error' });
@@ -268,6 +259,8 @@ export const updateDebt = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ errors: error.issues });
     }
+
+    if (handleDbErrorResponse(error, res)) return;
 
     console.error(error);
     return res.status(500).json({ error: 'Server error' });

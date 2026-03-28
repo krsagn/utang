@@ -28,7 +28,7 @@ export function DatePicker({
             )}
           >
             {value ? (
-              value.toLocaleDateString("en-US", {
+              value.toLocaleDateString(undefined, {
                 month: "long",
                 day: "numeric",
                 year: "numeric",
