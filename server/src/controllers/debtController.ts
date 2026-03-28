@@ -149,11 +149,11 @@ export const createDebt = async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Insert failed' });
     } else {
       // socket updates to each party
-      if (result[0]?.lenderId) {
-        io.to(result[0].lenderId).emit('debt:created', result[0]);
+      if (result[0]!.lenderId) {
+        io.to(result[0]!.lenderId).emit('debt:created', result[0]);
       }
-      if (result[0]?.lendeeId) {
-        io.to(result[0].lendeeId).emit('debt:created', result[0]);
+      if (result[0]!.lendeeId) {
+        io.to(result[0]!.lendeeId).emit('debt:created', result[0]);
       }
 
       const emailJobs = [];
@@ -264,11 +264,11 @@ export const updateDebt = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Debt not found or unauthorized' });
     } else {
       // socket updates to each party
-      if (result[0]?.lenderId) {
-        io.to(result[0].lenderId).emit('debt:updated', result[0]);
+      if (result[0]!.lenderId) {
+        io.to(result[0]!.lenderId).emit('debt:updated', result[0]);
       }
-      if (result[0]?.lendeeId) {
-        io.to(result[0].lendeeId).emit('debt:updated', result[0]);
+      if (result[0]!.lendeeId) {
+        io.to(result[0]!.lendeeId).emit('debt:updated', result[0]);
       }
 
       return res.json(result[0]);
@@ -306,11 +306,11 @@ export const deleteDebt = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Debt not found or unauthorized' });
     } else {
       // socket updates to each party
-      if (result[0]?.lenderId) {
-        io.to(result[0].lenderId).emit('debt:deleted', result[0]);
+      if (result[0]!.lenderId) {
+        io.to(result[0]!.lenderId).emit('debt:deleted', result[0]);
       }
-      if (result[0]?.lendeeId) {
-        io.to(result[0].lendeeId).emit('debt:deleted', result[0]);
+      if (result[0]!.lendeeId) {
+        io.to(result[0]!.lendeeId).emit('debt:deleted', result[0]);
       }
 
       return res.status(204).send();

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { lucia } from '../auth.js';
 import { db } from '../db/index.js';
+import { io } from '../socket.js';
 
 // Mock database
 vi.mock('../db/index.js', () => {
@@ -43,6 +44,14 @@ vi.mock('../db/index.js', () => {
   };
 });
 
+vi.mock('../socket.js', () => ({
+  io: {
+    to: vi.fn().mockReturnValue({
+      emit: vi.fn(),
+    }),
+  },
+}));
+
 vi.mock('../auth.js', () => ({
   lucia: {
     createSession: vi.fn(),
@@ -62,6 +71,7 @@ const mockUserId = '00000000-0000-0000-0000-000000000000';
 beforeEach(() => {
   vi.clearAllMocks();
 
+  vi.mocked(io.to).mockReturnValue({ emit: vi.fn() } as any);
   vi.mocked(lucia.readSessionCookie).mockReturnValue(
     'auth-session=mock-cookie'
   );
@@ -193,6 +203,28 @@ describe('POST /friendships', () => {
     expect(response.status).toBe(500);
   });
 
+  it('should emit friendship:requested to target user', async () => {
+    const validFriendship = createMockFriendship();
+
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: validFriendship.id,
+    } as any);
+
+    vi.mocked(db.insert).mockReturnValueOnce({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'mock-friendship-id' }]),
+      }),
+    } as any);
+
+    await request(app).post('/friendships').send(validFriendship);
+
+    expect(io.to).toHaveBeenCalledWith(validFriendship.id);
+    expect(io.to(validFriendship.id).emit).toHaveBeenCalledWith(
+      'friendship:requested',
+      expect.objectContaining({ id: 'mock-friendship-id' })
+    );
+  });
+
   it('should return 409 if friendship already exists', async () => {
     const redundantFriendship = createMockFriendship();
 
@@ -253,6 +285,26 @@ describe('PATCH /friendships/:id', () => {
     );
   });
 
+  it('should emit friendship:accepted to requester', async () => {
+    vi.mocked(db.update).mockReturnValueOnce({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([
+            { id: 'mock-friendship-id', requesterId: mockUserId },
+          ]),
+        }),
+      }),
+    } as any);
+
+    await request(app).patch('/friendships/12345');
+
+    expect(io.to).toHaveBeenCalledWith(mockUserId);
+    expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
+      'friendship:accepted',
+      expect.objectContaining({ id: 'mock-friendship-id' })
+    );
+  });
+
   it('should return 500 on unexpected error', async () => {
     vi.mocked(db.update).mockReturnValueOnce({
       set: vi.fn().mockRejectedValue(new Error('Unexpected')),
@@ -282,6 +334,26 @@ describe('DELETE /friendships/:id', () => {
     const response = await request(app).delete('/friendships/12345');
 
     expect(response.status).toBe(204);
+  });
+
+  it('should emit friendship:deleted to other user', async () => {
+    const otherUserId = '11111111-1111-1111-1111-111111111111';
+
+    vi.mocked(db.delete).mockReturnValueOnce({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([
+          { id: 'mock-friendship-id', userId1: mockUserId, userId2: otherUserId },
+        ]),
+      }),
+    } as any);
+
+    await request(app).delete('/friendships/12345');
+
+    expect(io.to).toHaveBeenCalledWith(otherUserId);
+    expect(io.to(otherUserId).emit).toHaveBeenCalledWith(
+      'friendship:deleted',
+      expect.objectContaining({ id: 'mock-friendship-id' })
+    );
   });
 
   it('should return 500 on unexpected error', async () => {
