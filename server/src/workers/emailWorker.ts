@@ -8,12 +8,20 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const emailWorker = new Worker(
   'emailQueue',
   async (job: Job) => {
-    const { to, name, amount, currency, otherPartyName, title, role } = job.data;
+    const { to, name, amount, currency, otherPartyName, title, role } =
+      job.data;
     const { error } = await resend.emails.send({
       from: process.env.EMAIL_FROM!,
-      to: to,
+      to,
       subject: 'New debt created!',
-      html: debtCreatedEmail(name, amount, currency, otherPartyName, title, role),
+      html: debtCreatedEmail(
+        name,
+        amount,
+        currency,
+        otherPartyName,
+        title,
+        role
+      ),
     });
 
     if (error) {

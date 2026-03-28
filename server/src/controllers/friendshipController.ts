@@ -4,6 +4,7 @@ import { users, friendships } from '../db/schema.js';
 import { and, eq, ne, or } from 'drizzle-orm';
 import { addFriendSchema } from '../schemas/friendshipSchema.js';
 import { z } from 'zod';
+import { isDbError } from '../lib/utils.js';
 
 /**
  * GET /friendships
@@ -108,17 +109,19 @@ export const addFriend = async (req: Request, res: Response) => {
       .returning();
 
     return res.status(201).json(result[0]);
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ errors: error.issues });
       return;
     }
 
     // Handle Unique Key violations (Postgres Error 23505)
-    if (error.code === '23505' || error.cause?.code === '23505') {
-      return res.status(409).json({
-        error: 'Friend request already exists or you are already friends',
-      });
+    if (isDbError(error)) {
+      if (error.code === '23505') {
+        return res.status(409).json({
+          error: 'Friend request already exists or you are already friends',
+        });
+      }
     }
 
     console.error(error);

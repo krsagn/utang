@@ -5,6 +5,7 @@ import { or, and, eq, desc, type InferInsertModel } from 'drizzle-orm';
 import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
 import { z } from 'zod';
 import { emailQueue } from '../queues/emailQueue.js';
+import { isDbError } from '../lib/utils.js';
 
 /**
  * GET /debts
@@ -142,7 +143,9 @@ export const createDebt = async (req: Request, res: Response) => {
 
     const result = await db.insert(debts).values(newDebt).returning();
 
-    if (result.length > 0) {
+    if (!result[0]) {
+      return res.status(500).json({ error: 'Insert failed' });
+    } else {
       const emailJobs = [];
 
       if (lenderUser?.email) {
@@ -172,13 +175,30 @@ export const createDebt = async (req: Request, res: Response) => {
         );
       }
 
-      await Promise.all(emailJobs);
+      Promise.allSettled(emailJobs).then((results) => {
+        results.forEach((result) => {
+          if (result.status === 'rejected') {
+            console.error('Failed to queue email:', result.reason);
+          }
+        });
+      });
     }
 
     return res.status(201).json(result[0]);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ errors: error.issues });
+    }
+
+    if (isDbError(error)) {
+      if (error.code === '23503') {
+        return res
+          .status(400)
+          .json({ error: 'Referenced user does not exist' });
+      }
+      if (error.code === '23505') {
+        return res.status(409).json({ error: 'Duplicate entry' });
+      }
     }
 
     console.error(error);
