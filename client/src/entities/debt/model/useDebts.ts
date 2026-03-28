@@ -1,28 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/shared/lib";
 import type { Debt, DebtType } from "./types";
-import { socket } from "@/shared/lib";
-import { useEffect } from "react";
 
 export function useDebts(type?: DebtType, status?: Debt["status"]) {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const onDebtCreated = () => queryClient.invalidateQueries({ queryKey: ["debts"] });
-    const onDebtUpdated = () => queryClient.invalidateQueries({ queryKey: ["debts"] });
-    const onDebtDeleted = () => queryClient.invalidateQueries({ queryKey: ["debts"] });
-
-    socket.on("debt:created", onDebtCreated);
-    socket.on("debt:updated", onDebtUpdated);
-    socket.on("debt:deleted", onDebtDeleted);
-
-    return () => {
-      socket.off("debt:created", onDebtCreated);
-      socket.off("debt:updated", onDebtUpdated);
-      socket.off("debt:deleted", onDebtDeleted);
-    };
-  }, [queryClient]);
-
   return useQuery({
     queryKey: ["debts", type, status],
     queryFn: async () => {

@@ -10,16 +10,20 @@ export function initSocket(httpServer: HttpServer) {
   });
 
   io.use(async (socket, next) => {
-    const sessionId = lucia.readSessionCookie(
-      socket.handshake.headers.cookie ?? ''
-    );
-    if (!sessionId) return next(new Error('Unauthorised'));
+    try {
+      const sessionId = lucia.readSessionCookie(
+        socket.handshake.headers.cookie ?? ''
+      );
+      if (!sessionId) return next(new Error('Unauthorised'));
 
-    const { user, session } = await lucia.validateSession(sessionId);
-    if (!session) return next(new Error('Unauthorised'));
+      const { user, session } = await lucia.validateSession(sessionId);
+      if (!session) return next(new Error('Unauthorised'));
 
-    socket.data.user = user;
-    next();
+      socket.data.user = user;
+      next();
+    } catch (err) {
+      next(err instanceof Error ? err : new Error('Internal server error'));
+    }
   });
 
   io.on('connection', (socket) => {
