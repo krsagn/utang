@@ -286,11 +286,13 @@ describe('PATCH /friendships/:id', () => {
   });
 
   it('should emit friendship:accepted to requester', async () => {
+    const mockRequesterId = '11111111-1111-1111-1111-111111111111';
+
     vi.mocked(db.update).mockReturnValueOnce({
       set: vi.fn().mockReturnValue({
         where: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([
-            { id: 'mock-friendship-id', requesterId: mockUserId },
+            { id: 'mock-friendship-id', requesterId: mockRequesterId },
           ]),
         }),
       }),
@@ -298,8 +300,8 @@ describe('PATCH /friendships/:id', () => {
 
     await request(app).patch('/friendships/12345');
 
-    expect(io.to).toHaveBeenCalledWith(mockUserId);
-    expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
+    expect(io.to).toHaveBeenCalledWith(mockRequesterId);
+    expect(io.to(mockRequesterId).emit).toHaveBeenCalledWith(
       'friendship:accepted',
       expect.objectContaining({ id: 'mock-friendship-id' })
     );

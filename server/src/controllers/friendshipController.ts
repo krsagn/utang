@@ -176,9 +176,7 @@ export const acceptFriend = async (req: Request, res: Response) => {
         .status(404)
         .json({ error: 'Request not found or unauthorized' });
     } else {
-      if (result[0]!.requesterId) {
-        io.to(result[0]!.requesterId).emit('friendship:accepted', result[0]);
-      }
+      io.to(result[0]!.requesterId).emit('friendship:accepted', result[0]);
 
       return res.json(result[0]);
     }

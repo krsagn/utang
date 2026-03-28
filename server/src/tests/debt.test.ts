@@ -196,21 +196,28 @@ describe('POST /debts', () => {
     );
   });
 
-  it('should emit debt:created to lender', async () => {
+  it('should emit debt:created to lender and lendee', async () => {
+    const mockLendeeId = '11111111-1111-1111-1111-111111111111';
+
     vi.mocked(db.insert).mockReturnValueOnce({
       values: vi.fn().mockReturnValue({
         returning: vi
           .fn()
-          .mockResolvedValue([{ id: 'mock-debt-id', lenderId: mockUserId }]),
+          .mockResolvedValue([{ id: 'mock-debt-id', lenderId: mockUserId, lendeeId: mockLendeeId }]),
       }),
     } as any);
 
     await request(app)
       .post('/debts')
-      .send(createMockDebt({ lenderId: mockUserId }));
+      .send(createMockDebt({ lenderId: mockUserId, lendeeId: mockLendeeId }));
 
     expect(io.to).toHaveBeenCalledWith(mockUserId);
     expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
+      'debt:created',
+      expect.objectContaining({ id: 'mock-debt-id' })
+    );
+    expect(io.to).toHaveBeenCalledWith(mockLendeeId);
+    expect(io.to(mockLendeeId).emit).toHaveBeenCalledWith(
       'debt:created',
       expect.objectContaining({ id: 'mock-debt-id' })
     );
