@@ -11,7 +11,7 @@ const app = express();
 // Only allow requests from the frontend
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
     credentials: true, // allows website to send cookies
   })
 );

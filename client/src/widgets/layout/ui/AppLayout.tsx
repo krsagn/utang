@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { FriendsSidebar, useFriendsSidebar } from "@/widgets/friends-sidebar";
 import { cn } from "@/shared/lib";
+import { RealtimeProvider } from "@/app/providers/RealtimeProvider";
 
 export function AppLayout() {
   const { pathname } = useLocation();
@@ -54,6 +55,7 @@ export function AppLayout() {
   )`;
 
   return (
+    <RealtimeProvider>
     <div className="bg-background relative flex h-screen w-full overflow-hidden">
       <FriendsSidebar />
 
@@ -115,5 +117,6 @@ export function AppLayout() {
         />
       </motion.div>
     </div>
+    </RealtimeProvider>
   );
 }

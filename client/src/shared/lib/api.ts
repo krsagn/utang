@@ -1,11 +1,8 @@
 import axios from "axios";
 
+// TODO (before deploying): Set VITE_SERVER_URL in .env.production to the production API URL (e.g. https://your-api-domain.com)
 // Create a configured axios instance
 export const api = axios.create({
-  baseURL: "http://localhost:3000", // API Server URL
+  baseURL: import.meta.env.VITE_SERVER_URL || "http://localhost:3000",
   withCredentials: true,
 });
-
-// NOT BEING USED YET
-// A helper to just return the data (so we don't type .data everywhere)
-// export const fetcher = (url: string) => api.get(url).then((res) => res.data);

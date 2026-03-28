@@ -5,6 +5,7 @@ import { and, eq, ne, or } from 'drizzle-orm';
 import { addFriendSchema } from '../schemas/friendshipSchema.js';
 import { z } from 'zod';
 import { isDbError } from '../lib/utils.js';
+import { io } from '../socket.js';
 
 /**
  * GET /friendships
@@ -108,7 +109,16 @@ export const addFriend = async (req: Request, res: Response) => {
       .values(friendRequest)
       .returning();
 
-    return res.status(201).json(result[0]);
+    if (result.length === 0) {
+      return res.status(500).json({ error: 'Insert failed' });
+    } else {
+      // socket updates to each party
+      if (targetUserId) {
+        io.to(targetUserId).emit('friendship:requested', result[0]);
+      }
+
+      return res.status(201).json(result[0]);
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ errors: error.issues });
@@ -165,9 +175,11 @@ export const acceptFriend = async (req: Request, res: Response) => {
       return res
         .status(404)
         .json({ error: 'Request not found or unauthorized' });
-    }
+    } else {
+      io.to(result[0]!.requesterId).emit('friendship:accepted', result[0]);
 
-    return res.json(result[0]);
+      return res.json(result[0]);
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });
@@ -206,9 +218,16 @@ export const deleteFriend = async (req: Request, res: Response) => {
       return res
         .status(404)
         .json({ error: 'Request not found or unauthorized' });
-    }
+    } else {
+      const otherUserId =
+        result[0]!.userId1 === currentUser
+          ? result[0]!.userId2
+          : result[0]!.userId1;
 
-    return res.status(204).send();
+      io.to(otherUserId).emit('friendship:deleted', result[0]);
+
+      return res.status(204).send();
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/shared/lib";
+import { api, socket } from "@/shared/lib";
 import { useNavigate } from "react-router-dom";
 
 export function useLogout() {
@@ -10,6 +10,7 @@ export function useLogout() {
     mutationFn: async () => api.delete("/auth/sessions/current"),
     onSuccess: () => {
       queryClient.clear();
+      socket.disconnect();
       navigate("/");
     },
   });

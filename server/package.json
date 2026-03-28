@@ -22,6 +22,7 @@
   "type": "module",
   "dependencies": {
     "@lucia-auth/adapter-drizzle": "^1.1.0",
+    "@socket.io/redis-adapter": "^8.3.0",
     "argon2": "^0.44.0",
     "bullmq": "^5.71.1",
     "cors": "^2.8.6",
@@ -32,6 +33,7 @@
     "lucia": "^3.2.2",
     "pg": "^8.18.0",
     "resend": "^6.9.4",
+    "socket.io": "^4.8.3",
     "zod": "^3.24.1"
   },
   "devDependencies": {

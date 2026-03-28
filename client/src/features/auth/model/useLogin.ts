@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/shared/lib";
+import { api, socket } from "@/shared/lib";
 import { useNavigate } from "react-router-dom";
 import type { LoginCredentials } from "./types";
 
@@ -13,6 +13,7 @@ export function useLogin() {
     onSuccess: async () => {
       // Refresh the global 'me' query so the UI picks up the new authenticated user
       await queryClient.invalidateQueries({ queryKey: ["me"] });
+      socket.connect();
       navigate("/home");
     },
   });
