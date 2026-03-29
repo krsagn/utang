@@ -4,7 +4,7 @@
 [![CodeRabbit](https://img.shields.io/badge/CodeRabbit-Reviewed-4940FC.svg)](https://coderabbit.ai/)
 [![Codecov Coverage](https://img.shields.io/codecov/c/github/krsagn/utang.svg)](https://codecov.io/gh/krsagn/utang)
 
-> **Full-stack debt tracker with session auth, a 36-test integration suite, and a Framer Motion-animated React 19 frontend.**
+> **Full-stack debt tracker with real-time WebSocket updates, email notifications, session auth, a 65-test integration suite, and a Framer Motion-animated React 19 frontend.**
 
 <!-- [Live Demo](https://your-domain.com) -->
 
@@ -24,6 +24,8 @@ _"Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose o
 
 - **Friend Management**: Easily search for users and add them as friends.
 - **Debt Tracking**: Keep a reliable record of shared expenses and loans between friends and strangers.
+- **Real-Time Updates**: Debt and friendship changes are pushed instantly to all connected clients via WebSockets — no refreshing required.
+- **Email Notifications**: Automated emails are sent when debts are created or updated, powered by Resend.
 - **Modern UI/UX**: Enjoy a beautifully animated interface featuring smooth layout shifts and semantic, accessible forms.
 - **Secure Auth**: Robust session-based authentication to keep your data safe.
 
@@ -46,6 +48,10 @@ _"Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose o
 - **ORM**: Drizzle ORM
 - **Auth**: Lucia Auth, Argon2
 - **Validation**: Zod
+- **Real-Time**: Socket.io (WebSockets), Redis adapter for multi-instance support
+- **Background Jobs**: BullMQ (Redis-backed job queue)
+- **Email**: Resend
+- **Cache & Queue**: Redis (Dockerised)
 
 ---
 
@@ -54,14 +60,13 @@ _"Utang" translates to "debt" in Tagalog, perfectly capturing the core purpose o
 ### Requirements
 
 - [Node.js](https://nodejs.org/)
-- [Docker Desktop](https://www.docker.com/) (for the PostgreSQL database)
+- [Docker Desktop](https://www.docker.com/) (for PostgreSQL and Redis)
 
 ### 1. Database Setup
 
-Navigate to the `server` directory and start the local PostgreSQL database using Docker. The configuration is defined in `server/docker-compose.yml`.
+Navigate to the root directory and start the local PostgreSQL and Redis services using Docker. The configuration is defined in `docker-compose.yml`.
 
 ```bash
-cd server
 docker compose up -d
 ```
 
@@ -70,6 +75,7 @@ docker compose up -d
 From the `server` directory, install dependencies and prepare your database schema:
 
 ```bash
+cd server
 npm install
 npm run db:generate
 npm run db:push
@@ -90,7 +96,7 @@ npm run dev
 
 The frontend application should now be accessible in your web browser, typically at `http://localhost:5173`.
 
-> **Tip:** The three services (database, backend, frontend) each run in separate terminals.
+> **Tip:** Docker runs detached in the background. The backend and frontend each need their own terminal.
 
 ---
 
