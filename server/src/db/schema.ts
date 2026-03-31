@@ -6,24 +6,25 @@ import {
   check,
   unique,
   index,
+  uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const users = pgTable('users', {
-  id: text('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
   username: text('username').unique().notNull(),
   email: text('email').unique().notNull(),
   passwordHash: text('password_hash').notNull(),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const sessions = pgTable(
   'sessions',
   {
     id: text('id').primaryKey(),
-    userId: text('user_id')
+    userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     expiresAt: timestamp('expires_at', {
@@ -38,20 +39,18 @@ export const debts = pgTable(
   'debts',
   {
     // identity-related
-    id: text('id')
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    createdBy: text('created_by')
+    id: uuid('id').defaultRandom().primaryKey(),
+    createdBy: uuid('created_by')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
 
     // parties involved
     lenderName: text('lender_name').notNull(),
-    lenderId: text('lender_id').references(() => users.id, {
+    lenderId: uuid('lender_id').references(() => users.id, {
       onDelete: 'cascade',
     }),
     lendeeName: text('lendee_name').notNull(),
-    lendeeId: text('lendee_id').references(() => users.id, {
+    lendeeId: uuid('lendee_id').references(() => users.id, {
       onDelete: 'cascade',
     }),
 
@@ -62,9 +61,11 @@ export const debts = pgTable(
     description: text('description'),
 
     // metadata
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
     deadline: timestamp('deadline'),
-    status: text('status').default('pending'),
+    status: text('status', { enum: ['pending', 'paid', 'void'] })
+      .notNull()
+      .default('pending'),
     updatedAt: timestamp('updated_at')
       .defaultNow()
       .$onUpdate(() => new Date()),
@@ -85,15 +86,13 @@ export const friendships = pgTable(
   'friendships',
   {
     // friendship identifier for ORM's sake
-    id: text('id')
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+    id: uuid('id').defaultRandom().primaryKey(),
 
     // handle sorting as a check AND in controller
-    userId1: text('user_id_1')
+    userId1: uuid('user_id_1')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    userId2: text('user_id_2')
+    userId2: uuid('user_id_2')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
 
@@ -101,7 +100,7 @@ export const friendships = pgTable(
     status: text('status', { enum: ['pending', 'accepted'] })
       .notNull()
       .default('pending'),
-    requesterId: text('requester_id')
+    requesterId: uuid('requester_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
