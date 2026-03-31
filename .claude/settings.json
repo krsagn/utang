@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__postgres__query",
+      "Bash(npm uninstall:*)",
+      "Bash(npm audit:*)"
+    ]
+  }
+}
