@@ -6,7 +6,7 @@ import {
   FieldRequiredIndicator,
   DatePicker,
 } from "@/shared/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { X, Pen } from "lucide-react";
@@ -97,12 +97,25 @@ export function EditDebtForm({
   if (!formData.title.trim()) missing.push("title");
   const isValid = missing.length === 0;
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        if (isValid && isDirty && !isPending) onSubmit(formData, type);
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isValid, isDirty, isPending, formData, type, onSubmit]);
+
   return (
     <>
       <form
         className="flex w-full flex-col items-center justify-center gap-7"
         onKeyDown={(e) => {
           const target = e.target as HTMLElement;
+
           if (
             e.key === "Enter" &&
             target.tagName.toLowerCase() !== "textarea" &&
