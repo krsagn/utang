@@ -272,48 +272,59 @@ export function DebtCarousel({ type }: { type: DebtType }) {
 
         {/* "to/from" + counterparty */}
         <motion.p
-          className="text-primary flex items-center text-sm font-medium tracking-wide select-none"
+          className="text-primary flex items-center gap-1 text-sm font-medium tracking-wide select-none"
           initial={hasNavigated ? false : { y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={mountTransition(1, hasNavigated)}
         >
           <motion.span
-            layout
+            layout="position"
             transition={{ type: "spring", stiffness: 400, damping: 35 }}
             className="relative z-0"
           >
             {isOutgoing ? "to" : "from"}
           </motion.span>
-          <span className="from-background via-background/25 relative z-10 w-1 self-stretch bg-linear-to-l to-transparent" />
-          <AnimatePresence mode="popLayout">
-            <span className="bg-background relative z-10">
+          <motion.span
+            layout="position"
+            transition={{ type: "spring", stiffness: 400, damping: 35 }}
+            className="bg-background relative z-10 inline-flex items-center gap-1.5"
+          >
+            <AnimatePresence mode="popLayout">
               <motion.span
-                key={selectedIndex}
-                initial={hasNavigated ? { scale: 0.95 } : false}
+                key={counterparty}
+                initial={hasNavigated ? { scale: 0.85 } : false}
                 animate={{
                   scale: 1,
                   transition: mountTransition(1, hasNavigated),
                 }}
-                className="inline-flex items-center gap-1.5"
               >
                 {counterparty}
-                {deadline && (
-                  <>
-                    <span className="text-foreground/30">|</span>
-                    <span
-                      className={cn(
-                        isPast(deadline) && "text-outgoing font-bold",
-                      )}
-                    >
-                      {isPast(deadline)
-                        ? `overdue by ${formatDistanceToNow(deadline)}`
-                        : `due in ${formatDistanceToNow(deadline)}`}
-                    </span>
-                  </>
-                )}
               </motion.span>
-            </span>
-          </AnimatePresence>
+            </AnimatePresence>
+            <AnimatePresence mode="popLayout">
+              {deadline && (
+                <motion.span
+                  key={selectedIndex}
+                  initial={hasNavigated ? { scale: 0.95 } : false}
+                  animate={{
+                    scale: 1,
+                    transition: mountTransition(1, hasNavigated),
+                  }}
+                >
+                  <span className="text-foreground/30 mr-1.5">|</span>
+                  <span
+                    className={cn(
+                      isPast(deadline) && "text-outgoing font-bold",
+                    )}
+                  >
+                    {isPast(deadline)
+                      ? `overdue by ${formatDistanceToNow(deadline)}`
+                      : `due in ${formatDistanceToNow(deadline)}`}
+                  </span>
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.span>
         </motion.p>
       </div>
 
@@ -387,7 +398,11 @@ export function DebtCarousel({ type }: { type: DebtType }) {
               </motion.button>
             </span>
           </TooltipTrigger>
-          <TooltipContent side="bottom" sideOffset={4}>
+          <TooltipContent
+            side="bottom"
+            className="tracking-wide"
+            sideOffset={4}
+          >
             Only the creator can mark this as done
           </TooltipContent>
         </Tooltip>

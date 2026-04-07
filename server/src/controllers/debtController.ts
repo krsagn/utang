@@ -24,6 +24,12 @@ export const getDebts = async (req: Request, res: Response) => {
     const type = req.query.type as string | undefined;
     const status = req.query.status as string | undefined;
 
+    type DebtStatus = (typeof debts.status.enumValues)[number];
+
+    if (status && !debts.status.enumValues.includes(status as DebtStatus)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
     let query = db.select().from(debts).limit(100);
 
     const conditions = [];
@@ -39,7 +45,7 @@ export const getDebts = async (req: Request, res: Response) => {
     }
 
     if (status) {
-      conditions.push(eq(debts.status, status));
+      conditions.push(eq(debts.status, status as DebtStatus));
     }
 
     query.where(and(...conditions));
@@ -235,11 +241,9 @@ export const updateDebt = async (req: Request, res: Response) => {
     ]);
 
     // Refresh names if IDs are being updated
-
     if (lenderUser) {
       finalLenderName = lenderUser.firstName;
     }
-
     if (lendeeUser) {
       finalLendeeName = lendeeUser.firstName;
     }

@@ -140,7 +140,7 @@ function RightSidebarNav({
         state={{ initialType: createInitialType }}
         className={({ isActive }) =>
           cn(
-            "pr-2 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm",
+            "focus-visible:ring-primary/30 rounded-sm pr-2 transition-all duration-300 outline-none focus-visible:ring-2",
             isActive
               ? "font-bold opacity-100"
               : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
@@ -159,9 +159,9 @@ function RightSidebarNav({
               if (!canMutate) e.preventDefault();
             }}
             className={cn(
-              "pr-2 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm",
+              "focus-visible:ring-primary/30 rounded-sm pr-2 font-medium transition-all duration-300 outline-none focus-visible:ring-2",
               !canMutate
-                ? "pointer-events-none cursor-not-allowed opacity-20"
+                ? "cursor-not-allowed opacity-20"
                 : isEditActive
                   ? "font-bold opacity-100"
                   : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
@@ -170,7 +170,7 @@ function RightSidebarNav({
             <span>Edit Debt</span>
           </NavLink>
         </TooltipTrigger>
-        <TooltipContent side="left">
+        <TooltipContent side="left" className="tracking-wide" sideOffset={5}>
           Only the creator can edit this debt
         </TooltipContent>
       </Tooltip>
@@ -181,7 +181,7 @@ function RightSidebarNav({
             onClick={openDeleteDialog}
             disabled={!canMutate}
             className={cn(
-              "pr-2 font-medium transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-sm focus-visible:opacity-100",
+              "focus-visible:ring-primary/30 rounded-sm pr-2 font-medium transition-all duration-300 outline-none focus-visible:opacity-100 focus-visible:ring-2",
               canMutate
                 ? "cursor-pointer opacity-50 hover:opacity-75"
                 : "cursor-not-allowed opacity-20",
@@ -190,7 +190,7 @@ function RightSidebarNav({
             <span>Delete Debt</span>
           </button>
         </TooltipTrigger>
-        <TooltipContent side="left">
+        <TooltipContent side="left" className="tracking-wide" sideOffset={5}>
           Only the creator can delete this debt
         </TooltipContent>
       </Tooltip>

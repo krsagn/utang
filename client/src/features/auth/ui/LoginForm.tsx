@@ -20,9 +20,6 @@ import {
   Spinner,
 } from "@/shared/ui";
 
-// Icons
-import { Eye, EyeClosed, DangerCircle } from "@solar-icons/react";
-
 import { useLogin } from "../model/useLogin";
 import { useSignup } from "../model/useSignup";
 
@@ -119,7 +116,6 @@ export function LoginForm() {
 
         {error && (
           <Alert variant="destructive" className="mb-6">
-            <DangerCircle className="size-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
               {(error as AxiosError<{ error: string }>).response?.data?.error ||
@@ -199,13 +195,7 @@ export function LoginForm() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-primary/50 hover:text-primary/75 absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
-                  >
-                    {showPassword ? (
-                      <EyeClosed className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
+                  ></button>
                 </div>
               </Field>
             </>
@@ -242,13 +232,7 @@ export function LoginForm() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-primary/50 hover:text-primary/75 absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
-                  >
-                    {showPassword ? (
-                      <EyeClosed className="-mb-2 size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
+                  ></button>
                 </div>
               </Field>
             </>

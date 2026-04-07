@@ -1,6 +1,6 @@
 import type React from "react";
 import { createPortal } from "react-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
   onClose: () => void;
@@ -14,7 +14,7 @@ function Modal({
   "aria-labelledby": ariaLabelledBy,
 }: ModalProps) {
   return createPortal(
-    <>
+    <AnimatePresence>
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -46,7 +46,7 @@ function Modal({
       >
         {children}
       </motion.div>
-    </>,
+    </AnimatePresence>,
     document.body,
   );
 }

@@ -139,15 +139,16 @@ function SidebarNavItem({
       >
         <span>{link.label}</span>
         {link.badge !== undefined && (
-          <motion.span
-            key={link.badge}
-            initial={{ scale: 0.6, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 250 }}
-            className="bg-primary flex size-5 items-center justify-center rounded-full text-[10px] font-medium text-white"
-          >
-            {link.badge}
-          </motion.span>
+          <span className="bg-primary flex size-5 items-center justify-center rounded-full text-[10px] font-medium text-white">
+            <motion.span
+              key={link.badge}
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              {link.badge}
+            </motion.span>
+          </span>
         )}
       </button>
     );
@@ -170,15 +171,16 @@ function SidebarNavItem({
     >
       <span>{link.label}</span>
       {link.badge !== undefined && (
-        <motion.span
-          key={link.badge}
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 500, damping: 20 }}
-          className="bg-primary flex size-5 items-center justify-center rounded-full text-[10px] font-normal tracking-tight text-white"
-        >
-          {link.badge}
-        </motion.span>
+        <span className="bg-primary flex size-5 items-center justify-center rounded-full text-[10px] font-normal tracking-tight text-white">
+          <motion.span
+            key={link.badge}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 500, damping: 20 }}
+          >
+            {link.badge}
+          </motion.span>
+        </span>
       )}
     </NavLink>
   );
