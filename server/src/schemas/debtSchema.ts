@@ -32,4 +32,4 @@ export const updateDebtSchema = createDebtSchema.partial().extend({
 export const getDebtsQuerySchema = z.object({
   type: z.enum(['pay', 'receive']).optional(),
   status: z.enum(['pending', 'paid', 'void']).optional(),
-});
+}).strict();
