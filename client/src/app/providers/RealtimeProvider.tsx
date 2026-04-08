@@ -12,6 +12,9 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       queryClient.invalidateQueries({ queryKey: ["friendships"] });
     const onConnectError = (err: Error) =>
       console.error("Socket connection error:", err);
+    const onReconnect = () => {
+      queryClient.invalidateQueries();
+    };
 
     socket.on("debt:created", onDebtChange);
     socket.on("debt:updated", onDebtChange);
@@ -20,6 +23,8 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     socket.on("friendship:accepted", onFriendshipChange);
     socket.on("friendship:deleted", onFriendshipChange);
     socket.on("connect_error", onConnectError);
+    // "reconnect" is a Manager-level event; socket.io is the Manager instance
+    socket.io.on("reconnect", onReconnect);
 
     return () => {
       socket.off("debt:created", onDebtChange);
@@ -29,6 +34,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       socket.off("friendship:accepted", onFriendshipChange);
       socket.off("friendship:deleted", onFriendshipChange);
       socket.off("connect_error", onConnectError);
+      socket.io.off("reconnect", onReconnect);
     };
   }, [queryClient]);
 

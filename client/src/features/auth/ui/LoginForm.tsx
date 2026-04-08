@@ -1,5 +1,6 @@
 // React
 import { useState, type SyntheticEvent } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 // Types
 import type { SignupCredentials, LoginCredentials } from "../model/types";
@@ -19,9 +20,6 @@ import {
   Label,
   Spinner,
 } from "@/shared/ui";
-
-// Icons
-import { Eye, EyeClosed, DangerCircle } from "@solar-icons/react";
 
 import { useLogin } from "../model/useLogin";
 import { useSignup } from "../model/useSignup";
@@ -119,7 +117,6 @@ export function LoginForm() {
 
         {error && (
           <Alert variant="destructive" className="mb-6">
-            <DangerCircle className="size-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
               {(error as AxiosError<{ error: string }>).response?.data?.error ||
@@ -198,10 +195,11 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="text-primary/50 hover:text-primary/75 absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
                   >
                     {showPassword ? (
-                      <EyeClosed className="size-4" />
+                      <EyeOff className="size-4" />
                     ) : (
                       <Eye className="size-4" />
                     )}
@@ -241,10 +239,11 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="text-primary/50 hover:text-primary/75 absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
                   >
                     {showPassword ? (
-                      <EyeClosed className="-mb-2 size-4" />
+                      <EyeOff className="size-4" />
                     ) : (
                       <Eye className="size-4" />
                     )}

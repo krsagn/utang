@@ -68,6 +68,7 @@ const { default: app } = await import('../app.js');
 const { default: request } = await import('supertest');
 
 const mockUserId = '00000000-0000-0000-0000-000000000000';
+const mockDebtId = '00000000-0000-0000-0000-000000000001';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -251,7 +252,7 @@ describe('PATCH /debts/:id', () => {
     vi.mocked(db.update).mockReturnValueOnce({ set: setSpy } as any);
 
     const response = await request(app)
-      .patch('/debts/12345')
+      .patch(`/debts/${mockDebtId}`)
       .send({ status: 'paid' });
 
     expect(response.status).toBe(200);
@@ -265,7 +266,7 @@ describe('PATCH /debts/:id', () => {
 
   it('should return 400 if input is invalid', async () => {
     const response = await request(app)
-      .patch('/debts/12345')
+      .patch(`/debts/${mockDebtId}`)
       .send({ status: 'wrong-status' });
 
     expect(response.status).toBe(400);
@@ -281,7 +282,7 @@ describe('PATCH /debts/:id', () => {
     vi.mocked(db.update).mockReturnValueOnce({ set: returnSpy } as any);
 
     const response = await request(app)
-      .patch('/debts/12345')
+      .patch(`/debts/${mockDebtId}`)
       .send({ status: 'paid' });
 
     expect(response.status).toBe(404);
@@ -303,7 +304,7 @@ describe('PATCH /debts/:id', () => {
     vi.mocked(db.update).mockReturnValueOnce({ set: setSpy } as any);
 
     const response = await request(app)
-      .patch('/debts/12345')
+      .patch(`/debts/${mockDebtId}`)
       .send({ lenderId: mockUserId });
 
     expect(response.status).toBe(200);
@@ -318,7 +319,7 @@ describe('PATCH /debts/:id', () => {
     } as any);
 
     const response = await request(app)
-      .patch('/debts/12345')
+      .patch(`/debts/${mockDebtId}`)
       .send({ status: 'paid' });
 
     expect(response.status).toBe(500);
@@ -335,7 +336,7 @@ describe('PATCH /debts/:id', () => {
       }),
     } as any);
 
-    await request(app).patch('/debts/12345').send({ status: 'paid' });
+    await request(app).patch(`/debts/${mockDebtId}`).send({ status: 'paid' });
 
     expect(io.to).toHaveBeenCalledWith(mockUserId);
     expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
@@ -398,13 +399,13 @@ describe('GET /debts/:id', () => {
     vi.mocked(db.query.debts.findFirst).mockResolvedValueOnce({
       id: 'mock-debt-id',
     } as any);
-    const response = await request(app).get('/debts/12345');
+    const response = await request(app).get(`/debts/${mockDebtId}`);
 
     expect(response.status).toBe(200);
   });
 
   it('should return 404 if debt does not exist', async () => {
-    const response = await request(app).get('/debts/12345');
+    const response = await request(app).get(`/debts/${mockDebtId}`);
 
     expect(response.status).toBe(404);
   });

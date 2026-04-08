@@ -2,7 +2,6 @@ import type { Friendship } from "../model/types";
 import { PopoverContent, PopoverTrigger, Popover } from "@/shared/ui";
 import { MoreHorizontal } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
-import { UsersGroupRounded } from "@solar-icons/react";
 import { useState, type ReactNode } from "react";
 
 type FriendCardProps = Pick<
@@ -35,10 +34,6 @@ export function FriendCard({
           <h3 className="font-heading text-xl font-extrabold">
             {friendFirstName} {friendLastName}
           </h3>
-          <UsersGroupRounded
-            weight="BoldDuotone"
-            className="text-primary size-4"
-          />
         </div>
         <div className="text-primary/50 flex items-center gap-3 text-sm font-medium">
           <p>@{friendUsername}</p>

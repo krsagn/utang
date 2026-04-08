@@ -1,6 +1,5 @@
 import type { Friendship } from "@/entities/friendship";
 import { useDeleteFriend } from "../model/useDeleteFriend";
-import { TrashBinTrash } from "@solar-icons/react";
 
 interface RemoveFriendButtonProps {
   friendshipId: Friendship["id"];
@@ -23,10 +22,6 @@ export function RemoveFriendButton({
       className="group text-outgoing hover:bg-outgoing/10 flex w-fit items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none"
       onClick={handleRemove}
     >
-      <TrashBinTrash
-        weight="BoldDuotone"
-        className="size-4 opacity-60 transition-opacity group-hover:opacity-100"
-      />
       <span>Remove Friend</span>
     </button>
   );

@@ -8,6 +8,9 @@ interface ModalProps {
   "aria-labelledby"?: string;
 }
 
+// AnimatePresence must live at the call site wrapping the conditional render of
+// this component — otherwise exit animations never fire because the whole tree
+// is removed before they can run.
 function Modal({
   onClose,
   children,

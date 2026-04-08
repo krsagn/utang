@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__postgres__query",
+      "Bash(npm audit)",
+      "Bash(npm audit --json)",
+      "Bash(npm test)",
+      "Bash(npm run test:coverage)",
+      "Bash(npx vitest:*)",
+      "Bash(git grep:*)"
+    ]
+  }
+}

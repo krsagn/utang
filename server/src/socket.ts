@@ -7,6 +7,8 @@ import { createRedisConnection } from './db/redis.js';
 export let io: Server;
 
 export function initSocket(httpServer: HttpServer) {
+  if (io) return io;
+
   io = new Server(httpServer, {
     cors: {
       origin: process.env.CLIENT_URL || 'http://localhost:5173',
@@ -15,7 +17,7 @@ export function initSocket(httpServer: HttpServer) {
   });
 
   const pubClient = createRedisConnection();
-  const subClient = createRedisConnection();
+  const subClient = pubClient.duplicate();
 
   pubClient.on('error', (err) => console.error('Redis pub client error:', err));
   subClient.on('error', (err) => console.error('Redis sub client error:', err));

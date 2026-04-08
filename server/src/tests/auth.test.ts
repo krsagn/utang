@@ -105,7 +105,7 @@ describe('POST /auth/sessions', () => {
       username: 'alice_wonder',
       firstName: 'Alice',
       lastName: 'Smith',
-      createdAt: null,
+      createdAt: new Date(),
     });
 
     const { email, password } = createMockUser();
@@ -159,7 +159,7 @@ describe('POST /auth/sessions', () => {
       username: 'alice_wonder',
       firstName: 'Alice',
       lastName: 'Smith',
-      createdAt: null,
+      createdAt: new Date(),
     });
     vi.mocked(argon2.verify).mockResolvedValueOnce(false);
 

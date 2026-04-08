@@ -7,7 +7,7 @@ export function useLogout() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: async () => api.delete("/auth/sessions/current"),
+    mutationFn: async () => api.delete<void>("/auth/sessions/current"),
     onSuccess: () => {
       queryClient.clear();
       socket.disconnect();
