@@ -1,5 +1,6 @@
 // React
 import { useState, type SyntheticEvent } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 // Types
 import type { SignupCredentials, LoginCredentials } from "../model/types";
@@ -194,8 +195,15 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="text-primary/50 hover:text-primary/75 absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
-                  ></button>
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </button>
                 </div>
               </Field>
             </>
@@ -231,8 +239,15 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="text-primary/50 hover:text-primary/75 absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
-                  ></button>
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </button>
                 </div>
               </Field>
             </>

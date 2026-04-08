@@ -1,3 +1,5 @@
+-- NOTE: These text→uuid casts assume the tables were empty at the time this migration ran.
+-- If rows existed, each statement would require an explicit USING clause (e.g. USING id::uuid).
 ALTER TABLE "debts" ALTER COLUMN "id" SET DATA TYPE uuid;--> statement-breakpoint
 ALTER TABLE "debts" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
 ALTER TABLE "debts" ALTER COLUMN "created_by" SET DATA TYPE uuid;--> statement-breakpoint

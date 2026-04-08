@@ -139,6 +139,8 @@ function SidebarNavItem({
       >
         <span>{link.label}</span>
         {link.badge !== undefined && (
+          // stiffness 300 here vs 500 on the NavLink badge is intentional:
+          // this button animates within a less-prominent action context
           <span className="bg-primary flex size-5 items-center justify-center rounded-full text-[10px] font-medium text-white">
             <motion.span
               key={link.badge}

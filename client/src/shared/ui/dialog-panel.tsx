@@ -86,7 +86,7 @@ function DialogPanel({
           onClick={handleAction}
           disabled={disabled}
           className={cn(
-            "bg-primary/97 hover:bg-primary squircle focus-visible:ring-primary inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-21 text-xs font-medium tracking-wide whitespace-nowrap text-white opacity-90 transition duration-300 outline-none hover:scale-99 focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50",
+            "bg-primary/97 hover:bg-primary squircle focus-visible:ring-primary inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 rounded-xl px-21 text-xs font-medium tracking-wide whitespace-nowrap text-white opacity-90 transition duration-300 outline-none hover:scale-99 focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
             actionClassName,
           )}
         >

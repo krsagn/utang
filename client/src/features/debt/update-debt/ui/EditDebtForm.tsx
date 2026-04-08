@@ -6,7 +6,7 @@ import {
   FieldRequiredIndicator,
   DatePicker,
 } from "@/shared/ui";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { X, Pen } from "lucide-react";
@@ -86,6 +86,14 @@ export function EditDebtForm({
     isDirty,
   });
 
+  const isSubmittingRef = useRef(false);
+
+  useEffect(() => {
+    if (!isPending) {
+      isSubmittingRef.current = false;
+    }
+  }, [isPending]);
+
   const updateFormData = (updates: Partial<UpdateDebtForm>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
@@ -101,7 +109,10 @@ export function EditDebtForm({
     const handler = (e: KeyboardEvent) => {
       if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        if (isValid && isDirty && !isPending) onSubmit(formData, type);
+        if (isValid && isDirty && !isPending && !isSubmittingRef.current) {
+          isSubmittingRef.current = true;
+          onSubmit(formData, type);
+        }
       }
     };
 
@@ -126,7 +137,10 @@ export function EditDebtForm({
         }}
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit(formData, type);
+          if (!isSubmittingRef.current) {
+            isSubmittingRef.current = true;
+            onSubmit(formData, type);
+          }
         }}
       >
         {/* type indicator + amount */}

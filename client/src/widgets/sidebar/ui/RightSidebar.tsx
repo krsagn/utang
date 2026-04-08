@@ -178,8 +178,11 @@ function RightSidebarNav({
         <TooltipTrigger asChild>
           <button
             type="button"
-            onClick={openDeleteDialog}
-            disabled={!canMutate}
+            onClick={() => {
+              if (!canMutate) return;
+              openDeleteDialog();
+            }}
+            aria-disabled={!canMutate}
             className={cn(
               "focus-visible:ring-primary/30 rounded-sm pr-2 font-medium transition-all duration-300 outline-none focus-visible:opacity-100 focus-visible:ring-2",
               canMutate

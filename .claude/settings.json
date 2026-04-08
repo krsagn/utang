@@ -2,12 +2,12 @@
   "permissions": {
     "allow": [
       "mcp__postgres__query",
-      "Bash(npm uninstall:*)",
-      "Bash(npm audit:*)",
-      "Bash(npm test:*)",
+      "Bash(npm audit)",
+      "Bash(npm audit --json)",
+      "Bash(npm test)",
+      "Bash(npm run test:coverage)",
       "Bash(npx vitest:*)",
-      "Bash(git grep:*)",
-      "Bash(ls /Users/kristian/dev/utang/server/.env* /Users/kristian/dev/utang/client/.env* /Users/kristian/dev/utang/.env*)"
+      "Bash(git grep:*)"
     ]
   }
 }

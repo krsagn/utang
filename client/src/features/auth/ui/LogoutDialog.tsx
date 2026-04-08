@@ -11,6 +11,10 @@ interface LogoutDialogProps {
   onClose: () => void;
 }
 
+function LogOutIcon({ className }: { className?: string }) {
+  return <LogOut className={cn(className, "rotate-180")} />;
+}
+
 export function LogoutDialog({ open, onClose }: LogoutDialogProps) {
   const { mutate: handleLogout, isPending: isLoggingOut } = useLogout();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -71,10 +75,6 @@ export function LogoutDialog({ open, onClose }: LogoutDialogProps) {
     document.addEventListener("keydown", handleKeyDown, true);
     return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [open, isLoggingOut, onClose]);
-
-  const LogOutIcon = ({ className }: { className?: string }) => (
-    <LogOut className={cn(className, "rotate-180")} />
-  );
 
   return createPortal(
     <AnimatePresence>

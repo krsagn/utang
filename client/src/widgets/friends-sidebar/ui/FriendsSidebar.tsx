@@ -174,8 +174,10 @@ export function FriendsSidebar() {
             </button>
           </div>
 
-          {/* Add Friend Modal can live here entirely decoupled */}
-          {modal.hasActiveModal && <AddFriendModal onClose={modal.close} />}
+          {/* AnimatePresence here lets Modal's exit animations run before unmounting */}
+          <AnimatePresence>
+            {modal.hasActiveModal && <AddFriendModal onClose={modal.close} />}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>

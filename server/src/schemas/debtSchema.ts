@@ -27,3 +27,9 @@ export const createDebtSchema = z.object({
 export const updateDebtSchema = createDebtSchema.partial().extend({
   status: z.enum(['pending', 'paid', 'void']).optional(),
 });
+
+// Query params for GET /debts
+export const getDebtsQuerySchema = z.object({
+  type: z.enum(['pay', 'receive']).optional(),
+  status: z.enum(['pending', 'paid', 'void']).optional(),
+});

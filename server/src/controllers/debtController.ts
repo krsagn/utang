@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { users, debts } from '../db/schema.js';
 import { or, and, eq, desc, type InferInsertModel } from 'drizzle-orm';
-import { createDebtSchema, updateDebtSchema } from '../schemas/debtSchema.js';
+import { createDebtSchema, getDebtsQuerySchema, updateDebtSchema } from '../schemas/debtSchema.js';
 import { z } from 'zod';
 import { emailQueue } from '../queues/emailQueue.js';
 import { handleDbErrorResponse } from '../lib/utils.js';
@@ -21,14 +21,13 @@ export const getDebts = async (req: Request, res: Response) => {
   try {
     const userId = res.locals.user!.id;
 
-    const type = req.query.type as string | undefined;
-    const status = req.query.status as string | undefined;
+    const queryResult = getDebtsQuerySchema.safeParse(req.query);
+    if (!queryResult.success) {
+      return res.status(400).json({ errors: queryResult.error.issues });
+    }
+    const { type, status } = queryResult.data;
 
     type DebtStatus = (typeof debts.status.enumValues)[number];
-
-    if (status && !debts.status.enumValues.includes(status as DebtStatus)) {
-      return res.status(400).json({ error: 'Invalid status' });
-    }
 
     let query = db.select().from(debts).limit(100);
 
@@ -73,7 +72,8 @@ export const getDebtById = async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = res.locals.user!.id;
 
-    if (!id) return res.status(400).json({ error: 'Missing ID' });
+    const idResult = z.string().uuid().safeParse(id);
+    if (!idResult.success) return res.status(400).json({ error: 'Invalid debt ID' });
 
     const debt = await db.query.debts.findFirst({
       where: and(
@@ -225,6 +225,9 @@ export const updateDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = res.locals.user!.id;
+
+    const idResult = z.string().uuid().safeParse(id);
+    if (!idResult.success) return res.status(400).json({ error: 'Invalid debt ID' });
 
     const body = updateDebtSchema.parse(req.body);
 

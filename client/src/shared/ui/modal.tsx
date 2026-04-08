@@ -1,6 +1,6 @@
 import type React from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface ModalProps {
   onClose: () => void;
@@ -8,13 +8,16 @@ interface ModalProps {
   "aria-labelledby"?: string;
 }
 
+// AnimatePresence must live at the call site wrapping the conditional render of
+// this component — otherwise exit animations never fire because the whole tree
+// is removed before they can run.
 function Modal({
   onClose,
   children,
   "aria-labelledby": ariaLabelledBy,
 }: ModalProps) {
   return createPortal(
-    <AnimatePresence>
+    <>
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -46,7 +49,7 @@ function Modal({
       >
         {children}
       </motion.div>
-    </AnimatePresence>,
+    </>,
     document.body,
   );
 }
