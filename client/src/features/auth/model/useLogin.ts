@@ -9,7 +9,7 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (creds: LoginCredentials) =>
-      api.post("/auth/sessions", creds),
+      api.post<void>("/auth/sessions", creds),
     onSuccess: async () => {
       // Refresh the global 'me' query so the UI picks up the new authenticated user
       await queryClient.invalidateQueries({ queryKey: ["me"] });
