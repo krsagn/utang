@@ -134,6 +134,7 @@ The frontend application should now be accessible in your web browser, typically
 ### Server
 
 - `npm run db:studio` - Launches Drizzle Studio.
+- `npm run db:migrate` - Applies pending migrations (for production).
 - `npm run worker` - Starts the BullMQ email worker process.
 - `npm run test` - Runs backend tests.
 - `npm run db:reset` - Resets and wipes the database.
