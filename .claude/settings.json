@@ -3,7 +3,9 @@
     "allow": [
       "mcp__postgres__query",
       "Bash(npm uninstall:*)",
-      "Bash(npm audit:*)"
+      "Bash(npm audit:*)",
+      "Bash(npm test:*)",
+      "Bash(npx vitest:*)"
     ]
   }
 }
