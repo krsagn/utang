@@ -7,7 +7,10 @@
       "Bash(npm test)",
       "Bash(npm run test:coverage)",
       "Bash(npx vitest:*)",
-      "Bash(git grep:*)"
+      "Bash(git grep:*)",
+      "Bash(npm show *)",
+      "Bash(git -C /Users/kristian/dev/utang diff --staged)",
+      "Bash(git -C /Users/kristian/dev/utang status)"
     ]
   }
 }

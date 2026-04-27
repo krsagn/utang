@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@fontsource-variable/playpen-sans";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -55,6 +56,7 @@
   --font-heading: "CabinetGrotesk", sans-serif;
   --font-sans: "PlusJakartaSans", sans-serif;
   --font-receipt: "VT323", monospace;
+  --font-playpen: "Playpen Sans Variable", sans-serif;
 }
 
 :root {

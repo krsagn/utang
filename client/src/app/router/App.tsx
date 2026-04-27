@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/shared/ui";
 import { Login } from "@/pages/auth/login";
-import { Home } from "@/pages/home";
+import { MyBoard } from "@/pages/my-board";
 import ProtectedRoute from "@/app/router/guards/ProtectedRoute";
 import AuthRedirect from "@/app/router/guards/AuthRedirect";
 import { Outgoing } from "@/pages/debts/outgoing";
@@ -22,7 +22,7 @@ const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          { path: "/home", element: <Home /> },
+          { path: "/board", element: <MyBoard /> },
           { path: "/debts/outgoing", element: <Outgoing /> },
           { path: "/debts/incoming", element: <Incoming /> },
           { path: "/debts/new", element: <CreateDebtPage /> },
