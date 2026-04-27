@@ -16,7 +16,7 @@ type SidebarLink = {
 
 // badge is now dynamic — not defined here
 const SIDEBAR_LINKS: SidebarLink[] = [
-  { path: "/home", label: "My Board" },
+  { path: "/board", label: "My Board" },
   { path: "/debts/outgoing", label: "To Pay" },
   { path: "/debts/incoming", label: "To Receive" },
   { action: "toggleFriends", label: "Friends" },

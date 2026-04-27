@@ -10,7 +10,9 @@
       "Bash(git grep:*)",
       "Bash(npm show *)",
       "Bash(git -C /Users/kristian/dev/utang diff --staged)",
-      "Bash(git -C /Users/kristian/dev/utang status)"
+      "Bash(git -C /Users/kristian/dev/utang status)",
+      "Bash(cwebp /Users/kristian/dev/utang/client/public/sticky-note-var1.png -o /Users/kristian/dev/utang/client/public/sticky-note-var1.webp)",
+      "Bash(cwebp /Users/kristian/dev/utang/client/public/sticky-note-var2.png -o /Users/kristian/dev/utang/client/public/sticky-note-var2.webp)"
     ]
   }
 }
