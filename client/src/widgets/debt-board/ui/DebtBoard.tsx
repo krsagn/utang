@@ -4,16 +4,93 @@ import { StickyNote, VARIATIONS_COUNT } from "@/entities/debt";
 import { useDebts } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { CANVAS_SIZE } from "../lib/board-utils";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { DebtContextMenu } from "@/widgets/debt-context-menu";
 import { useRef } from "react";
 import { motion } from "framer-motion";
+import { Spinner } from "@/shared/ui";
+
+const gridBackground = {
+  backgroundImage: `
+    radial-gradient(ellipse 55% 45% at center, var(--background) 0%, transparent 100%),
+    linear-gradient(to right, #E6E4E3 1px, transparent 1px),
+    linear-gradient(to bottom, #E6E4E3 1px, transparent 1px)
+  `,
+  backgroundSize: "auto, 60px 60px, 60px 60px",
+};
+
+const gridFadeEdges = (
+  <>
+    <div className="from-background pointer-events-none absolute inset-y-0 left-0 z-10 w-32 bg-linear-to-r to-transparent" />
+    <div className="from-background pointer-events-none absolute inset-y-0 right-0 z-10 w-32 bg-linear-to-l to-transparent" />
+  </>
+);
 
 export function DebtBoard() {
-  const { data: debts } = useDebts(undefined, "pending");
+  const { data: debts, isLoading, error } = useDebts(undefined, "pending");
   const { data: currentUser } = useSession();
   const navigate = useNavigate();
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
+
+  if (isLoading) {
+    return (
+      <div
+        className="relative flex h-screen w-full items-center justify-center"
+        style={gridBackground}
+      >
+        {gridFadeEdges}
+        <Spinner className="text-primary/50 size-6" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="relative flex h-screen w-full flex-col items-center justify-center gap-2 text-center"
+        style={gridBackground}
+      >
+        {gridFadeEdges}
+        <p className="font-heading text-4xl font-extrabold tracking-wide">
+          Uh oh!
+        </p>
+        <p className="text-primary/50 max-w-65 text-sm">
+          We couldn't load your debts. Try{" "}
+          <button
+            onClick={() => window.location.reload()}
+            className="text-primary underline underline-offset-4"
+          >
+            refreshing the page
+          </button>
+          .
+        </p>
+      </div>
+    );
+  }
+
+  if (debts?.length === 0) {
+    return (
+      <div
+        className="relative flex h-screen w-full flex-col items-center justify-center gap-2 text-center"
+        style={gridBackground}
+      >
+        {gridFadeEdges}
+        <p className="font-heading text-4xl font-extrabold tracking-wide">
+          All clear!
+        </p>
+        <p className="text-primary/50 max-w-65 text-sm">
+          No debts to show. Treat yourself, or go ahead and{" "}
+          <Link
+            to="/debts/new"
+            className="text-primary underline underline-offset-4 opacity-70 transition-opacity duration-300 hover:opacity-100"
+          >
+            record one
+          </Link>
+          .
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-screen w-full overflow-hidden">

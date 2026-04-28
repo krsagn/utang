@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -14,7 +14,7 @@ import {
 import { useSession } from "@/entities/user";
 import { useUpdateDebt } from "@/features/debt/update-debt";
 import { formatCurrency, cn } from "@/shared/lib";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui";
+import { Spinner, Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui";
 import { DebtContextMenu } from "@/widgets/debt-context-menu";
 
 // module-level constants, not recreated on render
@@ -201,20 +201,51 @@ export function DebtCarousel({ type }: { type: DebtType }) {
 
   if (isLoading || !imageReady)
     return (
-      <div className="flex items-center justify-center p-10">
-        Loading debts...
+      <div className="flex h-screen w-full items-center justify-center">
+        <Spinner className="text-primary/50 size-6" />
       </div>
     );
   if (error)
     return (
-      <div className="flex items-center justify-center p-10 text-red-500">
-        Error loading debts
+      <div className="flex h-screen w-full flex-col items-center justify-center gap-2 text-center">
+        <p className="font-heading text-4xl font-extrabold tracking-wide">
+          Uh oh!
+        </p>
+        <p className="text-primary/50 max-w-65 text-sm">
+          We couldn't load your debts. Try{" "}
+          <button
+            onClick={() => window.location.reload()}
+            className="text-primary underline underline-offset-4 opacity-70 transition-opacity duration-300 hover:opacity-100"
+          >
+            refreshing the page
+          </button>
+          .
+        </p>
       </div>
     );
   if (!debts || debts.length === 0)
     return (
-      <div className="text-muted-foreground flex items-center justify-center p-10">
-        No debts found.
+      <div className="flex h-screen w-full flex-col items-center justify-center gap-2 text-center">
+        <p className="font-heading text-4xl font-extrabold tracking-wide">
+          {isOutgoing ? "Nothing owed!" : "Nobody owes you."}
+        </p>
+        <p
+          className={cn(
+            "text-primary/50 text-sm",
+            isOutgoing ? "max-w-65" : "max-w-xs",
+          )}
+        >
+          {isOutgoing
+            ? "You're in the clear. No debts to pay, enjoy it while it lasts."
+            : "Looks like you're not owed anything. Time to lend a friend some cash."}{" "}
+          <Link
+            to="/debts/new"
+            className="text-primary underline underline-offset-4 opacity-70 transition-opacity duration-300 hover:opacity-100"
+          >
+            Record one
+          </Link>
+          .
+        </p>
       </div>
     );
 
