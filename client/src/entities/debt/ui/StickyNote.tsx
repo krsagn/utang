@@ -1,6 +1,6 @@
 import { formatCompactCurrency } from "@/shared/lib";
 import type { DebtType } from "../model/types";
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { ArrowUp, ArrowDown } from "lucide-react";
 
 const VARIATIONS = [
   "/sticky-note.webp",
@@ -42,9 +42,9 @@ export function StickyNote({
             {type === "pay" ? "to" : "from"} {otherParty}
           </span>
           {type === "pay" ? (
-            <ArrowUpRight className="mt-px size-4 stroke-[2.5px] text-black/80" />
+            <ArrowUp className="mt-0.5 size-4 stroke-[2.5px] text-black/80" />
           ) : (
-            <ArrowDownLeft className="mt-px size-4 stroke-[2.5px] text-black/80" />
+            <ArrowDown className="mt-px size-4 stroke-[2.5px] text-black/80" />
           )}
         </p>
       </div>

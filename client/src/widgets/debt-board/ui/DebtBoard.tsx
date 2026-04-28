@@ -1,14 +1,21 @@
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { hashId, getCardPosition, getCardRotation } from "../lib/board-utils";
+import {
+  hashId,
+  getCardPosition,
+  getCardRotation,
+  seededRandom,
+} from "../lib/board-utils";
 import { StickyNote, VARIATIONS_COUNT } from "@/entities/debt";
 import { useDebts } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { CANVAS_SIZE } from "../lib/board-utils";
 import { useNavigate, Link } from "react-router-dom";
 import { DebtContextMenu } from "@/widgets/debt-context-menu";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Spinner } from "@/shared/ui";
+import { cn } from "@/shared/lib/utils";
+import { BoardHUD } from "./BoardHUD";
 
 const gridBackground = {
   backgroundImage: `
@@ -26,13 +33,71 @@ const gridFadeEdges = (
   </>
 );
 
+const images = [
+  "/sticky-note.webp",
+  "/sticky-note-var1.webp",
+  "/sticky-note-var2.webp",
+  "/sticky-note-var3.webp",
+].map((src) => {
+  const img = new Image();
+  img.src = src;
+  return img;
+});
+
 export function DebtBoard() {
+  // data
   const { data: debts, isLoading, error } = useDebts(undefined, "pending");
   const { data: currentUser } = useSession();
   const navigate = useNavigate();
+
+  // interaction state
+  const [imagesReady, setImagesReady] = useState(() =>
+    images.every((img) => img.complete),
+  );
+  const [panning, setPanning] = useState(false);
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
 
-  if (isLoading) {
+  // HUD idle timer
+  const [idle, setIdle] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isHoveringHUD = useRef(false);
+
+  const stopTimer = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIdle(false);
+  };
+  const startTimer = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setIdle(true), 2000);
+  };
+
+  useEffect(() => {
+    timerRef.current = setTimeout(() => setIdle(true), 2000);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (imagesReady) return;
+    let loaded = images.filter((img) => img.complete).length;
+    const handlers = images
+      .filter((img) => !img.complete)
+      .map((img) => {
+        const onLoad = () => {
+          loaded++;
+          if (loaded === images.length) setImagesReady(true);
+        };
+        img.addEventListener("load", onLoad);
+        return { img, onLoad };
+      });
+    return () =>
+      handlers.forEach(({ img, onLoad }) =>
+        img.removeEventListener("load", onLoad),
+      );
+  }, [imagesReady]);
+
+  if (isLoading || !imagesReady) {
     return (
       <div
         className="relative flex h-screen w-full items-center justify-center"
@@ -93,10 +158,27 @@ export function DebtBoard() {
   }
 
   return (
-    <div className="relative h-screen w-full overflow-hidden">
+    <div
+      className={cn(
+        "relative h-screen w-full overflow-hidden",
+        panning ? "cursor-grabbing" : "cursor-grab",
+      )}
+    >
       <div className="from-background pointer-events-none absolute inset-y-0 left-0 z-10 w-32 bg-linear-to-r to-transparent" />
       <div className="from-background pointer-events-none absolute inset-y-0 right-0 z-10 w-32 bg-linear-to-l to-transparent" />
-      <TransformWrapper maxScale={2.5} centerOnInit centerZoomedOut>
+      <TransformWrapper
+        maxScale={2.5}
+        centerOnInit
+        centerZoomedOut
+        onPanningStart={() => {
+          setPanning(true);
+          stopTimer();
+        }}
+        onPanningStop={() => {
+          setPanning(false);
+          if (!isHoveringHUD.current) startTimer();
+        }}
+      >
         <TransformComponent wrapperClass="!w-full !h-screen">
           <div
             className="relative -m-180 scale-70 border border-black"
@@ -137,9 +219,18 @@ export function DebtBoard() {
                     scale: 1,
                     rotate: rotation,
                   }}
-                  whileHover={{ scale: 0.98 }}
+                  whileHover={{
+                    scale: 0.98,
+                    rotate: 0,
+                    transition: { delay: 0 },
+                  }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                    delay: seededRandom(seed + 3) * 0.3,
+                  }}
                 >
                   <StickyNote
                     amount={parseInt(debt.amount)}
@@ -153,7 +244,7 @@ export function DebtBoard() {
                     isCreator={currentUser?.id === debt.createdBy}
                   >
                     <div
-                      className="absolute inset-12"
+                      className="absolute inset-12 cursor-pointer"
                       onPointerDown={(e) => {
                         pointerDownPos.current = { x: e.clientX, y: e.clientY };
                       }}
@@ -174,6 +265,20 @@ export function DebtBoard() {
             })}
           </div>
         </TransformComponent>
+        <BoardHUD
+          debtCount={debts?.length}
+          className="absolute top-6 left-1/2 -translate-x-1/2"
+          panning={panning}
+          idle={idle}
+          onMouseEnter={() => {
+            isHoveringHUD.current = true;
+            stopTimer();
+          }}
+          onMouseLeave={() => {
+            isHoveringHUD.current = false;
+            startTimer();
+          }}
+        />
       </TransformWrapper>
     </div>
   );

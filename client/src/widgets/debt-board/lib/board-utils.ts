@@ -43,7 +43,7 @@ export function hashId(id: string): number {
   return [...id].reduce((acc, c) => acc + c.charCodeAt(0), 0);
 }
 
-function seededRandom(seed: number): number {
+export function seededRandom(seed: number): number {
   const t = seed + 0x6d2b79f5;
   let x = Math.imul(t ^ (t >>> 15), 1 | t);
   x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
