@@ -5,7 +5,7 @@ export default function AuthRedirect() {
   const { data: user, isLoading } = useSession();
 
   if (isLoading) return <div>Loading...</div>;
-  if (user) return <Navigate to="/home" replace />;
+  if (user) return <Navigate to="/board" replace />;
 
   return <Outlet />;
 }

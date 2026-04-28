@@ -7,7 +7,12 @@
       "Bash(npm test)",
       "Bash(npm run test:coverage)",
       "Bash(npx vitest:*)",
-      "Bash(git grep:*)"
+      "Bash(git grep:*)",
+      "Bash(npm show *)",
+      "Bash(git diff --staged)",
+      "Bash(git status)",
+      "Bash(cwebp *)",
+      "Bash(npx tsc *)"
     ]
   }
 }

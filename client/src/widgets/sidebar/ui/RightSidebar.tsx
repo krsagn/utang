@@ -137,6 +137,7 @@ function RightSidebarNav({
     <nav className="text-primary my-auto flex w-full flex-col items-end justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap">
       <NavLink
         to="/debts/new"
+        draggable={false}
         state={{ initialType: createInitialType }}
         className={({ isActive }) =>
           cn(
@@ -153,6 +154,7 @@ function RightSidebarNav({
         <TooltipTrigger asChild>
           <NavLink
             to={activeDebtId ? `/debts/${activeDebtId}/edit` : "/debts"}
+            draggable={false}
             aria-disabled={!canMutate}
             tabIndex={canMutate ? undefined : -1}
             onClick={(e) => {
@@ -177,6 +179,7 @@ function RightSidebarNav({
       <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
         <TooltipTrigger asChild>
           <button
+            draggable={false}
             type="button"
             onClick={() => {
               if (!canMutate) return;
@@ -207,6 +210,7 @@ function RightSidebarSettings() {
     <div className="text-right">
       <NavLink
         to="/settings"
+        draggable={false}
         className={({ isActive }) =>
           cn(
             "text-primary block cursor-pointer px-2 text-xs font-medium tracking-wider whitespace-nowrap transition-all duration-300",
