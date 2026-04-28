@@ -19,7 +19,10 @@ export function useCreateDebt() {
       return data;
     },
     onSuccess: (newDebt) => {
-      queryClient.invalidateQueries({ queryKey: ["debts"] });
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey[0] === "debts" && query.queryKey[2] !== "paid",
+      });
       queryClient.setQueryData(["debt", newDebt.id], newDebt);
     },
   });

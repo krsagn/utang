@@ -2,8 +2,10 @@ export interface Debt {
   id: string;
   createdBy: string;
   lenderName: string;
+  lenderFullName?: string;
   lenderId?: string | null;
   lendeeName: string;
+  lendeeFullName?: string;
   lendeeId?: string | null;
   currency: string;
   amount: string;
