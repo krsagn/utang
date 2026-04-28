@@ -160,6 +160,7 @@ function SidebarNavItem({
     <NavLink
       to={link.path!}
       tabIndex={collapsed ? -1 : 0}
+      draggable={false}
       className={({ isActive }) =>
         cn(
           "focus-visible:ring-primary/30 rounded-sm pl-2 transition-all duration-300 outline-none focus-visible:ring-2",
@@ -201,6 +202,7 @@ function SidebarLogout({ collapsed }: { collapsed: boolean }) {
       >
         <button
           type="button"
+          draggable={false}
           onClick={() => setIsLogoutDialogOpen(true)}
           tabIndex={collapsed ? -1 : 0}
           className="text-primary focus-visible:ring-primary/30 w-full cursor-pointer rounded-sm pl-2 text-left text-xs font-medium tracking-wider whitespace-nowrap opacity-50 transition-all duration-300 outline-none hover:opacity-75 focus-visible:opacity-100 focus-visible:ring-2"

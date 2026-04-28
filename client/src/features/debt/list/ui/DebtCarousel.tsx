@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -15,6 +15,7 @@ import { useSession } from "@/entities/user";
 import { useUpdateDebt } from "@/features/debt/update-debt";
 import { formatCurrency, cn } from "@/shared/lib";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui";
+import { DebtContextMenu } from "@/widgets/debt-context-menu";
 
 // module-level constants, not recreated on render
 const mountSpring = { type: "spring", stiffness: 500, damping: 35 } as const;
@@ -36,12 +37,14 @@ const CarouselSlide = memo(function CarouselSlide({
   index,
   isSelected,
   isOutgoing,
+  isCreator,
   currentUserId,
   hasNavigated,
 }: {
   debt: Debt;
   index: number;
   isSelected: boolean;
+  isCreator: boolean;
   isOutgoing: boolean;
   currentUserId: string | undefined;
   hasNavigated: boolean;
@@ -67,11 +70,21 @@ const CarouselSlide = memo(function CarouselSlide({
           isSelected ? "scale-100 opacity-100" : "scale-85 opacity-40",
         )}
       >
-        <ReceiptCard
-          {...debt}
-          isOutgoing={isOutgoing}
-          currentUserId={currentUserId}
-        />
+        {isSelected ? (
+          <DebtContextMenu debt={debt} isCreator={isCreator}>
+            <ReceiptCard
+              {...debt}
+              isOutgoing={isOutgoing}
+              currentUserId={currentUserId}
+            />
+          </DebtContextMenu>
+        ) : (
+          <ReceiptCard
+            {...debt}
+            isOutgoing={isOutgoing}
+            currentUserId={currentUserId}
+          />
+        )}
       </div>
     </motion.div>
   );
@@ -98,10 +111,12 @@ export function DebtCarousel({ type }: { type: DebtType }) {
   const [hasNavigated, setHasNavigated] = useState(false); // false = mount anims, true = directional anims
   const [imageReady, setImageReady] = useState(() => receiptImg.complete); // lazy init reads .complete at first render, not module load
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isInitialSelectRef = useRef(true);
   const selectedIndexRef = useRef(0); // avoids stale closure when computing direction
   const debtsRef = useRef(debts); // always-fresh ref for use inside embla callbacks
   const reInitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialDebtId = useRef(searchParams.get("debtId"));
 
   useEffect(() => {
     debtsRef.current = debts;
@@ -124,7 +139,8 @@ export function DebtCarousel({ type }: { type: DebtType }) {
       selectedIndexRef.current = next;
       setSlide({ index: next, direction: dir });
       const debtId = debtsRef.current?.[next]?.id;
-      if (debtId) navigate({ search: `?debtId=${debtId}` }, { replace: true });
+      if (debtId && !initialDebtId.current)
+        navigate({ search: `?debtId=${debtId}` }, { replace: true });
       if (isInitialSelectRef.current) {
         isInitialSelectRef.current = false;
       } else {
@@ -158,7 +174,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
   // ensure URL stays fresh when debts array changes (e.g., deletion, mark as done)
   // this catches cases where Embla doesn't fire 'select' when the carousel repositions
   useEffect(() => {
-    if (!debts || debts.length === 0) return;
+    if (!debts || debts.length === 0 || initialDebtId.current) return;
     const currentDebt = debts[clampedIndex];
     if (currentDebt) {
       navigate({ search: `?debtId=${currentDebt.id}` }, { replace: true });
@@ -166,10 +182,18 @@ export function DebtCarousel({ type }: { type: DebtType }) {
   }, [debts, clampedIndex, navigate]);
 
   // reinit Embla after mount stagger settles so slide positions are accurate
+  // if a debtId param was present, scroll to it after reInit when positions are correct
   useEffect(() => {
     if (!emblaApi || !debts) return;
-    const totalDuration = debts.length * 50 + 400;
-    reInitTimerRef.current = setTimeout(() => emblaApi.reInit(), totalDuration);
+    const totalDuration = debts.length * 50;
+    reInitTimerRef.current = setTimeout(() => {
+      emblaApi.reInit();
+      if (initialDebtId.current) {
+        const index = debts.findIndex((d) => d.id === initialDebtId.current);
+        if (index > 0) emblaApi.scrollTo(index);
+        initialDebtId.current = null;
+      }
+    }, totalDuration);
     return () => {
       if (reInitTimerRef.current) clearTimeout(reInitTimerRef.current);
     };
@@ -345,6 +369,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                 debt={debt}
                 index={index}
                 isSelected={index === selectedIndex}
+                isCreator={currentUser?.id === debt.createdBy}
                 isOutgoing={isOutgoing}
                 currentUserId={currentUser?.id}
                 hasNavigated={hasNavigated}

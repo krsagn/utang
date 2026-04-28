@@ -43,7 +43,7 @@ function ContextMenuItem({
     <ContextMenuPrimitive.Item
       data-slot="context-menu-item"
       className={cn(
-        "hover:bg-primary/5 focus:bg-primary/5 flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-normal opacity-50 transition-[opacity,scale] duration-300 outline-none select-none hover:scale-99 hover:opacity-100 focus:scale-99 focus:opacity-100 data-disabled:pointer-events-none data-disabled:opacity-50",
         className,
       )}
       {...props}

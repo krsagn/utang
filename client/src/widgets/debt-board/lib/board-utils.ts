@@ -1,4 +1,4 @@
-export const CANVAS_SIZE = 3000;
+export const CANVAS_SIZE = 4500;
 const CANVAS_CENTER = CANVAS_SIZE / 2;
 const BASE_RADIUS = 400;
 const RING_GAP = 400;

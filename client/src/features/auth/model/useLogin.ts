@@ -14,7 +14,7 @@ export function useLogin() {
       // Refresh the global 'me' query so the UI picks up the new authenticated user
       await queryClient.invalidateQueries({ queryKey: ["me"] });
       socket.connect();
-      navigate("/home");
+      navigate("/board");
     },
   });
 }
