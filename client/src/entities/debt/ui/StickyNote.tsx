@@ -18,7 +18,7 @@ export function StickyNote({
   type,
   variation,
 }: {
-  amount: number;
+  amount: string;
   currency: string;
   otherParty: string;
   type: DebtType;

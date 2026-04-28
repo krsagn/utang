@@ -190,7 +190,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
       emblaApi.reInit();
       if (initialDebtId.current) {
         const index = debts.findIndex((d) => d.id === initialDebtId.current);
-        if (index > 0) emblaApi.scrollTo(index);
+        if (index !== -1) emblaApi.scrollTo(index);
         initialDebtId.current = null;
       }
     }, totalDuration);

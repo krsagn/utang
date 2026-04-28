@@ -233,7 +233,7 @@ export function DebtBoard() {
                   }}
                 >
                   <StickyNote
-                    amount={parseInt(debt.amount)}
+                    amount={debt.amount}
                     currency={debt.currency}
                     otherParty={otherParty}
                     type={type}
