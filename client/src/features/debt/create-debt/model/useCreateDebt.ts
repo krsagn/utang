@@ -2,11 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/shared/lib";
 import type { Debt } from "@/entities/debt";
 import type { NewDebt } from "./types";
-import { useSession } from "@/entities/user";
-
 export function useCreateDebt() {
   const queryClient = useQueryClient();
-  const { data: currentUser } = useSession();
 
   return useMutation({
     mutationFn: async (newDebt: NewDebt) => {
@@ -22,9 +19,7 @@ export function useCreateDebt() {
       return data;
     },
     onSuccess: (newDebt) => {
-      // Invalidate the list to refresh dashboard, and pre-cache the new detail view instantly
-      const type = newDebt.lendeeId === currentUser?.id ? "pay" : "receive";
-      queryClient.invalidateQueries({ queryKey: ["debts", type] });
+      queryClient.invalidateQueries({ queryKey: ["debts"] });
       queryClient.setQueryData(["debt", newDebt.id], newDebt);
     },
   });
