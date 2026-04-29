@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, type Transition } from "framer-motion";
 import { ArrowUp, ArrowDown, Search } from "lucide-react";
 import { format } from "date-fns";
@@ -36,9 +37,14 @@ function matchesSearch(
   );
 }
 
-export function DebtHistoryTable() {
-  const { data: debts, isLoading, error } = useDebts(undefined, "paid", true);
+export function DebtSearchTable() {
+  const {
+    data: debts,
+    isLoading,
+    error,
+  } = useDebts(undefined, "pending", true);
   const { data: currentUser, isLoading: sessionLoading } = useSession();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -107,7 +113,7 @@ export function DebtHistoryTable() {
           Uh oh!
         </p>
         <p className="text-primary/50 max-w-65 text-sm">
-          We couldn't load your history. Try{" "}
+          We couldn't load your debts. Try{" "}
           <button
             onClick={() => window.location.reload()}
             className="text-primary underline underline-offset-4 opacity-70 transition-opacity duration-300 hover:opacity-100"
@@ -126,7 +132,7 @@ export function DebtHistoryTable() {
           All clear!
         </p>
         <p className="text-primary/50 max-w-65 text-sm">
-          No settled debts yet. They'll show up here once you mark one as done.
+          No pending debts yet. They'll show up here once one is created.
         </p>
       </div>
     );
@@ -141,7 +147,7 @@ export function DebtHistoryTable() {
         <Search className="text-primary/30 absolute top-1/2 left-3 size-3 -translate-y-1/2" />
         <input
           type="text"
-          placeholder="Search history..."
+          placeholder="Search debts..."
           value={search}
           spellCheck={false}
           autoCorrect="off"
@@ -192,20 +198,20 @@ export function DebtHistoryTable() {
           layout
           transition={TWEEN_TRANSITION}
           ref={scrollRef}
-          className="no-scrollbar relative flex min-h-0 max-w-156 flex-1 flex-col overflow-auto overscroll-none text-xs"
+          className="no-scrollbar relative flex min-h-0 max-w-156 flex-1 flex-col overflow-auto overscroll-none text-xs hover:cursor-pointer"
         >
           <motion.div
             layout
             transition={TWEEN_TRANSITION}
             className={cn(
               GRID,
-              "bg-background text-primary sticky top-0 z-20 min-w-156 -translate-y-px border-b pb-4 font-medium select-none",
+              "bg-background text-primary sticky top-0 z-20 min-w-156 -translate-y-px border-b pb-4 font-medium select-none hover:cursor-default",
             )}
           >
             <span>Other Party</span>
             <span>Amount</span>
             <span>Date Created</span>
-            <span>Date Settled</span>
+            <span>Deadline</span>
             <span>Created By</span>
           </motion.div>
           <AnimatePresence mode="popLayout">
@@ -232,11 +238,28 @@ export function DebtHistoryTable() {
                     delay: originalIndex * 0.05,
                     layout: { ...TWEEN_TRANSITION, delay: 0 },
                   }}
-                  className={cn(GRID, "min-w-156 border-b py-4 last:border-0")}
+                  whileHover={{
+                    scale: 0.995,
+                    opacity: 1,
+                    transition: {
+                      ...TWEEN_TRANSITION,
+                      delay: 0,
+                      duration: 0.3,
+                    },
+                  }}
+                  className={cn(
+                    GRID,
+                    "bg-background group min-w-156 border-b py-4 last:border-0",
+                  )}
+                  onClick={() =>
+                    navigate(
+                      `/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`,
+                    )
+                  }
                 >
                   <div className="pr-8">
                     <p className="font-semibold">{otherParty}</p>
-                    <p className="text-primary/40 mt-0.5 line-clamp-1 italic">
+                    <p className="text-primary/40 mt-0.5 line-clamp-1 italic underline decoration-transparent underline-offset-2 transition-[text-decoration-color] duration-300 group-hover:decoration-current/50">
                       {debt.title}
                     </p>
                   </div>
@@ -258,9 +281,14 @@ export function DebtHistoryTable() {
                   <div className="text-primary/60 flex items-center">
                     {format(new Date(debt.createdAt), "MMM d, yyyy")}
                   </div>
-                  <div className="text-primary/60 flex items-center">
-                    {debt.updatedAt
-                      ? format(new Date(debt.updatedAt), "MMM d, yyyy")
+                  <div
+                    className={cn(
+                      "text-primary/60 flex items-center",
+                      !debt.deadline && "select-none",
+                    )}
+                  >
+                    {debt.deadline
+                      ? format(new Date(debt.deadline), "MMM d, yyyy")
                       : "—"}
                   </div>
                   <div className="text-primary/60 flex items-center">
@@ -280,7 +308,7 @@ export function DebtHistoryTable() {
                 animate={{ opacity: 1 }}
                 className="text-primary/40 py-12 text-center text-xs"
               >
-                No paid debts match your search.
+                No debts match your search.
               </motion.div>
             )}
           </AnimatePresence>
