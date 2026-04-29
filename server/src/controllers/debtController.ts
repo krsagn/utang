@@ -9,6 +9,7 @@ import {
   type InferInsertModel,
   getTableColumns,
   sql,
+  ilike,
 } from 'drizzle-orm';
 import {
   createDebtSchema,
@@ -38,7 +39,7 @@ export const getDebts = async (req: Request, res: Response) => {
     if (!queryResult.success) {
       return res.status(400).json({ errors: queryResult.error.issues });
     }
-    const { type, status, fullNames } = queryResult.data;
+    const { type, status, fullNames, search } = queryResult.data;
     const lenderUser = alias(users, 'lender_user');
     const lendeeUser = alias(users, 'lendee_user');
 
@@ -61,6 +62,23 @@ export const getDebts = async (req: Request, res: Response) => {
     }
 
     if (fullNames === 'true') {
+      if (search) {
+        conditions.push(
+          or(
+            ilike(debts.title, `%${search}%`),
+            ilike(debts.description, `%${search}%`),
+            ilike(sql`${debts.amount}::text`, `%${search}%`),
+            ilike(
+              sql`CASE WHEN ${debts.lendeeId} = ${userId} 
+      THEN ${lenderUser.firstName} || ' ' || ${lenderUser.lastName}
+      ELSE ${lendeeUser.firstName} || ' ' || ${lendeeUser.lastName}
+      END`,
+              `%${search}%`
+            )
+          )
+        );
+      }
+
       const result = await db
         .select({
           ...getTableColumns(debts),
@@ -72,7 +90,7 @@ export const getDebts = async (req: Request, res: Response) => {
         .leftJoin(lendeeUser, eq(debts.lendeeId, lendeeUser.id))
         .where(and(...conditions))
         .orderBy(desc(debts.createdAt))
-        .limit(100);
+        .limit(search ? 50 : 25);
       return res.json(result);
     }
 

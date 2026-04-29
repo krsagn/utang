@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion, type Transition } from "framer-motion";
-import { ArrowUp, ArrowDown, Search } from "lucide-react";
+import { ArrowUp, ArrowDown, History } from "lucide-react";
 import { format } from "date-fns";
-import { formatCurrency, cn } from "@/shared/lib";
+import { formatCurrency, cn, useDebounce } from "@/shared/lib";
 import { useDebts } from "@/entities/debt";
-import type { Debt } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { Spinner } from "@/shared/ui";
 
@@ -18,28 +17,17 @@ const TWEEN_TRANSITION: Transition = {
   duration: ANIMATION_DURATION,
 };
 
-function matchesSearch(
-  debt: Debt,
-  query: string,
-  currentUserId?: string,
-): boolean {
-  const q = query.toLowerCase();
-  const otherParty =
-    debt.lendeeId === currentUserId
-      ? (debt.lenderFullName ?? debt.lenderName)
-      : (debt.lendeeFullName ?? debt.lendeeName);
-  return (
-    otherParty.toLowerCase().includes(q) ||
-    debt.title.toLowerCase().includes(q) ||
-    (debt.description?.toLowerCase().includes(q) ?? false) ||
-    debt.amount.includes(q)
-  );
-}
-
 export function DebtHistoryTable() {
-  const { data: debts, isLoading, error } = useDebts(undefined, "paid", true);
-  const { data: currentUser, isLoading: sessionLoading } = useSession();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+
+  const {
+    data: debts,
+    isLoading,
+    error,
+    isPlaceholderData,
+  } = useDebts(undefined, "paid", true, debouncedSearch || undefined);
+  const { data: currentUser, isLoading: sessionLoading } = useSession();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showTopGradient, setShowTopGradient] = useState(false);
@@ -47,10 +35,7 @@ export function DebtHistoryTable() {
   const [showLeftGradient, setShowLeftGradient] = useState(false);
   const [showRightGradient, setShowRightGradient] = useState(false);
 
-  const filtered =
-    debts && search.trim()
-      ? debts.filter((d) => matchesSearch(d, search, currentUser?.id))
-      : (debts ?? []);
+  const filtered = debts ?? [];
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -119,7 +104,7 @@ export function DebtHistoryTable() {
       </div>
     );
 
-  if (!debts || debts.length === 0)
+  if (!debts || (debts.length === 0 && !debouncedSearch))
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-2 text-center">
         <p className="font-heading text-4xl font-extrabold tracking-wide">
@@ -138,7 +123,7 @@ export function DebtHistoryTable() {
         transition={TWEEN_TRANSITION}
         className="relative"
       >
-        <Search className="text-primary/30 absolute top-1/2 left-3 size-3 -translate-y-1/2" />
+        <History className="text-primary/30 absolute top-1/2 left-3 ml-px size-3 -translate-y-1/2" />
         <input
           type="text"
           placeholder="Search history..."
@@ -148,6 +133,7 @@ export function DebtHistoryTable() {
           autoCapitalize="off"
           data-gramm="false"
           onChange={(e) => setSearch(e.target.value)}
+          maxLength={100}
           className={cn(
             "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/45 text-primary w-full border bg-transparent py-3 pr-3 pl-8 text-xs transition-colors outline-none",
             search && "font-medium",
@@ -158,6 +144,7 @@ export function DebtHistoryTable() {
       <motion.div
         layout
         transition={TWEEN_TRANSITION}
+        animate={{ opacity: isPlaceholderData ? 0.5 : 1 }}
         className={cn(
           "relative min-h-0 flex-1 text-xs",
           "no-scrollbar flex overflow-hidden",

@@ -34,5 +34,6 @@ export const getDebtsQuerySchema = z
     type: z.enum(['pay', 'receive']).optional(),
     status: z.enum(['pending', 'paid', 'void']).optional(),
     fullNames: z.enum(['true', 'false']).optional(),
+    search: z.string().max(100).optional(),
   })
   .strict();

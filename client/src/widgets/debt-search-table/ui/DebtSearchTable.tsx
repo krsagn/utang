@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, type Transition } from "framer-motion";
 import { ArrowUp, ArrowDown, Search } from "lucide-react";
 import { format } from "date-fns";
@@ -125,14 +125,21 @@ export function DebtSearchTable() {
       </div>
     );
 
-  if (!debts || debts.length === 0)
+  if (!debts || (debts.length === 0 && !search))
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-2 text-center">
         <p className="font-heading text-4xl font-extrabold tracking-wide">
           All clear!
         </p>
         <p className="text-primary/50 max-w-65 text-sm">
-          No pending debts yet. They'll show up here once one is created.
+          No pending debts yet.{" "}
+          <Link
+            to="/debts/new"
+            className="text-primary underline underline-offset-4 opacity-70 transition-opacity duration-300 hover:opacity-100"
+          >
+            Record one
+          </Link>
+          .
         </p>
       </div>
     );
@@ -154,6 +161,7 @@ export function DebtSearchTable() {
           autoCapitalize="off"
           data-gramm="false"
           onChange={(e) => setSearch(e.target.value)}
+          maxLength={100}
           className={cn(
             "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/45 text-primary w-full border bg-transparent py-3 pr-3 pl-8 text-xs transition-colors outline-none",
             search && "font-medium",
@@ -306,6 +314,7 @@ export function DebtSearchTable() {
                 layout="position"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                transition={TWEEN_TRANSITION}
                 className="text-primary/40 py-12 text-center text-xs"
               >
                 No debts match your search.
