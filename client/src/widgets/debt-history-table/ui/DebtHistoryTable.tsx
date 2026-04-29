@@ -7,7 +7,7 @@ import { useDebts } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { Spinner } from "@/shared/ui";
 
-const GRID = "grid grid-cols-[1.5fr_1.25fr_1fr_1fr_1fr]";
+const GRID = "grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr]";
 
 const ANIMATION_DURATION = 0.7;
 
@@ -135,7 +135,7 @@ export function DebtHistoryTable() {
           onChange={(e) => setSearch(e.target.value)}
           maxLength={100}
           className={cn(
-            "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/45 text-primary w-full border bg-transparent py-3 pr-3 pl-8 text-xs transition-colors outline-none",
+            "squircle border-primary/15 focus:border-primary/25 placeholder:text-primary/45 text-primary w-full border bg-transparent py-3 pr-3 pl-8 text-xs transition-colors outline-none",
             search && "font-medium",
           )}
         />
@@ -186,7 +186,7 @@ export function DebtHistoryTable() {
             transition={TWEEN_TRANSITION}
             className={cn(
               GRID,
-              "bg-background text-primary sticky top-0 z-20 min-w-156 -translate-y-px border-b pb-4 font-medium select-none",
+              "bg-background text-primary border-primary/10 sticky top-0 z-20 min-w-156 -translate-y-px border-b pb-4 font-medium select-none",
             )}
           >
             <span>Other Party</span>
@@ -219,11 +219,14 @@ export function DebtHistoryTable() {
                     delay: originalIndex * 0.03,
                     layout: { ...TWEEN_TRANSITION, delay: 0 },
                   }}
-                  className={cn(GRID, "min-w-156 border-b py-4 last:border-0")}
+                  className={cn(
+                    GRID,
+                    "border-primary/5 min-w-156 border-b py-4 last:border-0",
+                  )}
                 >
                   <div className="pr-8">
                     <p className="font-semibold">{otherParty}</p>
-                    <p className="text-primary/40 mt-0.5 line-clamp-1 italic">
+                    <p className="text-primary/40 mt-0.5 line-clamp-1 break-all italic">
                       {debt.title}
                     </p>
                   </div>
@@ -243,11 +246,11 @@ export function DebtHistoryTable() {
                     </span>
                   </div>
                   <div className="text-primary/60 flex items-center">
-                    {format(new Date(debt.createdAt), "MMM d, yyyy")}
+                    {format(new Date(debt.createdAt), "d MMM yyyy")}
                   </div>
                   <div className="text-primary/60 flex items-center">
                     {debt.updatedAt
-                      ? format(new Date(debt.updatedAt), "MMM d, yyyy")
+                      ? format(new Date(debt.updatedAt), "d MMM yyyy")
                       : "—"}
                   </div>
                   <div className="text-primary/60 flex items-center">
