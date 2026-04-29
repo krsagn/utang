@@ -69,9 +69,9 @@ export const getDebts = async (req: Request, res: Response) => {
             ilike(debts.description, `%${search}%`),
             ilike(sql`${debts.amount}::text`, `%${search}%`),
             ilike(
-              sql`CASE WHEN ${debts.lendeeId} = ${userId} 
-      THEN ${lenderUser.firstName} || ' ' || ${lenderUser.lastName}
-      ELSE ${lendeeUser.firstName} || ' ' || ${lendeeUser.lastName}
+              sql`CASE WHEN ${debts.lendeeId} = ${userId}
+      THEN COALESCE(${lenderUser.firstName} || ' ' || ${lenderUser.lastName}, ${debts.lenderName})
+      ELSE COALESCE(${lendeeUser.firstName} || ' ' || ${lendeeUser.lastName}, ${debts.lendeeName})
       END`,
               `%${search}%`
             )

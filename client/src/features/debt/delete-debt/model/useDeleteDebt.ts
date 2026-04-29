@@ -6,11 +6,12 @@ export function useDeleteDebt() {
 
   return useMutation({
     mutationFn: (id: string) => api.delete<void>(`/debts/${id}`),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({
         predicate: (query) =>
           query.queryKey[0] === "debts" && query.queryKey[2] !== "paid",
       });
+      queryClient.removeQueries({ queryKey: ["debt", id] });
     },
   });
 }

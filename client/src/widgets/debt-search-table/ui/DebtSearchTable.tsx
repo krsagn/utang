@@ -255,6 +255,8 @@ export function DebtSearchTable() {
                       duration: 0.3,
                     },
                   }}
+                  role="link"
+                  tabIndex={0}
                   className={cn(
                     GRID,
                     "bg-background group min-w-156 border-b py-4 last:border-0",
@@ -264,6 +266,12 @@ export function DebtSearchTable() {
                       `/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`,
                     )
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ")
+                      navigate(
+                        `/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`,
+                      );
+                  }}
                 >
                   <div className="pr-8">
                     <p className="font-semibold">{otherParty}</p>
