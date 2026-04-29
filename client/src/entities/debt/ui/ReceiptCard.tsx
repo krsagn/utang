@@ -37,7 +37,7 @@ export function ReceiptCard({
     // receipt image is the background; content is absolutely centered over it
     <div className="relative h-101 shrink-0 select-none">
       <img
-        src="/empty-receipt.webp"
+        src="/empty-receipt-alt2.png"
         alt=""
         aria-hidden
         className="h-full w-auto scale-111 object-fill select-none"
