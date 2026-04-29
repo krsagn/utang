@@ -232,7 +232,7 @@ export function DebtSearchTable() {
               const originalIndex = debts.findIndex((d) => d.id === debt.id);
 
               return (
-                <motion.div
+                <motion.a
                   key={debt.id}
                   layout
                   initial={{ opacity: 0 }}
@@ -255,22 +255,16 @@ export function DebtSearchTable() {
                       duration: 0.3,
                     },
                   }}
-                  role="link"
-                  tabIndex={0}
                   className={cn(
                     GRID,
                     "bg-background group border-primary/5 min-w-156 border-b py-4 last:border-0",
                   )}
-                  onClick={() =>
+                  href={`/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
                     navigate(
                       `/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`,
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ")
-                      navigate(
-                        `/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`,
-                      );
+                    );
                   }}
                 >
                   <div className="pr-8">
@@ -314,7 +308,7 @@ export function DebtSearchTable() {
                         ? (debt.lenderFullName ?? debt.lenderName)
                         : (debt.lendeeFullName ?? debt.lendeeName)}
                   </div>
-                </motion.div>
+                </motion.a>
               );
             })}
             {filtered.length === 0 && (
