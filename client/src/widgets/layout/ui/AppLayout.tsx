@@ -35,7 +35,7 @@ export function AppLayout() {
           transition={{
             type: "tween",
             ease: [0.42, 0, 0.58, 1],
-            duration: 0.5,
+            duration: 0.6,
           }}
           className={cn(
             "bg-background relative z-10 flex h-screen w-full shrink-0 overflow-hidden will-change-transform",

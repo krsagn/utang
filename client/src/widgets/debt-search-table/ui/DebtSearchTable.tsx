@@ -243,7 +243,7 @@ export function DebtSearchTable() {
                   }}
                   transition={{
                     ...TWEEN_TRANSITION,
-                    delay: originalIndex * 0.05,
+                    delay: originalIndex * 0.03,
                     layout: { ...TWEEN_TRANSITION, delay: 0 },
                   }}
                   whileHover={{

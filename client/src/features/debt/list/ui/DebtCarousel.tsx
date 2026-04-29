@@ -29,7 +29,7 @@ const mountTransition = (segment: number, hasNavigated: boolean) => ({
 
 // preload receipt image at module load, gate mount animations until it's ready
 const receiptImg = new Image();
-receiptImg.src = "/empty-receipt.webp";
+receiptImg.src = "/empty-receipt-alt2.png";
 
 // memo'd so only the 2 cards whose isSelected changes re-render on navigation
 const CarouselSlide = memo(function CarouselSlide({

@@ -216,7 +216,7 @@ export function DebtHistoryTable() {
                   }}
                   transition={{
                     ...TWEEN_TRANSITION,
-                    delay: originalIndex * 0.05,
+                    delay: originalIndex * 0.03,
                     layout: { ...TWEEN_TRANSITION, delay: 0 },
                   }}
                   className={cn(GRID, "min-w-156 border-b py-4 last:border-0")}
