@@ -52,8 +52,11 @@ const CarouselSlide = memo(function CarouselSlide({
   return (
     <motion.div
       className="flex-none basis-auto"
-      initial={hasNavigated ? false : { opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={hasNavigated ? false : { opacity: 0.35, scale: 0.95 }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+      }}
       exit={{
         opacity: 0,
         scale: 0.6,
@@ -62,7 +65,11 @@ const CarouselSlide = memo(function CarouselSlide({
           scale: { duration: 0.3, ease: "easeOut" },
         },
       }}
-      transition={{ ...mountSpring, delay: index * 0.1 }}
+      transition={{
+        ...mountSpring,
+        delay: index * 0.1,
+        opacity: { duration: 0.5 },
+      }}
     >
       <div
         className={cn(

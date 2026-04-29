@@ -6,9 +6,12 @@ export function useDeleteDebt() {
 
   return useMutation({
     mutationFn: (id: string) => api.delete<void>(`/debts/${id}`),
-    onSuccess: () => {
-      // Refresh all debt lists to remove the deleted item from the dashboard
-      queryClient.invalidateQueries({ queryKey: ["debts"] });
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey[0] === "debts" && query.queryKey[2] !== "paid",
+      });
+      queryClient.removeQueries({ queryKey: ["debt", id] });
     },
   });
 }

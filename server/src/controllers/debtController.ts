@@ -1,12 +1,26 @@
 import type { Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { users, debts } from '../db/schema.js';
-import { or, and, eq, desc, type InferInsertModel } from 'drizzle-orm';
-import { createDebtSchema, getDebtsQuerySchema, updateDebtSchema } from '../schemas/debtSchema.js';
+import {
+  or,
+  and,
+  eq,
+  desc,
+  type InferInsertModel,
+  getTableColumns,
+  sql,
+  ilike,
+} from 'drizzle-orm';
+import {
+  createDebtSchema,
+  getDebtsQuerySchema,
+  updateDebtSchema,
+} from '../schemas/debtSchema.js';
 import { z } from 'zod';
 import { emailQueue } from '../queues/emailQueue.js';
 import { handleDbErrorResponse } from '../lib/utils.js';
 import { io } from '../socket.js';
+import { alias } from 'drizzle-orm/pg-core';
 
 /**
  * GET /debts
@@ -25,11 +39,11 @@ export const getDebts = async (req: Request, res: Response) => {
     if (!queryResult.success) {
       return res.status(400).json({ errors: queryResult.error.issues });
     }
-    const { type, status } = queryResult.data;
+    const { type, status, fullNames, search } = queryResult.data;
+    const lenderUser = alias(users, 'lender_user');
+    const lendeeUser = alias(users, 'lendee_user');
 
     type DebtStatus = (typeof debts.status.enumValues)[number];
-
-    let query = db.select().from(debts).limit(100);
 
     const conditions = [];
 
@@ -47,13 +61,46 @@ export const getDebts = async (req: Request, res: Response) => {
       conditions.push(eq(debts.status, status as DebtStatus));
     }
 
-    query.where(and(...conditions));
+    if (fullNames === 'true') {
+      if (search) {
+        conditions.push(
+          or(
+            ilike(debts.title, `%${search}%`),
+            ilike(debts.description, `%${search}%`),
+            ilike(sql`${debts.amount}::text`, `%${search}%`),
+            ilike(
+              sql`CASE WHEN ${debts.lendeeId} = ${userId}
+      THEN COALESCE(${lenderUser.firstName} || ' ' || ${lenderUser.lastName}, ${debts.lenderName})
+      ELSE COALESCE(${lendeeUser.firstName} || ' ' || ${lendeeUser.lastName}, ${debts.lendeeName})
+      END`,
+              `%${search}%`
+            )
+          )
+        );
+      }
 
-    // Newest debts at the top
-    query.orderBy(desc(debts.createdAt));
+      const result = await db
+        .select({
+          ...getTableColumns(debts),
+          lenderFullName: sql<string>`${lenderUser.firstName} || ' ' || ${lenderUser.lastName}`,
+          lendeeFullName: sql<string>`${lendeeUser.firstName} || ' ' || ${lendeeUser.lastName}`,
+        })
+        .from(debts)
+        .leftJoin(lenderUser, eq(debts.lenderId, lenderUser.id))
+        .leftJoin(lendeeUser, eq(debts.lendeeId, lendeeUser.id))
+        .where(and(...conditions))
+        .orderBy(desc(debts.createdAt))
+        .limit(search ? 50 : 25);
+      return res.json(result);
+    }
 
-    const userDebts = await query;
-    return res.json(userDebts);
+    const result = await db
+      .select()
+      .from(debts)
+      .where(and(...conditions))
+      .orderBy(desc(debts.createdAt))
+      .limit(100);
+    return res.json(result);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });
@@ -73,7 +120,8 @@ export const getDebtById = async (req: Request, res: Response) => {
     const userId = res.locals.user!.id;
 
     const idResult = z.string().uuid().safeParse(id);
-    if (!idResult.success) return res.status(400).json({ error: 'Invalid debt ID' });
+    if (!idResult.success)
+      return res.status(400).json({ error: 'Invalid debt ID' });
 
     const debt = await db.query.debts.findFirst({
       where: and(
@@ -227,7 +275,8 @@ export const updateDebt = async (req: Request, res: Response) => {
     const userId = res.locals.user!.id;
 
     const idResult = z.string().uuid().safeParse(id);
-    if (!idResult.success) return res.status(400).json({ error: 'Invalid debt ID' });
+    if (!idResult.success)
+      return res.status(400).json({ error: 'Invalid debt ID' });
 
     const body = updateDebtSchema.parse(req.body);
 

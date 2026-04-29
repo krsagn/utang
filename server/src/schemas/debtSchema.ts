@@ -29,7 +29,11 @@ export const updateDebtSchema = createDebtSchema.partial().extend({
 });
 
 // Query params for GET /debts
-export const getDebtsQuerySchema = z.object({
-  type: z.enum(['pay', 'receive']).optional(),
-  status: z.enum(['pending', 'paid', 'void']).optional(),
-}).strict();
+export const getDebtsQuerySchema = z
+  .object({
+    type: z.enum(['pay', 'receive']).optional(),
+    status: z.enum(['pending', 'paid', 'void']).optional(),
+    fullNames: z.enum(['true', 'false']).optional(),
+    search: z.string().max(100).optional(),
+  })
+  .strict();

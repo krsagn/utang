@@ -230,6 +230,8 @@ export function DebtBoard() {
                     stiffness: 300,
                     damping: 30,
                     delay: seededRandom(seed + 3) * 0.3,
+                    left: { type: "spring", stiffness: 300, damping: 50 },
+                    top: { type: "spring", stiffness: 300, damping: 50 },
                   }}
                 >
                   <StickyNote

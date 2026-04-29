@@ -9,7 +9,9 @@ import { Outgoing } from "@/pages/debts/outgoing";
 import { Incoming } from "@/pages/debts/incoming";
 import { CreateDebtPage } from "@/pages/debts/new";
 import { EditDebtPage } from "@/pages/debts/edit";
+import { HistoryPage } from "@/pages/debts/history";
 import { AppLayout } from "@/widgets/layout";
+import { SearchPage } from "@/pages/debts/search";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +29,8 @@ const router = createBrowserRouter([
           { path: "/debts/incoming", element: <Incoming /> },
           { path: "/debts/new", element: <CreateDebtPage /> },
           { path: "/debts/:id/edit", element: <EditDebtPage /> },
+          { path: "/debts/history", element: <HistoryPage /> },
+          { path: "/debts/search", element: <SearchPage /> },
         ],
       },
     ],

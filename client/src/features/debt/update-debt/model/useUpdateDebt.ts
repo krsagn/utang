@@ -18,7 +18,20 @@ export function useUpdateDebt() {
       return data;
     },
     onSuccess: (updatedDebt) => {
-      queryClient.invalidateQueries({ queryKey: ["debts"] });
+      const previousDebt = queryClient.getQueryData<Debt>(["debt", updatedDebt.id]);
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey[0] === "debts" && query.queryKey[2] !== "paid",
+      });
+      if (
+        updatedDebt.status === "paid" ||
+        previousDebt?.status === "paid"
+      ) {
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey[0] === "debts" && query.queryKey[2] === "paid",
+        });
+      }
       queryClient.setQueryData(["debt", updatedDebt.id], updatedDebt);
     },
   });

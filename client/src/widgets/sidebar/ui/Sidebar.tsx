@@ -19,6 +19,7 @@ const SIDEBAR_LINKS: SidebarLink[] = [
   { path: "/board", label: "My Board" },
   { path: "/debts/outgoing", label: "To Pay" },
   { path: "/debts/incoming", label: "To Receive" },
+  { path: "/debts/history", label: "History" },
   { action: "toggleFriends", label: "Friends" },
 ];
 

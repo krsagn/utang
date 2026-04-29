@@ -80,7 +80,7 @@ function RightSidebarSearch() {
   return (
     <div className="flex h-8 cursor-pointer items-center justify-end pr-2 select-none">
       <NavLink
-        to="/search"
+        to="/debts/search"
         className={({ isActive }) =>
           cn(
             "text-primary transition-all duration-300",
