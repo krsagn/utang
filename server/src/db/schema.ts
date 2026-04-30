@@ -45,14 +45,15 @@ export const debts = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
 
     // parties involved
-    lenderName: text('lender_name').notNull(),
     lenderId: uuid('lender_id').references(() => users.id, {
       onDelete: 'cascade',
     }),
-    lendeeName: text('lendee_name').notNull(),
     lendeeId: uuid('lendee_id').references(() => users.id, {
       onDelete: 'cascade',
     }),
+
+    // optional stranger name if other party is a non-user
+    strangerName: text('stranger_name'),
 
     // core data
     currency: text('currency').notNull().default('AUD'),
@@ -75,6 +76,11 @@ export const debts = pgTable(
     check(
       'one-participant-check',
       sql`${table.lenderId} IS NOT NULL OR ${table.lendeeId} IS NOT NULL`
+    ),
+    // Ensures that either a stranger name is present, or both IDs are present
+    check(
+      'stranger-or-both-ids-check',
+      sql`${table.strangerName} IS NOT NULL OR (${table.lenderId} IS NOT NULL AND ${table.lendeeId} IS NOT NULL)`
     ),
     index('idx_debts_lender').on(table.lenderId),
     index('idx_debts_lendee').on(table.lendeeId),

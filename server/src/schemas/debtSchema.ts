@@ -1,12 +1,9 @@
 import { z } from 'zod';
 
-// Define the shape of the incoming request body (POST)
-export const createDebtSchema = z.object({
+export const baseDebtSchema = z.object({
   // parties involved
-  lenderId: z.string().uuid().optional(),
-  lendeeId: z.string().uuid().optional(),
-  lenderName: z.string().min(1, 'Lender name is required'),
-  lendeeName: z.string().min(1, 'Lendee name is required'),
+  otherPartyId: z.string().uuid().optional(),
+  strangerName: z.string().optional(),
 
   // Lent amount must be positive, and capped locally at ~10M for real-life usage
   currency: z.string().length(3).toUpperCase(),
@@ -23,17 +20,31 @@ export const createDebtSchema = z.object({
   deadline: z.coerce.date().optional(),
 });
 
-// Same shape as createDebtSchema, partial() makes all fields optional
-export const updateDebtSchema = createDebtSchema.partial().extend({
-  status: z.enum(['pending', 'paid', 'void']).optional(),
-});
+// Extends baseDebtSchema with type, and enforces exactly one of strangerName or otherPartyId
+export const createDebtSchema = baseDebtSchema
+  .extend({ type: z.enum(['pay', 'receive']) })
+  .refine((data) => data.strangerName || data.otherPartyId, {
+    message: 'Provide a stranger name or ID of other party',
+  })
+  .refine((data) => !(data.otherPartyId && data.strangerName), {
+    message: 'Cannot provide both other party ID and stranger name',
+  });
+
+// All fields optional; rejects requests that provide both otherPartyId and strangerName
+export const updateDebtSchema = baseDebtSchema
+  .partial()
+  .extend({
+    status: z.enum(['pending', 'paid', 'void']).optional(),
+  })
+  .refine((data) => !(data.otherPartyId && data.strangerName), {
+    message: 'Cannot provide both other party ID and stranger name',
+  });
 
 // Query params for GET /debts
 export const getDebtsQuerySchema = z
   .object({
     type: z.enum(['pay', 'receive']).optional(),
     status: z.enum(['pending', 'paid', 'void']).optional(),
-    fullNames: z.enum(['true', 'false']).optional(),
     search: z.string().max(100).optional(),
   })
   .strict();
