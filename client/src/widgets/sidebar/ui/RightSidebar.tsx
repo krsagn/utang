@@ -78,15 +78,16 @@ export function RightSidebar() {
 // top section: right-aligned search icon
 function RightSidebarSearch() {
   return (
-    <div className="flex h-8 cursor-pointer items-center justify-end pr-2 select-none">
+    <div className="flex h-8 items-center justify-end pr-2 select-none">
       <NavLink
         to="/debts/search"
         className={({ isActive }) =>
           cn(
-            "text-primary transition-all duration-300",
+            "text-primary cursor-pointer transition-all duration-300",
             isActive ? "opacity-100" : "opacity-30 hover:opacity-100",
           )
         }
+        draggable={false}
       >
         <Search className="size-5" />
       </NavLink>

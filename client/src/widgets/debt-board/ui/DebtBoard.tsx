@@ -222,7 +222,7 @@ export function DebtBoard() {
                   whileHover={{
                     scale: 0.98,
                     rotate: rotation * 0.7,
-                    transition: { delay: 0 },
+                    transition: { delay: 0, duration: 0.15 },
                   }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{
