@@ -14,7 +14,7 @@ export function DatePicker({
   return (
     <div
       className={cn(
-        "squircle border-primary/10 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors",
+        "squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors",
         open && "border-primary/20",
       )}
     >
@@ -43,7 +43,7 @@ export function DatePicker({
             mode="single"
             selected={value}
             onSelect={onChange}
-            disabled={(date) =>
+            disabled={(date: Date) =>
               date < new Date(new Date().setHours(0, 0, 0, 0))
             }
             autoFocus

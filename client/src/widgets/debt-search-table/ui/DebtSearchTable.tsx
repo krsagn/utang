@@ -9,7 +9,7 @@ import type { Debt } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { Spinner } from "@/shared/ui";
 
-const GRID = "grid grid-cols-[1.5fr_1.25fr_1fr_1fr_1fr]";
+const GRID = "grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr]";
 
 const ANIMATION_DURATION = 0.7;
 
@@ -163,7 +163,7 @@ export function DebtSearchTable() {
           onChange={(e) => setSearch(e.target.value)}
           maxLength={100}
           className={cn(
-            "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/45 text-primary w-full border bg-transparent py-3 pr-3 pl-8 text-xs transition-colors outline-none",
+            "squircle border-primary/15 focus:border-primary/25 placeholder:text-primary/45 text-primary w-full border bg-transparent py-3 pr-3 pl-8 text-xs transition-colors outline-none",
             search && "font-medium",
           )}
         />
@@ -213,7 +213,7 @@ export function DebtSearchTable() {
             transition={TWEEN_TRANSITION}
             className={cn(
               GRID,
-              "bg-background text-primary sticky top-0 z-20 min-w-156 -translate-y-px border-b pb-4 font-medium select-none hover:cursor-default",
+              "bg-background text-primary border-primary/10 sticky top-0 z-20 min-w-156 -translate-y-px border-b pb-4 font-medium select-none hover:cursor-default",
             )}
           >
             <span>Other Party</span>
@@ -232,7 +232,7 @@ export function DebtSearchTable() {
               const originalIndex = debts.findIndex((d) => d.id === debt.id);
 
               return (
-                <motion.div
+                <motion.a
                   key={debt.id}
                   layout
                   initial={{ opacity: 0 }}
@@ -243,7 +243,7 @@ export function DebtSearchTable() {
                   }}
                   transition={{
                     ...TWEEN_TRANSITION,
-                    delay: originalIndex * 0.05,
+                    delay: originalIndex * 0.03,
                     layout: { ...TWEEN_TRANSITION, delay: 0 },
                   }}
                   whileHover={{
@@ -255,27 +255,21 @@ export function DebtSearchTable() {
                       duration: 0.3,
                     },
                   }}
-                  role="link"
-                  tabIndex={0}
                   className={cn(
                     GRID,
-                    "bg-background group min-w-156 border-b py-4 last:border-0",
+                    "bg-background group border-primary/5 min-w-156 border-b py-4 last:border-0",
                   )}
-                  onClick={() =>
+                  href={`/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
                     navigate(
                       `/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`,
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ")
-                      navigate(
-                        `/debts/${isOutgoing ? "outgoing" : "incoming"}?debtId=${debt.id}`,
-                      );
+                    );
                   }}
                 >
                   <div className="pr-8">
                     <p className="font-semibold">{otherParty}</p>
-                    <p className="text-primary/40 mt-0.5 line-clamp-1 italic underline decoration-transparent underline-offset-2 transition-[text-decoration-color] duration-300 group-hover:decoration-current/50">
+                    <p className="text-primary/40 mt-0.5 line-clamp-1 break-all italic underline decoration-transparent underline-offset-2 transition-[text-decoration-color] duration-300 group-hover:decoration-current/50">
                       {debt.title}
                     </p>
                   </div>
@@ -295,7 +289,7 @@ export function DebtSearchTable() {
                     </span>
                   </div>
                   <div className="text-primary/60 flex items-center">
-                    {format(new Date(debt.createdAt), "MMM d, yyyy")}
+                    {format(new Date(debt.createdAt), "d MMM yyyy")}
                   </div>
                   <div
                     className={cn(
@@ -304,7 +298,7 @@ export function DebtSearchTable() {
                     )}
                   >
                     {debt.deadline
-                      ? format(new Date(debt.deadline), "MMM d, yyyy")
+                      ? format(new Date(debt.deadline), "d MMM yyyy")
                       : "—"}
                   </div>
                   <div className="text-primary/60 flex items-center">
@@ -314,7 +308,7 @@ export function DebtSearchTable() {
                         ? (debt.lenderFullName ?? debt.lenderName)
                         : (debt.lendeeFullName ?? debt.lendeeName)}
                   </div>
-                </motion.div>
+                </motion.a>
               );
             })}
             {filtered.length === 0 && (

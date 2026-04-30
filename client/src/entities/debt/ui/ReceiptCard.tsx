@@ -35,12 +35,12 @@ export function ReceiptCard({
 
   return (
     // receipt image is the background; content is absolutely centered over it
-    <div className="relative h-101 shrink-0 drop-shadow-lg select-none">
+    <div className="relative h-101 shrink-0 select-none">
       <img
         src="/empty-receipt.webp"
         alt=""
         aria-hidden
-        className="h-full w-auto object-fill select-none"
+        className="h-full w-auto scale-111 object-fill select-none"
         draggable={false}
       />
       {/* fixed-width column matching the receipt's printable area */}

@@ -62,7 +62,7 @@ export function FriendsSidebar() {
           transition={{
             type: "tween",
             ease: [0.42, 0, 0.58, 1],
-            duration: 0.5,
+            duration: 0.6,
           }}
           className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col justify-between gap-15 p-7"
         >

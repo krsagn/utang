@@ -7,6 +7,7 @@ import { io } from '../socket.js';
 vi.mock('../db/index.js', () => {
   const mockQueryBuilder = {
     from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
@@ -173,6 +174,30 @@ describe('POST /debts', () => {
     expect(response.body.error).toBe('Duplicate entry');
   });
 
+  it('should refresh lendee name if lendeeId resolves to a user', async () => {
+    const mockLendeeId = '11111111-1111-1111-1111-111111111111';
+
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: mockLendeeId,
+      firstName: 'Bob',
+      email: 'bob@example.com',
+    } as any);
+
+    const valuesSpy = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([{ id: 'mock-debt-id' }]),
+    });
+    vi.mocked(db.insert).mockReturnValueOnce({ values: valuesSpy } as any);
+
+    const response = await request(app)
+      .post('/debts')
+      .send(createMockDebt({ lenderId: mockUserId, lendeeId: mockLendeeId }));
+
+    expect(response.status).toBe(201);
+    expect(valuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ lendeeName: 'Bob' })
+    );
+  });
+
   it('should queue an email if lender is a registered user', async () => {
     const { emailQueue } = await import('../queues/emailQueue.js');
 
@@ -238,6 +263,24 @@ describe('GET /debts', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([{ id: 'mock-debt-id' }]);
+  });
+
+  it('should return 200 when type=receive', async () => {
+    const response = await request(app).get('/debts?type=receive');
+
+    expect(response.status).toBe(200);
+  });
+
+  it('should return 200 with full names when fullNames=true', async () => {
+    const response = await request(app).get('/debts?fullNames=true');
+
+    expect(response.status).toBe(200);
+  });
+
+  it('should return 200 and apply search filter when fullNames=true with search', async () => {
+    const response = await request(app).get('/debts?fullNames=true&search=Alice');
+
+    expect(response.status).toBe(200);
   });
 });
 
@@ -313,6 +356,32 @@ describe('PATCH /debts/:id', () => {
     );
   });
 
+  it('should refresh lendee name if lendeeId is provided', async () => {
+    const mockLendeeId = '11111111-1111-1111-1111-111111111111';
+
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce({
+      id: mockLendeeId,
+      firstName: 'Bob',
+      email: 'bob@example.com',
+    } as any);
+
+    const setSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'mock-debt-id' }]),
+      }),
+    });
+    vi.mocked(db.update).mockReturnValueOnce({ set: setSpy } as any);
+
+    const response = await request(app)
+      .patch(`/debts/${mockDebtId}`)
+      .send({ lendeeId: mockLendeeId });
+
+    expect(response.status).toBe(200);
+    expect(setSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ lendeeName: 'Bob' })
+    );
+  });
+
   it('should return 500 on unexpected error', async () => {
     vi.mocked(db.update).mockReturnValueOnce({
       set: vi.fn().mockRejectedValue(new Error('Unexpected')),
@@ -340,6 +409,28 @@ describe('PATCH /debts/:id', () => {
 
     expect(io.to).toHaveBeenCalledWith(mockUserId);
     expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
+      'debt:updated',
+      expect.objectContaining({ id: 'mock-debt-id' })
+    );
+  });
+
+  it('should emit debt:updated to lendee', async () => {
+    const mockLendeeId = '11111111-1111-1111-1111-111111111111';
+
+    vi.mocked(db.update).mockReturnValueOnce({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi
+            .fn()
+            .mockResolvedValue([{ id: 'mock-debt-id', lendeeId: mockLendeeId }]),
+        }),
+      }),
+    } as any);
+
+    await request(app).patch(`/debts/${mockDebtId}`).send({ status: 'paid' });
+
+    expect(io.to).toHaveBeenCalledWith(mockLendeeId);
+    expect(io.to(mockLendeeId).emit).toHaveBeenCalledWith(
       'debt:updated',
       expect.objectContaining({ id: 'mock-debt-id' })
     );
@@ -388,6 +479,26 @@ describe('DELETE /debts/:id', () => {
 
     expect(io.to).toHaveBeenCalledWith(mockUserId);
     expect(io.to(mockUserId).emit).toHaveBeenCalledWith(
+      'debt:deleted',
+      expect.objectContaining({ id: 'mock-debt-id' })
+    );
+  });
+
+  it('should emit debt:deleted to lendee', async () => {
+    const mockLendeeId = '11111111-1111-1111-1111-111111111111';
+
+    vi.mocked(db.delete).mockReturnValueOnce({
+      where: vi.fn().mockReturnValue({
+        returning: vi
+          .fn()
+          .mockResolvedValue([{ id: 'mock-debt-id', lendeeId: mockLendeeId }]),
+      }),
+    } as any);
+
+    await request(app).delete('/debts/12345');
+
+    expect(io.to).toHaveBeenCalledWith(mockLendeeId);
+    expect(io.to(mockLendeeId).emit).toHaveBeenCalledWith(
       'debt:deleted',
       expect.objectContaining({ id: 'mock-debt-id' })
     );
