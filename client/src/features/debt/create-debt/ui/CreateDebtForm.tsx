@@ -139,7 +139,10 @@ export function CreateDebtForm({
                 With Whom?
                 <FieldRequiredIndicator filled={Boolean(withWhom.trim())} />
               </label>
-              <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors" data-combobox>
+              <div
+                className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors"
+                data-combobox
+              >
                 <FriendSelectCombobox
                   value={{
                     name:
@@ -202,7 +205,6 @@ export function CreateDebtForm({
               maxLength={30}
               value={formData.title}
               placeholder="e.g. Dinner last Friday"
-              aria-label="Title"
               aria-required="true"
               spellCheck={false}
               autoCorrect="off"
@@ -238,7 +240,6 @@ export function CreateDebtForm({
               }
               maxLength={100}
               placeholder="Any extra details..."
-              aria-label="Description"
               className={cn(
                 "squircle border-primary/10 focus:border-primary/20 placeholder:text-primary/25 text-primary h-20 w-full resize-none border bg-transparent p-3 text-xs tracking-wide transition-colors outline-none",
                 formData.description && "font-medium",
