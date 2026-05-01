@@ -10,6 +10,7 @@ import {
   type DebtType,
   useDebts,
   ReceiptCard,
+  resolveOtherPartyFirstName,
 } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { useUpdateDebt } from "@/features/debt/update-debt";
@@ -258,9 +259,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
 
   const selectedDebt = debts[selectedIndex] ?? debts[0];
   const isCreator = selectedDebt.createdBy === currentUser?.id;
-  const counterparty = isOutgoing
-    ? selectedDebt.lenderName
-    : selectedDebt.lendeeName;
+  const counterparty = resolveOtherPartyFirstName(selectedDebt, currentUser?.id);
   const deadline = selectedDebt.deadline
     ? new Date(selectedDebt.deadline)
     : null;

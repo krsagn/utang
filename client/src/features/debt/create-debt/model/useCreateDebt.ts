@@ -9,8 +9,8 @@ export function useCreateDebt() {
     mutationFn: async (newDebt: NewDebt) => {
       const payload = {
         ...newDebt,
-        lendeeId: newDebt.lendeeId || undefined,
-        lenderId: newDebt.lenderId || undefined,
+        otherPartyId: newDebt.otherPartyId || undefined,
+        strangerName: newDebt.strangerName || undefined,
         description: newDebt.description || undefined,
         deadline: newDebt.deadline || undefined,
       };

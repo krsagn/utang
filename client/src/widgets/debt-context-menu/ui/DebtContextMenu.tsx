@@ -63,8 +63,8 @@ export function DebtContextMenu({
             <ContextMenuLabel className="font-normal tracking-wide">
               <span className="font-semibold">
                 {debt.createdBy === debt.lenderId
-                  ? debt.lenderName
-                  : debt.lendeeName}
+                  ? `${debt.lenderFirstName ?? ""} ${debt.lenderLastName ?? ""}`.trim()
+                  : `${debt.lendeeFirstName ?? ""} ${debt.lendeeLastName ?? ""}`.trim()}
               </span>{" "}
               created this debt
             </ContextMenuLabel>

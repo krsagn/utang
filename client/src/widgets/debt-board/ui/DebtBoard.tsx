@@ -5,8 +5,7 @@ import {
   getCardRotation,
   seededRandom,
 } from "../lib/board-utils";
-import { StickyNote, VARIATIONS_COUNT } from "@/entities/debt";
-import { useDebts } from "@/entities/debt";
+import { StickyNote, VARIATIONS_COUNT, useDebts, resolveOtherPartyFirstName } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { CANVAS_SIZE } from "../lib/board-utils";
 import { useNavigate, Link } from "react-router-dom";
@@ -198,8 +197,7 @@ export function DebtBoard() {
               const rotation = getCardRotation(seed);
               const type =
                 debt.lendeeId === currentUser?.id ? "pay" : "receive";
-              const otherParty =
-                type === "pay" ? debt.lenderName : debt.lendeeName;
+              const otherParty = resolveOtherPartyFirstName(debt, currentUser?.id);
 
               return (
                 <motion.div

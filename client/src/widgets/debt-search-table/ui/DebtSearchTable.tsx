@@ -4,7 +4,7 @@ import { AnimatePresence, motion, type Transition } from "framer-motion";
 import { ArrowUp, ArrowDown, Search } from "lucide-react";
 import { format } from "date-fns";
 import { formatCurrency, cn } from "@/shared/lib";
-import { useDebts } from "@/entities/debt";
+import { useDebts, resolveOtherParty } from "@/entities/debt";
 import type { Debt } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { Spinner } from "@/shared/ui";
@@ -19,16 +19,15 @@ const TWEEN_TRANSITION: Transition = {
   duration: ANIMATION_DURATION,
 };
 
+
 function matchesSearch(
   debt: Debt,
   query: string,
   currentUserId?: string,
 ): boolean {
   const q = query.toLowerCase();
-  const otherParty =
-    debt.lendeeId === currentUserId
-      ? (debt.lenderFullName ?? debt.lenderName)
-      : (debt.lendeeFullName ?? debt.lendeeName);
+  const otherParty = resolveOtherParty(debt, currentUserId);
+
   return (
     otherParty.toLowerCase().includes(q) ||
     debt.title.toLowerCase().includes(q) ||
@@ -38,11 +37,7 @@ function matchesSearch(
 }
 
 export function DebtSearchTable() {
-  const {
-    data: debts,
-    isLoading,
-    error,
-  } = useDebts(undefined, "pending", true);
+  const { data: debts, isLoading, error } = useDebts(undefined, "pending");
   const { data: currentUser, isLoading: sessionLoading } = useSession();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -225,9 +220,7 @@ export function DebtSearchTable() {
           <AnimatePresence mode="popLayout">
             {filtered.map((debt) => {
               const isOutgoing = debt.lendeeId === currentUser?.id;
-              const otherParty = isOutgoing
-                ? (debt.lenderFullName ?? debt.lenderName)
-                : (debt.lendeeFullName ?? debt.lendeeName);
+              const otherParty = resolveOtherParty(debt, currentUser?.id);
               const isCreator = debt.createdBy === currentUser?.id;
               const originalIndex = debts.findIndex((d) => d.id === debt.id);
 
@@ -304,9 +297,7 @@ export function DebtSearchTable() {
                   <div className="text-primary/60 flex items-center">
                     {isCreator
                       ? "You"
-                      : debt.createdBy === debt.lenderId
-                        ? (debt.lenderFullName ?? debt.lenderName)
-                        : (debt.lendeeFullName ?? debt.lendeeName)}
+                      : resolveOtherParty(debt, currentUser?.id)}
                   </div>
                 </motion.a>
               );

@@ -4,8 +4,9 @@ import type { Debt } from "../model/types";
 type ReceiptCardProps = Pick<
   Debt,
   | "createdBy"
-  | "lenderName"
-  | "lendeeName"
+  | "lenderFirstName"
+  | "lendeeFirstName"
+  | "strangerName"
   | "currency"
   | "amount"
   | "title"
@@ -18,8 +19,9 @@ type ReceiptCardProps = Pick<
 
 export function ReceiptCard({
   createdBy,
-  lenderName,
-  lendeeName,
+  lenderFirstName,
+  lendeeFirstName,
+  strangerName,
   currency,
   amount,
   title,
@@ -30,7 +32,8 @@ export function ReceiptCard({
 }: ReceiptCardProps) {
   const isCreator = createdBy === currentUserId;
   // counterparty = the other person from the current user's perspective
-  const counterparty = isOutgoing ? lenderName : lendeeName;
+  const counterparty =
+    (isOutgoing ? lenderFirstName : lendeeFirstName) ?? strangerName;
   const createdAt = new Date(createdAtStr);
 
   return (
@@ -47,8 +50,8 @@ export function ReceiptCard({
       <div className="font-receipt absolute top-1/2 left-1/2 flex w-40 -translate-x-1/2 -translate-y-1/2 flex-col text-[17px] leading-3.5 text-neutral-800">
         {/* header: always shows both parties regardless of direction */}
         <div className="mb-5 text-center">
-          <p className="uppercase">From {lendeeName}</p>
-          <p className="uppercase">To {lenderName}</p>
+          <p className="uppercase">From {lendeeFirstName ?? strangerName}</p>
+          <p className="uppercase">To {lenderFirstName ?? strangerName}</p>
           <p className="tracking-widest">UTANG.APP</p>
         </div>
 
