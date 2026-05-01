@@ -1,6 +1,7 @@
 import type { Debt } from "./types";
 
-export function resolveOtherParty(debt: Debt, currentUserId?: string): string {
+export function resolveOtherParty(debt: Debt, currentUserId: string | undefined): string {
+  if (!currentUserId) return debt.strangerName ?? "";
   const isOutgoing = debt.lendeeId === currentUserId;
   const firstName = isOutgoing ? debt.lenderFirstName : debt.lendeeFirstName;
   const lastName = isOutgoing ? debt.lenderLastName : debt.lendeeLastName;
@@ -11,8 +12,9 @@ export function resolveOtherParty(debt: Debt, currentUserId?: string): string {
 
 export function resolveOtherPartyFirstName(
   debt: Debt,
-  currentUserId?: string,
+  currentUserId: string | undefined,
 ): string {
+  if (!currentUserId) return debt.strangerName ?? "";
   const isOutgoing = debt.lendeeId === currentUserId;
   const firstName = isOutgoing ? debt.lenderFirstName : debt.lendeeFirstName;
   return firstName ?? debt.strangerName ?? "";

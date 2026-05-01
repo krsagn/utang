@@ -35,6 +35,12 @@ const SPRING_TRANSITION = {
   opacity: { type: "tween", duration: 0.08 },
 } as const;
 
+const normalise = (data: NewDebt) => ({
+  ...data,
+  description: data.description || undefined,
+  deadline: data.deadline || undefined,
+});
+
 export function CreateDebtForm({
   onClose,
   onSubmit,
@@ -49,16 +55,15 @@ export function CreateDebtForm({
   const [type, setType] = useState<DebtType>(initialType);
 
   const [formData, setFormData] = useState<NewDebt>(INITIAL_FORM_DATA);
-  const hasOtherParty = !!(formData.otherPartyId || formData.strangerName);
+  const hasOtherParty = !!(
+    formData.otherPartyId || formData.strangerName?.trim()
+  );
 
   const [otherPartyName, setOtherPartyName] = useState("");
 
   const isDirty =
-    JSON.stringify({
-      ...formData,
-      description: formData.description || undefined,
-      deadline: formData.deadline || undefined,
-    }) !== JSON.stringify(INITIAL_FORM_DATA);
+    JSON.stringify(normalise(formData)) !==
+    JSON.stringify(normalise(INITIAL_FORM_DATA));
 
   const { showDialog, confirmDiscard, cancelDiscard } = useUnsavedChanges({
     enabled: !isPending,
@@ -129,7 +134,7 @@ export function CreateDebtForm({
                     setFormData({
                       ...formData,
                       otherPartyId: id ?? null,
-                      strangerName: id ? null : name || null,
+                      strangerName: id ? null : name.trim() || null,
                     });
                   }}
                 />

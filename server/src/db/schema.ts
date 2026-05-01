@@ -72,15 +72,11 @@ export const debts = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    // Ensures a debt record cannot exist without at least one assigned participant
+    // Ensures either both user IDs are present with no stranger name,
+    // or exactly one user ID is present with a stranger name
     check(
-      'one-participant-check',
-      sql`${table.lenderId} IS NOT NULL OR ${table.lendeeId} IS NOT NULL`
-    ),
-    // Ensures that either a stranger name is present, or both IDs are present
-    check(
-      'stranger-or-both-ids-check',
-      sql`${table.strangerName} IS NOT NULL OR (${table.lenderId} IS NOT NULL AND ${table.lendeeId} IS NOT NULL)`
+      'participant-exclusivity-check',
+      sql`(${table.lenderId} IS NOT NULL AND ${table.lendeeId} IS NOT NULL AND ${table.strangerName} IS NULL) OR (((${table.lenderId} IS NOT NULL AND ${table.lendeeId} IS NULL) OR (${table.lenderId} IS NULL AND ${table.lendeeId} IS NOT NULL)) AND ${table.strangerName} IS NOT NULL)`
     ),
     index('idx_debts_lender').on(table.lenderId),
     index('idx_debts_lendee').on(table.lendeeId),

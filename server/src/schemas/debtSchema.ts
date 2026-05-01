@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const baseDebtSchema = z.object({
   // parties involved
   otherPartyId: z.string().uuid().optional(),
-  strangerName: z.string().optional(),
+  strangerName: z.string().trim().min(1).optional(),
 
   // Lent amount must be positive, and capped locally at ~10M for real-life usage
   currency: z.string().length(3).toUpperCase(),

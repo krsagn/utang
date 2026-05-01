@@ -78,7 +78,7 @@ export function EditDebtForm({
   };
 
   const [formData, setFormData] = useState<UpdateDebtForm>(initialValues);
-  const hasOtherParty = !!(formData.otherPartyId || formData.strangerName);
+  const hasOtherParty = !!(formData.otherPartyId || formData.strangerName?.trim());
 
   const [otherPartyName, setOtherPartyName] = useState(() => {
     if (debt.strangerName) return debt.strangerName;
@@ -186,7 +186,7 @@ export function EditDebtForm({
                     setFormData({
                       ...formData,
                       otherPartyId: id ?? null,
-                      strangerName: id ? null : name || null,
+                      strangerName: id ? null : name.trim() || null,
                     });
                   }}
                 />

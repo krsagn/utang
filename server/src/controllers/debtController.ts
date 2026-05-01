@@ -213,6 +213,14 @@ export const createDebt = async (req: Request, res: Response) => {
     if (result.length === 0) {
       return res.status(500).json({ error: 'Insert failed' });
     } else {
+      // socket updates to each party immediately after DB insert
+      if (result[0]!.lenderId) {
+        io.to(result[0]!.lenderId).emit('debt:created', result[0]);
+      }
+      if (result[0]!.lendeeId) {
+        io.to(result[0]!.lendeeId).emit('debt:created', result[0]);
+      }
+
       const [lenderUser, lendeeUser] = await Promise.all([
         lenderId
           ? db.query.users.findFirst({ where: eq(users.id, lenderId) })
@@ -221,14 +229,6 @@ export const createDebt = async (req: Request, res: Response) => {
           ? db.query.users.findFirst({ where: eq(users.id, lendeeId) })
           : Promise.resolve(null),
       ]);
-
-      // socket updates to each party
-      if (result[0]!.lenderId) {
-        io.to(result[0]!.lenderId).emit('debt:created', result[0]);
-      }
-      if (result[0]!.lendeeId) {
-        io.to(result[0]!.lendeeId).emit('debt:created', result[0]);
-      }
 
       const emailJobs = [];
 
@@ -393,6 +393,10 @@ export const updateDebt = async (req: Request, res: Response) => {
 export const deleteDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const idResult = z.string().uuid().safeParse(id);
+    if (!idResult.success) {
+      return res.status(400).json({ error: 'Invalid debt ID' });
+    }
     const sessionUserId = res.locals.user!.id;
 
     const result = await db

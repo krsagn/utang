@@ -25,7 +25,7 @@ function matchesSearch(
   query: string,
   currentUserId?: string,
 ): boolean {
-  const q = query.toLowerCase();
+  const q = query.trim().toLowerCase();
   const otherParty = resolveOtherParty(debt, currentUserId);
 
   return (

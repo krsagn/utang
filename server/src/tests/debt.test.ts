@@ -478,7 +478,7 @@ describe('PATCH /debts/:id', () => {
 
 describe('DELETE /debts/:id', () => {
   it('should return 204 if debt is successfully deleted', async () => {
-    const response = await request(app).delete('/debts/${mockDebtId}');
+    const response = await request(app).delete(`/debts/${mockDebtId}`);
 
     expect(response.status).toBe(204);
   });
@@ -490,7 +490,7 @@ describe('DELETE /debts/:id', () => {
 
     vi.mocked(db.delete).mockReturnValueOnce({ where: returnSpy } as any);
 
-    const response = await request(app).delete('/debts/${mockDebtId}');
+    const response = await request(app).delete(`/debts/${mockDebtId}`);
 
     expect(response.status).toBe(404);
   });
@@ -500,7 +500,7 @@ describe('DELETE /debts/:id', () => {
       where: vi.fn().mockRejectedValue(new Error('Unexpected')),
     } as any);
 
-    const response = await request(app).delete('/debts/${mockDebtId}');
+    const response = await request(app).delete(`/debts/${mockDebtId}`);
 
     expect(response.status).toBe(500);
   });
@@ -514,7 +514,7 @@ describe('DELETE /debts/:id', () => {
       }),
     } as any);
 
-    await request(app).delete('/debts/${mockDebtId}');
+    await request(app).delete(`/debts/${mockDebtId}`);
 
     expect(io.to).toHaveBeenCalledWith(mockUserId);
     expect(mockEmit).toHaveBeenCalledWith(
@@ -532,7 +532,7 @@ describe('DELETE /debts/:id', () => {
       }),
     } as any);
 
-    await request(app).delete('/debts/${mockDebtId}');
+    await request(app).delete(`/debts/${mockDebtId}`);
 
     expect(io.to).toHaveBeenCalledWith(mockOtherPartyId);
     expect(mockEmit).toHaveBeenCalledWith(
