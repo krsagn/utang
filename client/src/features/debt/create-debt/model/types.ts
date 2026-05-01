@@ -1,6 +1,12 @@
-import type { Debt } from "@/entities/debt";
+import type { DebtType } from "@/entities/debt";
+export interface NewDebt {
+  otherPartyId: string | null;
+  strangerName: string | null;
+  type: DebtType;
 
-export type NewDebt = Omit<
-  Debt,
-  "id" | "createdAt" | "updatedAt" | "status" | "createdBy"
->;
+  currency: string;
+  amount: string;
+  title: string;
+  description: string | null;
+  deadline: string | null;
+}

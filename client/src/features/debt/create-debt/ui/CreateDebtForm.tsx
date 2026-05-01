@@ -18,15 +18,14 @@ import { FriendSelectCombobox } from "@/entities/friendship";
 import { DiscardDebtDialog } from "../../update-debt/ui/DiscardDebtDialog";
 
 const INITIAL_FORM_DATA: NewDebt = {
-  lenderName: "",
-  lendeeName: "",
-  lenderId: null,
-  lendeeId: null,
+  otherPartyId: null,
+  strangerName: null,
+  type: "pay",
   currency: "AUD",
   amount: "",
   title: "",
-  description: undefined,
-  deadline: undefined,
+  description: null,
+  deadline: null,
 };
 
 const SPRING_TRANSITION = {
@@ -35,6 +34,12 @@ const SPRING_TRANSITION = {
   damping: 30,
   opacity: { type: "tween", duration: 0.08 },
 } as const;
+
+const normalise = (data: NewDebt) => ({
+  ...data,
+  description: data.description || undefined,
+  deadline: data.deadline || undefined,
+});
 
 export function CreateDebtForm({
   onClose,
@@ -49,50 +54,26 @@ export function CreateDebtForm({
 }) {
   const [type, setType] = useState<DebtType>(initialType);
 
-  // stable initial snapshot - includes type so toggling pay/receive marks the form dirty
-  const initialSnapshot = { type: initialType, ...INITIAL_FORM_DATA };
-
   const [formData, setFormData] = useState<NewDebt>(INITIAL_FORM_DATA);
-  const withWhom = type === "pay" ? formData.lenderName : formData.lendeeName;
+  const hasOtherParty = !!(
+    formData.otherPartyId || formData.strangerName?.trim()
+  );
+
+  const [otherPartyName, setOtherPartyName] = useState("");
 
   const isDirty =
-    JSON.stringify({
-      type,
-      ...formData,
-      description: formData.description || undefined,
-      deadline: formData.deadline || undefined,
-    }) !== JSON.stringify(initialSnapshot);
+    JSON.stringify(normalise(formData)) !==
+    JSON.stringify(normalise(INITIAL_FORM_DATA));
 
   const { showDialog, confirmDiscard, cancelDiscard } = useUnsavedChanges({
     enabled: !isPending,
     isDirty,
   });
 
-  const handleTypeChange = (newType: DebtType) => {
-    setType(newType);
-    if (newType === "pay") {
-      setFormData((prev) => ({
-        ...prev,
-        lenderName: prev.lendeeName,
-        lenderId: prev.lendeeId,
-        lendeeName: "",
-        lendeeId: null,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        lendeeName: prev.lenderName,
-        lendeeId: prev.lenderId,
-        lenderName: "",
-        lenderId: null,
-      }));
-    }
-  };
-
   const missing: string[] = [];
   if (!formData.amount || parseFloat(formData.amount) <= 0)
     missing.push("amount");
-  if (!withWhom.trim()) missing.push("who it's with");
+  if (!hasOtherParty) missing.push("who it's with");
   if (!formData.title.trim()) missing.push("title");
   const isValid = missing.length === 0;
 
@@ -118,7 +99,7 @@ export function CreateDebtForm({
       >
         {/* type toggle + amount */}
         <div className="flex flex-col items-center justify-center gap-5">
-          <TypeToggle type={type} onChange={handleTypeChange} />
+          <TypeToggle type={type} onChange={(newType) => setType(newType)} />
           <AmountInput
             value={formData.amount}
             onChange={(val) => setFormData({ ...formData, amount: val })}
@@ -137,7 +118,7 @@ export function CreateDebtForm({
             <div className="flex flex-1 flex-col gap-2">
               <label className="text-primary/50 flex items-center gap-0.5 text-xs font-semibold tracking-wide">
                 With Whom?
-                <FieldRequiredIndicator filled={Boolean(withWhom.trim())} />
+                <FieldRequiredIndicator filled={hasOtherParty} />
               </label>
               <div
                 className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors"
@@ -145,29 +126,16 @@ export function CreateDebtForm({
               >
                 <FriendSelectCombobox
                   value={{
-                    name:
-                      type === "pay"
-                        ? formData.lenderName
-                        : formData.lendeeName,
-                    id:
-                      (type === "pay"
-                        ? formData.lenderId
-                        : formData.lendeeId) ?? undefined,
+                    name: otherPartyName,
+                    id: formData.otherPartyId ?? undefined,
                   }}
                   onChange={({ name, id }) => {
-                    if (type === "pay") {
-                      setFormData({
-                        ...formData,
-                        lenderName: name,
-                        lenderId: id ?? null,
-                      });
-                    } else {
-                      setFormData({
-                        ...formData,
-                        lendeeName: name,
-                        lendeeId: id ?? null,
-                      });
-                    }
+                    setOtherPartyName(name);
+                    setFormData({
+                      ...formData,
+                      otherPartyId: id ?? null,
+                      strangerName: id ? null : name.trim() || null,
+                    });
                   }}
                 />
               </div>
@@ -183,7 +151,7 @@ export function CreateDebtForm({
                 onChange={(date) =>
                   setFormData({
                     ...formData,
-                    deadline: date ? date.toISOString() : undefined,
+                    deadline: date ? date.toISOString() : null,
                   })
                 }
               />

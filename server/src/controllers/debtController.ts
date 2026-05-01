@@ -22,6 +22,16 @@ import { handleDbErrorResponse } from '../lib/utils.js';
 import { io } from '../socket.js';
 import { alias } from 'drizzle-orm/pg-core';
 
+function resolveParties(
+  type: 'pay' | 'receive',
+  sessionUserId: string,
+  otherPartyId?: string
+) {
+  return type === 'pay'
+    ? { lenderId: otherPartyId ?? null, lendeeId: sessionUserId }
+    : { lenderId: sessionUserId, lendeeId: otherPartyId ?? null };
+}
+
 /**
  * GET /debts
  * Retrieves a list of debts associated with the authenticated user.
@@ -29,7 +39,8 @@ import { alias } from 'drizzle-orm/pg-core';
  * Defaults to returning all debts where the user is either the lender or the lendee.
  *
  * @query {string} type - Optional filter for debt role ('pay' | 'receive').
- * @query {string} status - Optional filter for debt status ('pending' | 'settled').
+ * @query {string} status - Optional filter for debt status ('pending' | 'paid' | 'void').
+ * @query {string} search - Optional search string matched against title, description, amount, and other party name.
  */
 export const getDebts = async (req: Request, res: Response) => {
   try {
@@ -39,7 +50,7 @@ export const getDebts = async (req: Request, res: Response) => {
     if (!queryResult.success) {
       return res.status(400).json({ errors: queryResult.error.issues });
     }
-    const { type, status, fullNames, search } = queryResult.data;
+    const { type, status, search } = queryResult.data;
     const lenderUser = alias(users, 'lender_user');
     const lendeeUser = alias(users, 'lendee_user');
 
@@ -61,45 +72,37 @@ export const getDebts = async (req: Request, res: Response) => {
       conditions.push(eq(debts.status, status as DebtStatus));
     }
 
-    if (fullNames === 'true') {
-      if (search) {
-        conditions.push(
-          or(
-            ilike(debts.title, `%${search}%`),
-            ilike(debts.description, `%${search}%`),
-            ilike(sql`${debts.amount}::text`, `%${search}%`),
-            ilike(
-              sql`CASE WHEN ${debts.lendeeId} = ${userId}
-      THEN COALESCE(${lenderUser.firstName} || ' ' || ${lenderUser.lastName}, ${debts.lenderName})
-      ELSE COALESCE(${lendeeUser.firstName} || ' ' || ${lendeeUser.lastName}, ${debts.lendeeName})
+    if (search) {
+      conditions.push(
+        or(
+          ilike(debts.title, `%${search}%`),
+          ilike(debts.description, `%${search}%`),
+          ilike(sql`${debts.amount}::text`, `%${search}%`),
+          ilike(
+            sql`CASE WHEN ${debts.lendeeId} = ${userId}
+      THEN COALESCE(${lenderUser.firstName} || ' ' || ${lenderUser.lastName}, ${debts.strangerName})
+      ELSE COALESCE(${lendeeUser.firstName} || ' ' || ${lendeeUser.lastName}, ${debts.strangerName})
       END`,
-              `%${search}%`
-            )
+            `%${search}%`
           )
-        );
-      }
-
-      const result = await db
-        .select({
-          ...getTableColumns(debts),
-          lenderFullName: sql<string>`${lenderUser.firstName} || ' ' || ${lenderUser.lastName}`,
-          lendeeFullName: sql<string>`${lendeeUser.firstName} || ' ' || ${lendeeUser.lastName}`,
-        })
-        .from(debts)
-        .leftJoin(lenderUser, eq(debts.lenderId, lenderUser.id))
-        .leftJoin(lendeeUser, eq(debts.lendeeId, lendeeUser.id))
-        .where(and(...conditions))
-        .orderBy(desc(debts.createdAt))
-        .limit(search ? 50 : 25);
-      return res.json(result);
+        )
+      );
     }
 
     const result = await db
-      .select()
+      .select({
+        ...getTableColumns(debts),
+        lenderFirstName: lenderUser.firstName,
+        lenderLastName: lenderUser.lastName,
+        lendeeFirstName: lendeeUser.firstName,
+        lendeeLastName: lendeeUser.lastName,
+      })
       .from(debts)
+      .leftJoin(lenderUser, eq(debts.lenderId, lenderUser.id))
+      .leftJoin(lendeeUser, eq(debts.lendeeId, lendeeUser.id))
       .where(and(...conditions))
       .orderBy(desc(debts.createdAt))
-      .limit(100);
+      .limit(search ? 50 : 100);
     return res.json(result);
   } catch (error) {
     console.error(error);
@@ -117,27 +120,41 @@ export const getDebts = async (req: Request, res: Response) => {
 export const getDebtById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = res.locals.user!.id;
+    const sessionUserId = res.locals.user!.id;
 
     const idResult = z.string().uuid().safeParse(id);
     if (!idResult.success)
       return res.status(400).json({ error: 'Invalid debt ID' });
 
-    const debt = await db.query.debts.findFirst({
-      where: and(
-        eq(debts.id, id as string),
-        or(
-          eq(debts.lenderId, userId),
-          eq(debts.lendeeId, userId),
-          eq(debts.createdBy, userId)
-        )
-      ),
-    });
+    const lenderUser = alias(users, 'lender_user');
+    const lendeeUser = alias(users, 'lendee_user');
 
-    if (!debt) {
+    const result = await db
+      .select({
+        ...getTableColumns(debts),
+        lenderFirstName: lenderUser.firstName,
+        lenderLastName: lenderUser.lastName,
+        lendeeFirstName: lendeeUser.firstName,
+        lendeeLastName: lendeeUser.lastName,
+      })
+      .from(debts)
+      .leftJoin(lenderUser, eq(debts.lenderId, lenderUser.id))
+      .leftJoin(lendeeUser, eq(debts.lendeeId, lendeeUser.id))
+      .where(
+        and(
+          eq(debts.id, id as string),
+          or(
+            eq(debts.lenderId, sessionUserId),
+            eq(debts.lendeeId, sessionUserId),
+            eq(debts.createdBy, sessionUserId)
+          )
+        )
+      );
+
+    if (result.length === 0) {
       return res.status(404).json({ error: 'Debt not found' });
     } else {
-      return res.json(debt);
+      return res.json(result[0]);
     }
   } catch (error) {
     console.error(error);
@@ -148,52 +165,46 @@ export const getDebtById = async (req: Request, res: Response) => {
 /**
  * POST /debts
  * Creates a new debt record.
- * Automatically derives lender/lendee names if valid User IDs are provided.
+ * Derives lender/lendee IDs from the session user and otherPartyId based on type.
  *
- * @body {string} title - The title/description of the debt.
- * @body {string} amount - The initial debt amount.
- * @body {string} [lenderId] - Optional UUID of the lender.
- * @body {string} [lendeeId] - Optional UUID of the lendee.
+ * @body {'pay' | 'receive'} type - Whether the session user owes or is owed.
+ * @body {string} [otherPartyId] - UUID of the other party if they are a registered user.
+ * @body {string} [strangerName] - Name of the other party if they are not a registered user.
+ * @body {string} currency - Three-letter currency code.
+ * @body {number} amount - The debt amount.
+ * @body {string} title - Short title for the debt.
+ * @body {string} [description] - Optional description.
+ * @body {Date} [deadline] - Optional repayment deadline.
  */
 export const createDebt = async (req: Request, res: Response) => {
   try {
-    const body = createDebtSchema.parse(req.body);
+    const {
+      type,
+      otherPartyId,
+      strangerName,
+      currency,
+      amount,
+      title,
+      description,
+      deadline,
+    } = createDebtSchema.parse(req.body);
     const sessionUserId = res.locals.user!.id;
-
-    if (body.lenderId !== sessionUserId && body.lendeeId !== sessionUserId) {
-      return res
-        .status(403)
-        .json({ error: 'You cannot create a debt between two other people' });
-    }
-
-    let finalLenderName = body.lenderName;
-    let finalLendeeName = body.lendeeName;
-
-    const [lenderUser, lendeeUser] = await Promise.all([
-      body.lenderId
-        ? db.query.users.findFirst({ where: eq(users.id, body.lenderId) })
-        : Promise.resolve(null),
-      body.lendeeId
-        ? db.query.users.findFirst({ where: eq(users.id, body.lendeeId) })
-        : Promise.resolve(null),
-    ]);
-
-    // Refresh names if IDs are provided
-
-    if (lenderUser) {
-      finalLenderName = lenderUser.firstName;
-    }
-
-    if (lendeeUser) {
-      finalLendeeName = lendeeUser.firstName;
-    }
+    const { lenderId, lendeeId } = resolveParties(
+      type,
+      sessionUserId,
+      otherPartyId
+    );
 
     const newDebt = {
-      ...body,
-      amount: body.amount.toString(),
       createdBy: sessionUserId,
-      lenderName: finalLenderName,
-      lendeeName: finalLendeeName,
+      lenderId,
+      lendeeId,
+      strangerName,
+      currency,
+      amount: amount.toString(),
+      title,
+      description,
+      deadline,
     };
 
     const result = await db.insert(debts).values(newDebt).returning();
@@ -202,7 +213,7 @@ export const createDebt = async (req: Request, res: Response) => {
     if (result.length === 0) {
       return res.status(500).json({ error: 'Insert failed' });
     } else {
-      // socket updates to each party
+      // socket updates to each party immediately after DB insert
       if (result[0]!.lenderId) {
         io.to(result[0]!.lenderId).emit('debt:created', result[0]);
       }
@@ -210,17 +221,28 @@ export const createDebt = async (req: Request, res: Response) => {
         io.to(result[0]!.lendeeId).emit('debt:created', result[0]);
       }
 
+      const [lenderUser, lendeeUser] = await Promise.all([
+        lenderId
+          ? db.query.users.findFirst({ where: eq(users.id, lenderId) })
+          : Promise.resolve(null),
+        lendeeId
+          ? db.query.users.findFirst({ where: eq(users.id, lendeeId) })
+          : Promise.resolve(null),
+      ]);
+
       const emailJobs = [];
 
       if (lenderUser?.email) {
         emailJobs.push(
           emailQueue.add('lenderCreationEmail', {
             to: lenderUser.email,
-            name: finalLenderName,
-            amount: body.amount,
-            currency: body.currency,
-            otherPartyName: finalLendeeName,
-            title: body.title,
+            name: lenderUser.firstName,
+            amount: amount,
+            currency: currency,
+            otherPartyName: lendeeUser
+              ? `${lendeeUser.firstName} ${lendeeUser.lastName}`
+              : strangerName,
+            title: title,
             role: 'lender',
           })
         );
@@ -229,11 +251,13 @@ export const createDebt = async (req: Request, res: Response) => {
         emailJobs.push(
           emailQueue.add('lendeeCreationEmail', {
             to: lendeeUser.email,
-            name: finalLendeeName,
-            amount: body.amount,
-            currency: body.currency,
-            otherPartyName: finalLenderName,
-            title: body.title,
+            name: lendeeUser.firstName,
+            amount: amount,
+            currency: currency,
+            otherPartyName: lenderUser
+              ? `${lenderUser.firstName} ${lenderUser.lastName}`
+              : strangerName,
+            title: title,
             role: 'lendee',
           })
         );
@@ -264,56 +288,74 @@ export const createDebt = async (req: Request, res: Response) => {
 /**
  * PATCH /debts/:id
  * Updates an existing debt record.
- * Access Control: Only the properties' Creator can update the record.
- * Automatically updates names if IDs are changed.
+ * Access Control: Only the Creator can update the record.
+ * Re-derives lender/lendee IDs from the existing debt and otherPartyId if provided.
  *
  * @param {string} id - The UUID of the debt.
  */
 export const updateDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = res.locals.user!.id;
+    const sessionUserId = res.locals.user!.id;
 
     const idResult = z.string().uuid().safeParse(id);
     if (!idResult.success)
       return res.status(400).json({ error: 'Invalid debt ID' });
 
-    const body = updateDebtSchema.parse(req.body);
+    const {
+      otherPartyId,
+      strangerName,
+      currency,
+      amount,
+      title,
+      description,
+      deadline,
+      status,
+    } = updateDebtSchema.parse(req.body);
 
-    let finalLenderName = body.lenderName;
-    let finalLendeeName = body.lendeeName;
+    const debt = await db.query.debts.findFirst({
+      where: and(
+        eq(debts.id, id as string),
+        eq(debts.createdBy, sessionUserId)
+      ),
+    });
 
-    const [lenderUser, lendeeUser] = await Promise.all([
-      body.lenderId
-        ? db.query.users.findFirst({ where: eq(users.id, body.lenderId) })
-        : Promise.resolve(null),
-      body.lendeeId
-        ? db.query.users.findFirst({ where: eq(users.id, body.lendeeId) })
-        : Promise.resolve(null),
-    ]);
-
-    // Refresh names if IDs are being updated
-    if (lenderUser) {
-      finalLenderName = lenderUser.firstName;
+    if (!debt) {
+      return res.status(404).json({ error: 'Debt not found' });
     }
-    if (lendeeUser) {
-      finalLendeeName = lendeeUser.firstName;
+
+    let lenderId;
+    let lendeeId;
+
+    if (debt.lenderId === sessionUserId) {
+      lenderId = sessionUserId;
+      lendeeId = strangerName ? null : otherPartyId;
+    } else {
+      lenderId = strangerName ? null : otherPartyId;
+      lendeeId = sessionUserId;
     }
 
     type NewDebt = InferInsertModel<typeof debts>;
 
     const updateData: Partial<NewDebt> = {
-      ...body,
-      amount: body.amount?.toString(),
-      lenderName: finalLenderName,
-      lendeeName: finalLendeeName,
+      lenderId,
+      lendeeId,
+      strangerName: otherPartyId ? null : strangerName,
+      currency,
+      amount: amount?.toString(),
+      title,
+      description,
+      deadline,
+      status,
     };
 
     // Drizzle ignores undefined values in .set()
     const result = await db
       .update(debts)
       .set(updateData)
-      .where(and(eq(debts.id, id as string), eq(debts.createdBy, userId)))
+      .where(
+        and(eq(debts.id, id as string), eq(debts.createdBy, sessionUserId))
+      )
       .returning();
 
     if (result.length === 0) {
@@ -351,11 +393,17 @@ export const updateDebt = async (req: Request, res: Response) => {
 export const deleteDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = res.locals.user!.id;
+    const idResult = z.string().uuid().safeParse(id);
+    if (!idResult.success) {
+      return res.status(400).json({ error: 'Invalid debt ID' });
+    }
+    const sessionUserId = res.locals.user!.id;
 
     const result = await db
       .delete(debts)
-      .where(and(eq(debts.id, id as string), eq(debts.createdBy, userId)))
+      .where(
+        and(eq(debts.id, id as string), eq(debts.createdBy, sessionUserId))
+      )
       .returning();
 
     if (result.length === 0) {

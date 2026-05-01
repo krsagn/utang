@@ -28,25 +28,11 @@ export function EditDebtPage() {
   const handleSubmit = (formData: UpdateDebtForm, debtType: DebtType) => {
     if (!user || !id) return;
 
-    const payload = { ...formData };
-
-    if (debtType === "pay") {
-      payload.lendeeId = user.id;
-      payload.lendeeName = `${user.firstName} ${user.lastName}`;
-    } else {
-      payload.lenderId = user.id;
-      payload.lenderName = `${user.firstName} ${user.lastName}`;
-    }
-
     updateDebt(
-      { id, updates: payload },
+      { id, updates: formData },
       {
         onSuccess: () => {
-          if (debtType === "pay") {
-            navigate("/debts/outgoing");
-          } else {
-            navigate("/debts/incoming");
-          }
+          navigate(debtType === "pay" ? "/debts/outgoing" : "/debts/incoming");
         },
       },
     );

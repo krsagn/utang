@@ -38,10 +38,8 @@ function normaliseDeadline(value?: string | null): string | undefined {
 
 function getComparableFormData(formData: UpdateDebtForm) {
   return {
-    lenderName: formData.lenderName,
-    lendeeName: formData.lendeeName,
-    lenderId: formData.lenderId ?? undefined,
-    lendeeId: formData.lendeeId ?? undefined,
+    otherPartyId: formData.otherPartyId,
+    strangerName: formData.strangerName,
     currency: formData.currency,
     amount: normaliseAmount(formData.amount),
     title: formData.title,
@@ -64,19 +62,32 @@ export function EditDebtForm({
   type: DebtType;
 }) {
   const initialValues = {
-    lenderName: debt.lenderName,
-    lendeeName: debt.lendeeName,
-    lenderId: debt.lenderId,
-    lendeeId: debt.lendeeId,
+    otherPartyId: debt.strangerName
+      ? null
+      : type === "pay"
+        ? debt.lenderId
+        : debt.lendeeId,
+    strangerName: (type === "pay" ? debt.lenderId : debt.lendeeId)
+      ? null
+      : debt.strangerName,
     currency: debt.currency,
     amount: debt.amount,
     title: debt.title,
-    description: debt.description ?? undefined,
-    deadline: debt.deadline ?? undefined,
+    description: debt.description ?? null,
+    deadline: debt.deadline ?? null,
   };
 
   const [formData, setFormData] = useState<UpdateDebtForm>(initialValues);
-  const withWhom = type === "pay" ? formData.lenderName : formData.lendeeName;
+  const hasOtherParty = !!(formData.otherPartyId || formData.strangerName?.trim());
+
+  const [otherPartyName, setOtherPartyName] = useState(() => {
+    if (debt.strangerName) return debt.strangerName;
+    const firstName =
+      type === "pay" ? debt.lenderFirstName : debt.lendeeFirstName;
+    const lastName = type === "pay" ? debt.lenderLastName : debt.lendeeLastName;
+    return firstName ? `${firstName} ${lastName ?? ""}`.trim() : "";
+  });
+
   const isDirty =
     JSON.stringify(getComparableFormData(formData)) !==
     JSON.stringify(getComparableFormData(initialValues));
@@ -101,7 +112,7 @@ export function EditDebtForm({
   const missing: string[] = [];
   if (!formData.amount || parseFloat(formData.amount) <= 0)
     missing.push("amount");
-  if (!withWhom.trim()) missing.push("who it's with");
+  if (!hasOtherParty) missing.push("who it's with");
   if (!formData.title.trim()) missing.push("title");
   const isValid = missing.length === 0;
 
@@ -162,32 +173,21 @@ export function EditDebtForm({
             <div className="flex flex-1 flex-col gap-2">
               <label className="text-primary/50 flex items-center gap-0.5 text-xs font-semibold tracking-wide">
                 With Whom?
-                <FieldRequiredIndicator filled={Boolean(withWhom.trim())} />
+                <FieldRequiredIndicator filled={hasOtherParty} />
               </label>
               <div className="squircle border-primary/10 focus-within:border-primary/20 flex flex-1 items-center overflow-hidden border bg-transparent transition-colors">
                 <FriendSelectCombobox
                   value={{
-                    name:
-                      type === "pay"
-                        ? formData.lenderName
-                        : formData.lendeeName,
-                    id:
-                      (type === "pay"
-                        ? formData.lenderId
-                        : formData.lendeeId) ?? undefined,
+                    name: otherPartyName,
+                    id: formData.otherPartyId ?? undefined,
                   }}
                   onChange={({ name, id }) => {
-                    if (type === "pay") {
-                      updateFormData({
-                        lenderName: name,
-                        lenderId: id ?? null,
-                      });
-                    } else {
-                      updateFormData({
-                        lendeeName: name,
-                        lendeeId: id ?? null,
-                      });
-                    }
+                    setOtherPartyName(name);
+                    setFormData({
+                      ...formData,
+                      otherPartyId: id ?? null,
+                      strangerName: id ? null : name.trim() || null,
+                    });
                   }}
                 />
               </div>
@@ -202,7 +202,7 @@ export function EditDebtForm({
                 }
                 onChange={(date) =>
                   updateFormData({
-                    deadline: date ? date.toISOString() : undefined,
+                    deadline: date ? date.toISOString() : null,
                   })
                 }
               />

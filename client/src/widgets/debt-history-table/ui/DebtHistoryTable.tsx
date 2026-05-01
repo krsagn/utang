@@ -3,7 +3,7 @@ import { AnimatePresence, motion, type Transition } from "framer-motion";
 import { ArrowUp, ArrowDown, History } from "lucide-react";
 import { format } from "date-fns";
 import { formatCurrency, cn, useDebounce } from "@/shared/lib";
-import { useDebts } from "@/entities/debt";
+import { resolveOtherParty, useDebts } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { Spinner } from "@/shared/ui";
 
@@ -26,7 +26,7 @@ export function DebtHistoryTable() {
     isLoading,
     error,
     isPlaceholderData,
-  } = useDebts(undefined, "paid", true, debouncedSearch || undefined);
+  } = useDebts(undefined, "paid", debouncedSearch || undefined);
   const { data: currentUser, isLoading: sessionLoading } = useSession();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -198,9 +198,7 @@ export function DebtHistoryTable() {
           <AnimatePresence mode="popLayout">
             {filtered.map((debt) => {
               const isOutgoing = debt.lendeeId === currentUser?.id;
-              const otherParty = isOutgoing
-                ? (debt.lenderFullName ?? debt.lenderName)
-                : (debt.lendeeFullName ?? debt.lendeeName);
+              const otherParty = resolveOtherParty(debt, currentUser?.id);
               const isCreator = debt.createdBy === currentUser?.id;
               const originalIndex = debts.findIndex((d) => d.id === debt.id);
 
@@ -256,9 +254,7 @@ export function DebtHistoryTable() {
                   <div className="text-primary/60 flex items-center">
                     {isCreator
                       ? "You"
-                      : debt.createdBy === debt.lenderId
-                        ? (debt.lenderFullName ?? debt.lenderName)
-                        : (debt.lendeeFullName ?? debt.lendeeName)}
+                      : resolveOtherParty(debt, currentUser?.id)}
                   </div>
                 </motion.div>
               );
