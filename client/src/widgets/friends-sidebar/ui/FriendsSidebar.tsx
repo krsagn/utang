@@ -56,9 +56,9 @@ export function FriendsSidebar() {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ x: "-100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "-100%" }}
+          initial={{ opacity: 0, x: "-100%" }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: "-100%" }}
           transition={{
             type: "tween",
             ease: [0.42, 0, 0.58, 1],

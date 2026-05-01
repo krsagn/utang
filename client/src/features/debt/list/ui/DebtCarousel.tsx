@@ -259,7 +259,10 @@ export function DebtCarousel({ type }: { type: DebtType }) {
 
   const selectedDebt = debts[selectedIndex] ?? debts[0];
   const isCreator = selectedDebt.createdBy === currentUser?.id;
-  const counterparty = resolveOtherPartyFirstName(selectedDebt, currentUser?.id);
+  const counterparty = resolveOtherPartyFirstName(
+    selectedDebt,
+    currentUser?.id,
+  );
   const deadline = selectedDebt.deadline
     ? new Date(selectedDebt.deadline)
     : null;

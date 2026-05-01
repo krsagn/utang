@@ -78,7 +78,9 @@ export function EditDebtForm({
   };
 
   const [formData, setFormData] = useState<UpdateDebtForm>(initialValues);
-  const hasOtherParty = !!(formData.otherPartyId || formData.strangerName?.trim());
+  const hasOtherParty = !!(
+    formData.otherPartyId || formData.strangerName?.trim()
+  );
 
   const [otherPartyName, setOtherPartyName] = useState(() => {
     if (debt.strangerName) return debt.strangerName;
@@ -289,7 +291,7 @@ export function EditDebtForm({
             <motion.button
               type="button"
               onClick={onClose}
-              className="text-primary/40 hover:text-primary/50 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide transition-colors"
+              className="text-primary/40 hover:text-primary/60 -mt-3 flex cursor-pointer items-center gap-2 p-3 text-xs font-medium tracking-wide transition-[color,scale] duration-300 hover:scale-98"
             >
               <motion.span layout transition={SPRING_TRANSITION}>
                 <X className="mt-px size-3 stroke-[2.5px]" />
