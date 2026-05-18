@@ -12,5 +12,11 @@ export interface Friendship {
 export interface FriendStats {
   netBalance: number;
   settledDebtCount: number;
-  longestOwed: { amount: number; currency: string; since: string } | null;
+  longestOwed: {
+    id: string;
+    amount: number;
+    currency: string;
+    since: string;
+    direction: "incoming" | "outgoing";
+  } | null;
 }

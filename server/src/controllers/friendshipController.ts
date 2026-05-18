@@ -315,9 +315,12 @@ export const getFriendStats = async (req: Request, res: Response) => {
       settledDebtCount,
       longestOwed: longestOwed
         ? {
+            id: longestOwed.id,
             amount: parseFloat(longestOwed.amount),
             currency: longestOwed.currency,
             since: longestOwed.createdAt,
+            direction:
+              longestOwed.lendeeId === currentUser ? 'outgoing' : 'incoming',
           }
         : null,
     };

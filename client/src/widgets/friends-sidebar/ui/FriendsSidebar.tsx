@@ -20,17 +20,18 @@ import {
   UserRoundX,
   ArrowUp,
   ArrowDown,
+  Pointer,
 } from "lucide-react";
 import { useAcceptFriend } from "@/features/friendship/accept-friend/model/useAcceptFriend";
 import { useDeleteFriend } from "@/features/friendship/delete-friend/model/useDeleteFriend";
-import { useModal } from "@/shared/lib";
+import { useModal, cn, formatCompactCurrency } from "@/shared/lib";
 import { AddFriendModal } from "@/features/friendship/add-friend";
-import { cn } from "@/shared/lib";
 import { useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui";
 import { RemoveFriendDialog } from "@/features/friendship/delete-friend";
+import { Link } from "react-router-dom";
 
 export function FriendsSidebar() {
   const { closeSidebar, isOpen } = useFriendsSidebar();
@@ -238,11 +239,11 @@ function NetBalanceValue({ amount }: { amount: number }) {
 }
 
 function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
-  const { isOpen: sidebarOpen } = useFriendsSidebar();
+  const { isOpen: sidebarOpen, closeSidebar } = useFriendsSidebar();
 
   const [isOpen, setIsOpen] = useState(false);
   const [removeFriendDialogOpen, setRemoveFriendDialogOpen] = useState(false);
-  const { data: stats } = useFriendStats(friendship.id, isOpen);
+  const { data: stats, isPending } = useFriendStats(friendship.id, isOpen);
   const longestOwed = stats?.longestOwed;
 
   const fullName = `${friendship.friendFirstName} ${friendship.friendLastName}`;
@@ -259,17 +260,16 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
           </span>
         </div>
         <PopoverTrigger asChild>
-          <button className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
-            <Ellipsis className="size-4 stroke-[2.5px]" />
+          <button className="text-primary/50 hover:text-primary group flex size-6 items-center justify-center transition-all duration-300 outline-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+            <Ellipsis className="transition-scale size-4 stroke-[2.5px] duration-300 group-hover:scale-90" />
           </button>
         </PopoverTrigger>
         <PopoverContent
-          className="squircle-dialog relative flex w-65 flex-col justify-between gap-4 bg-white/30 p-4.5 backdrop-blur-xs"
+          className="squircle-dialog relative flex w-75 flex-col justify-between gap-4 bg-white/30 p-4.5 backdrop-blur-xs transition-colors duration-400 hover:bg-white/45"
           side="right"
           sideOffset={16}
           align="start"
           alignOffset={-13}
-          hideWhenDetached
         >
           <div className="flex justify-between">
             <div className="flex flex-col justify-center tracking-wide">
@@ -278,46 +278,73 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                 @{friendship.friendUsername}
               </p>
             </div>
-            <button
-              className="text-primary/50 hover:text-primary flex size-6 translate-x-0.5 -translate-y-px items-center justify-center transition-all duration-300 outline-none hover:scale-90 enabled:cursor-pointer"
-              onClick={() => setRemoveFriendDialogOpen(true)}
-            >
-              <UserRoundX className="size-4 stroke-[2.5px]" />
-            </button>
+            <div className="flex translate-x-0.5 -translate-y-px gap-1">
+              {/* TODO: nudge feature — POST /friendships/:id/nudge, socket + email notify */}
+              <button className="hover:text-primary flex size-6 items-center justify-center text-[#989898] transition-all duration-300 outline-none hover:scale-96 enabled:cursor-pointer">
+                <Pointer className="size-4 stroke-[2.25px]" />
+              </button>
+              <button
+                className="hover:text-primary flex size-6 translate-x-0.5 -translate-y-px items-center justify-center text-[#989898] transition-all duration-300 outline-none hover:scale-96 enabled:cursor-pointer"
+                onClick={() => setRemoveFriendDialogOpen(true)}
+              >
+                <UserRoundX className="size-4 stroke-[2.25px]" />
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div
+            className={cn(
+              "flex flex-col gap-1.5 transition-opacity",
+              isPending && "pointer-events-none opacity-40 select-none",
+              !stats && "select-none",
+            )}
+          >
             <div className="flex items-center justify-between">
               <p className="text-primary/40 text-xs tracking-wide">
                 Net Balance
               </p>
-              <NetBalanceValue amount={stats?.netBalance ?? 0} />
+              {stats ? (
+                <NetBalanceValue amount={stats.netBalance} />
+              ) : (
+                <span className="text-primary/40 text-xs font-semibold tracking-wide tabular-nums">
+                  --
+                </span>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <p className="text-primary/40 text-xs tracking-wide">
                 Total Settled Debts
               </p>
-              <p className="text-primary text-xs font-semibold tracking-wide tabular-nums">
-                {stats?.settledDebtCount ?? 0}
+              <p className="text-primary/40 text-xs font-semibold tracking-wide tabular-nums">
+                {stats ? stats.settledDebtCount : "--"}
               </p>
             </div>
             {longestOwed && (
               <div className="flex items-center justify-between">
-                <p className="text-primary/40 text-xs tracking-wide">
+                <Link
+                  className="text-primary/40 hover:text-primary/50 cursor-pointer text-xs tracking-wide underline decoration-transparent underline-offset-3 transition-[text-decoration-color,color,scale] duration-300 hover:scale-99 hover:decoration-current/50"
+                  to={`/debts/${longestOwed.direction}?debtId=${longestOwed.id}`}
+                  onClick={closeSidebar}
+                >
                   Oldest Open Debt
-                </p>
+                </Link>
                 <span
                   className={cn(
                     "flex items-center gap-1.5 text-xs font-semibold tabular-nums",
-                    longestOwed.amount > 0 ? "text-incoming" : "text-outgoing",
+                    longestOwed.direction === "incoming"
+                      ? "text-incoming"
+                      : "text-outgoing",
                   )}
                 >
-                  {longestOwed.amount > 0 ? (
+                  {longestOwed.direction === "incoming" ? (
                     <ArrowDown className="size-3 stroke-[2.5px]" />
                   ) : (
                     <ArrowUp className="size-3 stroke-[2.5px]" />
                   )}
-                  ${Math.abs(longestOwed.amount)}
+                  {formatCompactCurrency(
+                    longestOwed.amount,
+                    longestOwed.currency,
+                  )}
                   <div className="size-0.5 shrink-0 self-center rounded-full bg-current opacity-50" />
                   <span className="animate-pulse">
                     {compactAge(new Date(longestOwed.since))}
