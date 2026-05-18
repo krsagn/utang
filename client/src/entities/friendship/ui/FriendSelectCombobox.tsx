@@ -105,9 +105,9 @@ export function FriendSelectCombobox({
                 <ComboboxItem
                   key={friend.friendId}
                   value={friend.friendId}
-                  className="group flex flex-col items-start gap-0 text-xs tracking-wide opacity-50 transition-[opacity,scale] duration-300 data-highlighted:scale-99 data-highlighted:opacity-100 data-[selected=true]:opacity-100"
+                  className="group flex flex-col items-start gap-0 text-xs tracking-wide opacity-50 transition-[opacity,scale] duration-150 data-highlighted:scale-[0.985] data-highlighted:opacity-100 data-[selected=true]:opacity-100"
                 >
-                  <span>
+                  <span className="transition-all duration-150 group-data-highlighted:font-medium">
                     {friend.friendFirstName} {friend.friendLastName}
                   </span>
                   <span className="text-primary/40">
@@ -118,9 +118,9 @@ export function FriendSelectCombobox({
             ) : (
               <ComboboxItem
                 value="__stranger__"
-                className="group flex flex-col items-start gap-0 text-xs"
+                className="group flex flex-col items-start gap-0 text-xs tracking-wide opacity-50 transition-[opacity,scale] duration-150 data-highlighted:scale-[0.985] data-highlighted:opacity-100 data-[selected=true]:opacity-100"
               >
-                <span className="opacity-50 transition-opacity group-hover:opacity-100 group-data-[selected=true]:opacity-100">
+                <span className="transition-all duration-150 group-data-highlighted:font-medium">
                   {inputValue}
                 </span>
                 <span className="text-primary/50 opacity-50 transition-opacity group-hover:opacity-100 group-data-[selected=true]:opacity-100">

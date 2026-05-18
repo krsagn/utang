@@ -78,7 +78,9 @@ export function EditDebtForm({
   };
 
   const [formData, setFormData] = useState<UpdateDebtForm>(initialValues);
-  const hasOtherParty = !!(formData.otherPartyId || formData.strangerName?.trim());
+  const hasOtherParty = !!(
+    formData.otherPartyId || formData.strangerName?.trim()
+  );
 
   const [otherPartyName, setOtherPartyName] = useState(() => {
     if (debt.strangerName) return debt.strangerName;
@@ -213,10 +215,24 @@ export function EditDebtForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="debt-title"
-              className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide"
+              className="text-primary/50 flex items-center justify-between px-0.5 text-xs font-semibold tracking-wide"
             >
-              Title
-              <FieldRequiredIndicator filled={Boolean(formData.title.trim())} />
+              <span className="flex items-center gap-0.5">
+                Title
+                <FieldRequiredIndicator
+                  filled={Boolean(formData.title.trim())}
+                />
+              </span>
+              <span
+                className={cn(
+                  "transition-colors text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  formData.title.length >= 30
+                    ? "text-danger"
+                    : "text-primary/20",
+                )}
+              >
+                {formData.title.length} / 30
+              </span>
             </label>
             <input
               id="debt-title"
@@ -242,9 +258,21 @@ export function EditDebtForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="debt-description"
-              className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide"
+              className="text-primary/50 flex items-center justify-between px-0.5 text-xs font-semibold tracking-wide"
             >
-              Description <span className="text-primary/30">(Optional)</span>
+              <span>
+                Description <span className="text-primary/30">(Optional)</span>
+              </span>
+              <span
+                className={cn(
+                  "transition-colors text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  (formData.description?.length ?? 0) >= 100
+                    ? "text-danger"
+                    : "text-primary/20",
+                )}
+              >
+                {formData.description?.length ?? 0} / 100
+              </span>
             </label>
             <textarea
               id="debt-description"
@@ -289,7 +317,7 @@ export function EditDebtForm({
             <motion.button
               type="button"
               onClick={onClose}
-              className="text-primary/40 hover:text-primary/50 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide transition-colors"
+              className="text-primary/40 hover:text-primary/60 -mt-3 flex cursor-pointer items-center gap-2 p-3 text-xs font-medium tracking-wide transition-[color,scale] duration-300 hover:scale-98"
             >
               <motion.span layout transition={SPRING_TRANSITION}>
                 <X className="mt-px size-3 stroke-[2.5px]" />

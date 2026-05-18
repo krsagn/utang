@@ -52,6 +52,11 @@
   --color-incoming: var(--incoming);
   --color-incoming-dark: var(--incoming-dark);
 
+  --color-danger: var(--danger);
+  --color-danger-dark: var(--danger-dark);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-active: var(--danger-active);
+
   --font-display: "ClashDisplay", sans-serif;
   --font-heading: "CabinetGrotesk", sans-serif;
   --font-sans: "PlusJakartaSans", sans-serif;
@@ -87,6 +92,12 @@
   --outgoing-active: #6b1111;
   --incoming: #839b1a;
   --incoming-dark: #6a7d13;
+
+  /* danger semantic colors (destructive actions like deletion) */
+  --danger: #af1d1d;
+  --danger-dark: #7d1313;
+  --danger-hover: #8b1717;
+  --danger-active: #6b1111;
 }
 
 .dark {

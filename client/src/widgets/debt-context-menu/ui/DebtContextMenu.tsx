@@ -33,7 +33,7 @@ export function DebtContextMenu({
     <>
       <ContextMenu>
         <ContextMenuTrigger>{children}</ContextMenuTrigger>
-        <ContextMenuContent className="squircle bg-white/50 backdrop-blur-2xl">
+        <ContextMenuContent className="squircle-dialog bg-white/80 backdrop-blur-xs">
           {isCreator ? (
             <>
               <ContextMenuItem

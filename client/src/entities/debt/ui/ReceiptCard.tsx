@@ -45,6 +45,7 @@ export function ReceiptCard({
         aria-hidden
         className="h-full w-auto scale-111 object-fill select-none"
         draggable={false}
+        fetchPriority="high"
       />
       {/* fixed-width column matching the receipt's printable area */}
       <div className="font-receipt absolute top-1/2 left-1/2 flex w-40 -translate-x-1/2 -translate-y-1/2 flex-col text-[17px] leading-3.5 text-neutral-800">

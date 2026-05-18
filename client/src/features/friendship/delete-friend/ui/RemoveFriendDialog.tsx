@@ -1,29 +1,31 @@
 import { createPortal } from "react-dom";
 import { AnimatePresence } from "framer-motion";
-import { useDeleteDebt } from "../model/useDeleteDebt";
-import { Trash, X } from "lucide-react";
+import { useDeleteFriend } from "../model/useDeleteFriend";
+import { UserRoundX, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { DialogBackdrop, DialogPanel } from "@/shared/ui";
 
-interface DeleteDebtDialogProps {
+interface RemoveFriendDialogProps {
   open: boolean;
-  onClose: () => void;
-  debtId: string;
-  onDeleted?: () => void;
+  onCancel: () => void;
+  onSuccess: () => void;
+  friendshipId: string;
+  friendName: string;
 }
 
-export function DeleteDebtDialog({
+export function RemoveFriendDialog({
   open,
-  onClose,
-  debtId,
-  onDeleted,
-}: DeleteDebtDialogProps) {
-  const { mutate: deleteDebt, isPending: isDeleting } = useDeleteDebt();
+  onCancel,
+  onSuccess,
+  friendshipId,
+  friendName,
+}: RemoveFriendDialogProps) {
+  const { mutate: removeFriend, isPending: isRemoving } =
+    useDeleteFriend("accepted");
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
   const keepItRef = useRef<HTMLButtonElement>(null);
 
-  // capture the element that opened the dialog so we can return focus on close
   useEffect(() => {
     if (open) {
       triggerRef.current = document.activeElement;
@@ -33,7 +35,6 @@ export function DeleteDebtDialog({
     }
   }, [open]);
 
-  // auto-focus the safe "Keep it" button when dialog opens
   useEffect(() => {
     if (open) {
       const id = setTimeout(() => keepItRef.current?.focus(), 50);
@@ -41,14 +42,13 @@ export function DeleteDebtDialog({
     }
   }, [open]);
 
-  // Escape key + focus trap
   useEffect(() => {
     if (!open) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isDeleting) {
+      if (e.key === "Escape" && !isRemoving) {
         e.stopPropagation();
-        onClose();
+        onCancel();
         return;
       }
 
@@ -76,40 +76,31 @@ export function DeleteDebtDialog({
 
     document.addEventListener("keydown", handleKeyDown, true);
     return () => document.removeEventListener("keydown", handleKeyDown, true);
-  }, [open, isDeleting, onClose]);
+  }, [open, isRemoving, onCancel]);
 
-  const handleDelete = () => {
-    deleteDebt(debtId, {
-      onSuccess: () => {
-        onClose();
-        if (onDeleted) {
-          setTimeout(() => {
-            onDeleted();
-          }, 200);
-        }
-      },
-    });
+  const handleRemove = () => {
+    removeFriend(friendshipId, { onSuccess });
   };
 
   return createPortal(
     <AnimatePresence>
       {open && (
         <>
-          <DialogBackdrop disabled={isDeleting} onClose={onClose} />
+          <DialogBackdrop disabled={isRemoving} onClose={onCancel} />
           <DialogPanel
-            id="delete-dialog"
+            id="remove-friend-dialog"
             dialogRef={dialogRef}
             cancelRef={keepItRef}
-            title="Delete this debt?"
-            subtitle="Once deleted, this debt and all its history will be gone for good."
-            actionLabel="Yes, delete it"
-            actionClassName="bg-outgoing hover:bg-outgoing-hover focus-visible:ring-outgoing-hover"
-            actionIcon={Trash}
-            handleAction={handleDelete}
-            cancelLabel="Keep it"
+            title="Remove friend?"
+            subtitle="They'll be removed from your friends list. A new request would be needed to reconnect."
+            actionLabel={`Remove ${friendName}`}
+            actionClassName="bg-danger hover:bg-danger-hover focus-visible:ring-danger-hover"
+            actionIcon={UserRoundX}
+            handleAction={handleRemove}
+            cancelLabel="Keep them"
             cancelIcon={X}
-            onClose={onClose}
-            disabled={isDeleting}
+            onClose={onCancel}
+            disabled={isRemoving}
           />
         </>
       )}

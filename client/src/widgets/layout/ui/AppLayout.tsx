@@ -49,8 +49,17 @@ export function AppLayout() {
           >
             <motion.main
               key={pathname}
-              initial={{ opacity: 1, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{
+                y:
+                  pathname === "/debts/outgoing"
+                    ? 50
+                    : pathname === "/debts/incoming"
+                      ? -50
+                      : 0,
+                opacity: 0,
+                scale: 0.9,
+              }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="z-10 flex flex-1 items-center justify-center"
             >

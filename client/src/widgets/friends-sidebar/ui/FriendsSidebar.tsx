@@ -1,6 +1,22 @@
+import {
+  differenceInDays,
+  differenceInHours,
+  differenceInMonths,
+  differenceInWeeks,
+  differenceInYears,
+} from "date-fns";
 import { useFriendsSidebar } from "../model/useFriendsSidebar";
 import { useFriends, type Friendship } from "@/entities/friendship";
-import { X, Check, Plus, ChevronLeft } from "lucide-react";
+import {
+  X,
+  Check,
+  Plus,
+  ChevronLeft,
+  Ellipsis,
+  UserRoundX,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { useAcceptFriend } from "@/features/friendship/accept-friend/model/useAcceptFriend";
 import { useDeleteFriend } from "@/features/friendship/delete-friend/model/useDeleteFriend";
 import { useModal } from "@/shared/lib";
@@ -9,6 +25,8 @@ import { cn } from "@/shared/lib";
 import { useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui";
+import { RemoveFriendDialog } from "@/features/friendship/delete-friend";
 
 export function FriendsSidebar() {
   const { closeSidebar, isOpen } = useFriendsSidebar();
@@ -56,9 +74,9 @@ export function FriendsSidebar() {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ x: "-100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "-100%" }}
+          initial={{ opacity: 0, x: "-100%" }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: "-100%" }}
           transition={{
             type: "tween",
             ease: [0.42, 0, 0.58, 1],
@@ -101,7 +119,7 @@ export function FriendsSidebar() {
                         <span className="text-primary/20 select-none">|</span>{" "}
                         {pendingRequests.length}
                       </motion.h3>
-                      <div className="flex flex-col gap-6">
+                      <div className="flex flex-col gap-6 pr-6">
                         {pendingRequests.map((f) => (
                           <motion.div
                             layout="position"
@@ -124,21 +142,16 @@ export function FriendsSidebar() {
                       <span className="text-primary/20 select-none">|</span>{" "}
                       {acceptedFriends?.length || 0}
                     </h3>
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-6 pr-6">
                       {acceptedFriends?.map((f) => (
                         <motion.div
                           key={f.id}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
-                          className="flex flex-col justify-center tracking-wide"
+                          className="flex justify-between"
                         >
-                          <span className="text-primary mb-1 text-xs leading-tight font-semibold">
-                            {f.friendFirstName} {f.friendLastName}
-                          </span>
-                          <span className="text-primary/50 text-xs font-medium">
-                            @{f.friendUsername}
-                          </span>
+                          <AcceptedFriendItem friendship={f} />
                         </motion.div>
                       ))}
                     </div>
@@ -184,6 +197,156 @@ export function FriendsSidebar() {
   );
 }
 
+const FRIEND_STATS = [
+  { label: "Total Settled Debts", value: "15", className: "text-primary" },
+] as const;
+
+const NET_BALANCE = -45;
+const LONGEST_OWED_AMOUNT = 45;
+const LONGEST_OWED_SINCE = new Date(Date.now() - 23 * 24 * 60 * 60 * 1000);
+
+function compactAge(date: Date): string {
+  const now = new Date();
+  const years = differenceInYears(now, date);
+  if (years >= 1) return `${years}y`;
+  const months = differenceInMonths(now, date);
+  if (months >= 1) return `${months}mo`;
+  const weeks = differenceInWeeks(now, date);
+  if (weeks >= 1) return `${weeks}w`;
+  const days = differenceInDays(now, date);
+  if (days >= 1) return `${days}d`;
+  const hours = differenceInHours(now, date);
+  return `${Math.max(1, hours)}h`;
+}
+
+function NetBalanceValue({ amount }: { amount: number }) {
+  if (amount === 0)
+    return <Check className="text-primary/40 size-3.5 stroke-[2.5px]" />;
+
+  const isPositive = amount > 0;
+  return (
+    <span
+      className={cn(
+        "flex items-center gap-1 text-xs font-semibold tabular-nums",
+        isPositive ? "text-incoming" : "text-outgoing",
+      )}
+    >
+      {isPositive ? (
+        <ArrowDown className="size-3 stroke-[2.5px]" />
+      ) : (
+        <ArrowUp className="size-3 stroke-[2.5px]" />
+      )}
+      ${Math.abs(amount)}
+    </span>
+  );
+}
+
+function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
+  const { isOpen: sidebarOpen } = useFriendsSidebar();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [removeFriendDialogOpen, setRemoveFriendDialogOpen] = useState(false);
+
+  const fullName = `${friendship.friendFirstName} ${friendship.friendLastName}`;
+
+  return (
+    <>
+      <Popover open={isOpen && sidebarOpen} onOpenChange={setIsOpen}>
+        <div className="flex flex-col justify-center tracking-wide">
+          <span className="text-primary mb-1 text-xs leading-tight font-semibold">
+            {fullName}
+          </span>
+          <span className="text-primary/50 text-xs font-medium">
+            @{friendship.friendUsername}
+          </span>
+        </div>
+        <PopoverTrigger asChild>
+          <button className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+            <Ellipsis className="size-4 stroke-[2.5px]" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="squircle-dialog relative flex w-65 flex-col justify-between gap-4 bg-white/30 p-4.5 backdrop-blur-xs"
+          side="right"
+          sideOffset={16}
+          align="start"
+          alignOffset={-13}
+          hideWhenDetached
+        >
+          <div className="flex justify-between">
+            <div className="flex flex-col justify-center tracking-wide">
+              <p className="text-primary text-xs font-semibold">{fullName}</p>
+              <p className="text-primary/50 text-xs font-medium">
+                @{friendship.friendUsername}
+              </p>
+            </div>
+            <button
+              className="text-primary/50 hover:text-primary flex size-6 translate-x-0.5 -translate-y-px items-center justify-center transition-all duration-300 outline-none hover:scale-90 enabled:cursor-pointer"
+              onClick={() => setRemoveFriendDialogOpen(true)}
+            >
+              <UserRoundX className="size-4 stroke-[2.5px]" />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <p className="text-primary/40 text-xs tracking-wide">
+                Net Balance
+              </p>
+              <NetBalanceValue amount={NET_BALANCE} />
+            </div>
+            {FRIEND_STATS.map(({ label, value, className }) => (
+              <div key={label} className="flex items-center justify-between">
+                <p className="text-primary/40 text-xs tracking-wide">{label}</p>
+                <p
+                  className={`${className} text-xs font-semibold tracking-wide tabular-nums`}
+                >
+                  {value}
+                </p>
+              </div>
+            ))}
+            <div className="flex items-center justify-between">
+              <p className="text-primary/40 text-xs tracking-wide">
+                Longest Owed
+              </p>
+              <span
+                className={cn(
+                  "flex items-center gap-1 text-xs font-semibold tabular-nums",
+                  LONGEST_OWED_AMOUNT > 0 ? "text-incoming" : "text-outgoing",
+                )}
+              >
+                {LONGEST_OWED_AMOUNT > 0 ? (
+                  <ArrowDown className="size-3 stroke-[2.5px]" />
+                ) : (
+                  <ArrowUp className="size-3 stroke-[2.5px]" />
+                )}
+                ${Math.abs(LONGEST_OWED_AMOUNT)}
+                <div
+                  className={cn(
+                    "mx-1 h-2.5 w-px shrink-0 self-center rounded-full opacity-50",
+                    LONGEST_OWED_AMOUNT > 0 ? "bg-incoming" : "bg-outgoing",
+                  )}
+                />
+                {compactAge(LONGEST_OWED_SINCE)}
+              </span>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+      <RemoveFriendDialog
+        open={removeFriendDialogOpen}
+        friendshipId={friendship.id}
+        friendName={fullName}
+        onCancel={() => {
+          setRemoveFriendDialogOpen(false);
+          setIsOpen(true);
+        }}
+        onSuccess={() => setRemoveFriendDialogOpen(false)}
+      />
+    </>
+  );
+}
+
 function RequestItem({ request }: { request: Friendship }) {
   const { mutate: acceptFriend, isPending: isAccepting } = useAcceptFriend();
   const { mutate: rejectFriend, isPending: isRejecting } =
@@ -194,7 +357,7 @@ function RequestItem({ request }: { request: Friendship }) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between pr-6 tracking-wide",
+        "flex items-center justify-between tracking-wide",
         isPending && "pointer-events-none opacity-50",
       )}
     >
@@ -210,14 +373,14 @@ function RequestItem({ request }: { request: Friendship }) {
         <button
           onClick={() => acceptFriend(request.id)}
           disabled={isPending}
-          className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90"
+          className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Check className="size-4 stroke-[2.5px]" />
         </button>
         <button
           onClick={() => rejectFriend(request.id)}
           disabled={isPending}
-          className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90"
+          className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >
           <X className="size-4 stroke-[2.5px]" />
         </button>
