@@ -219,12 +219,16 @@ export function EditDebtForm({
             >
               <span className="flex items-center gap-0.5">
                 Title
-                <FieldRequiredIndicator filled={Boolean(formData.title.trim())} />
+                <FieldRequiredIndicator
+                  filled={Boolean(formData.title.trim())}
+                />
               </span>
               <span
                 className={cn(
-                  "transition-color font-medium tracking-wider tabular-nums duration-200",
-                  formData.title.length >= 30 ? "text-danger" : "text-primary/20",
+                  "transition-color text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  formData.title.length >= 30
+                    ? "text-danger"
+                    : "text-primary/20",
                 )}
               >
                 {formData.title.length} / 30
@@ -256,11 +260,15 @@ export function EditDebtForm({
               htmlFor="debt-description"
               className="text-primary/50 flex items-center justify-between px-0.5 text-xs font-semibold tracking-wide"
             >
-              <span>Description <span className="text-primary/30">(Optional)</span></span>
+              <span>
+                Description <span className="text-primary/30">(Optional)</span>
+              </span>
               <span
                 className={cn(
-                  "transition-color font-medium tracking-wider tabular-nums duration-200",
-                  (formData.description?.length ?? 0) >= 100 ? "text-danger" : "text-primary/20",
+                  "transition-color text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  (formData.description?.length ?? 0) >= 100
+                    ? "text-danger"
+                    : "text-primary/20",
                 )}
               >
                 {formData.description?.length ?? 0} / 100
