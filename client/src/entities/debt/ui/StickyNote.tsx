@@ -32,6 +32,7 @@ export function StickyNote({
         aria-hidden
         className="h-full w-auto object-fill select-none"
         draggable={false}
+        fetchPriority="high"
       />
       <div className="font-playpen absolute top-1/2 left-1/2 flex max-w-60 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 break-all opacity-90">
         <p className="mt-3 line-clamp-1 bg-linear-to-tr from-black to-black/70 bg-clip-text text-4xl font-bold text-transparent">

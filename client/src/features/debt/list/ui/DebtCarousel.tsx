@@ -53,10 +53,15 @@ const CarouselSlide = memo(function CarouselSlide({
   return (
     <motion.div
       className="flex-none basis-auto"
-      initial={hasNavigated ? false : { opacity: 0.35, scale: 0.95 }}
+      initial={
+        hasNavigated
+          ? false
+          : { opacity: 0.35, scale: 0.95, y: isOutgoing ? 10 : -10 }
+      }
       animate={{
         opacity: 1,
         scale: 1,
+        y: 0,
       }}
       exit={{
         opacity: 0,
@@ -276,10 +281,12 @@ export function DebtCarousel({ type }: { type: DebtType }) {
           src={isOutgoing ? "/outgoing-arrow.svg" : "/incoming-arrow.svg"}
           alt=""
           aria-hidden
-          className={cn("h-12 select-none", isOutgoing && "-mb-2")}
-          initial={hasNavigated ? false : { y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={mountTransition(3, hasNavigated)}
+          className="h-12 select-none"
+          initial={
+            hasNavigated ? false : { y: isOutgoing ? 20 : -5, opacity: 0 }
+          }
+          animate={{ y: isOutgoing ? 8 : 0, opacity: 1 }}
+          transition={mountTransition(isOutgoing ? 3 : 1, hasNavigated)}
         />
         {/* amount — pops in on mount, slides directionally on navigation */}
         <div className="relative">
@@ -293,7 +300,9 @@ export function DebtCarousel({ type }: { type: DebtType }) {
               custom={{ dir: direction, mounted: hasNavigated }}
               variants={{
                 enter: ({ dir, mounted }: { dir: number; mounted: boolean }) =>
-                  mounted ? { x: dir * 40, opacity: 0 } : { y: 20, opacity: 0 },
+                  mounted
+                    ? { x: dir * 40, opacity: 0 }
+                    : { y: isOutgoing ? 20 : -5, opacity: 0 },
                 center: {
                   x: 0,
                   y: 0,
@@ -337,9 +346,11 @@ export function DebtCarousel({ type }: { type: DebtType }) {
         {/* "to/from" + counterparty */}
         <motion.p
           className="text-primary flex items-center gap-1 text-sm font-medium tracking-wide select-none"
-          initial={hasNavigated ? false : { y: 20, opacity: 0 }}
+          initial={
+            hasNavigated ? false : { y: isOutgoing ? 20 : -5, opacity: 0 }
+          }
           animate={{ y: 0, opacity: 1 }}
-          transition={mountTransition(1, hasNavigated)}
+          transition={mountTransition(isOutgoing ? 1 : 3, hasNavigated)}
         >
           <motion.span
             layout="position"
@@ -359,10 +370,15 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                 initial={hasNavigated ? { scale: 0.85 } : false}
                 animate={{
                   scale: 1,
-                  transition: mountTransition(1, hasNavigated),
+                  transition: mountTransition(isOutgoing ? 1 : 3, hasNavigated),
                 }}
               >
                 {counterparty}
+                {selectedDebt.strangerName && (
+                  <span className="ml-1 font-normal opacity-35">
+                    (Stranger)
+                  </span>
+                )}
               </motion.span>
             </AnimatePresence>
             <AnimatePresence mode="popLayout">
@@ -372,7 +388,10 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                   initial={hasNavigated ? { scale: 0.95 } : false}
                   animate={{
                     scale: 1,
-                    transition: mountTransition(1, hasNavigated),
+                    transition: mountTransition(
+                      isOutgoing ? 1 : 3,
+                      hasNavigated,
+                    ),
                   }}
                 >
                   <span className="text-foreground/30 mr-1.5">|</span>
@@ -426,7 +445,11 @@ export function DebtCarousel({ type }: { type: DebtType }) {
           disabled={selectedIndex === 0}
           aria-label="Previous debt"
           className="text-foreground/60 hover:text-foreground cursor-pointer transition-colors focus:outline-none disabled:pointer-events-none"
-          initial={hasNavigated ? false : { x: 5, y: -15, opacity: 0 }}
+          initial={
+            hasNavigated
+              ? false
+              : { x: 5, y: isOutgoing ? 15 : -15, opacity: 0 }
+          }
           animate={{ x: 0, y: 0, opacity: selectedIndex === 0 ? 0.25 : 1 }}
           transition={{
             ...mountTransition(1, hasNavigated),
@@ -448,7 +471,11 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                 }
                 disabled={isMarkingDone || !isCreator}
                 className="-m-5 cursor-pointer font-sans text-sm font-medium tracking-wide select-none disabled:pointer-events-none"
-                initial={hasNavigated ? false : { y: -15, opacity: 0 }}
+                initial={
+                  hasNavigated
+                    ? false
+                    : { y: isOutgoing ? 15 : -15, opacity: 0 }
+                }
                 animate={{
                   y: 0,
                   opacity: isMarkingDone || !isCreator ? 0.3 : 0.8,
@@ -476,7 +503,11 @@ export function DebtCarousel({ type }: { type: DebtType }) {
           disabled={selectedIndex === debts.length - 1}
           aria-label="Next debt"
           className="text-foreground/60 hover:text-foreground cursor-pointer transition-colors focus:outline-none disabled:pointer-events-none"
-          initial={hasNavigated ? false : { x: -5, y: -15, opacity: 0 }}
+          initial={
+            hasNavigated
+              ? false
+              : { x: -5, y: isOutgoing ? 15 : -15, opacity: 0 }
+          }
           animate={{
             x: 0,
             y: 0,

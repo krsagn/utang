@@ -215,10 +215,20 @@ export function EditDebtForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="debt-title"
-              className="text-primary/50 flex items-center gap-0.5 px-0.5 text-xs font-semibold tracking-wide"
+              className="text-primary/50 flex items-center justify-between px-0.5 text-xs font-semibold tracking-wide"
             >
-              Title
-              <FieldRequiredIndicator filled={Boolean(formData.title.trim())} />
+              <span className="flex items-center gap-0.5">
+                Title
+                <FieldRequiredIndicator filled={Boolean(formData.title.trim())} />
+              </span>
+              <span
+                className={cn(
+                  "transition-color font-medium tracking-wider tabular-nums duration-200",
+                  formData.title.length >= 30 ? "text-danger" : "text-primary/20",
+                )}
+              >
+                {formData.title.length} / 30
+              </span>
             </label>
             <input
               id="debt-title"
@@ -244,9 +254,17 @@ export function EditDebtForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="debt-description"
-              className="text-primary/50 px-0.5 text-xs font-semibold tracking-wide"
+              className="text-primary/50 flex items-center justify-between px-0.5 text-xs font-semibold tracking-wide"
             >
-              Description <span className="text-primary/30">(Optional)</span>
+              <span>Description <span className="text-primary/30">(Optional)</span></span>
+              <span
+                className={cn(
+                  "transition-color font-medium tracking-wider tabular-nums duration-200",
+                  (formData.description?.length ?? 0) >= 100 ? "text-danger" : "text-primary/20",
+                )}
+              >
+                {formData.description?.length ?? 0} / 100
+              </span>
             </label>
             <textarea
               id="debt-description"
