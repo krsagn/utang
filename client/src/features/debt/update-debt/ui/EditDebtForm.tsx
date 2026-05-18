@@ -225,7 +225,7 @@ export function EditDebtForm({
               </span>
               <span
                 className={cn(
-                  "transition-color text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  "transition-colors text-[11px] font-medium tracking-wider tabular-nums duration-200",
                   formData.title.length >= 30
                     ? "text-danger"
                     : "text-primary/20",
@@ -265,7 +265,7 @@ export function EditDebtForm({
               </span>
               <span
                 className={cn(
-                  "transition-color text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  "transition-colors text-[11px] font-medium tracking-wider tabular-nums duration-200",
                   (formData.description?.length ?? 0) >= 100
                     ? "text-danger"
                     : "text-primary/20",
