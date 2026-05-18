@@ -6,7 +6,11 @@ import {
   differenceInYears,
 } from "date-fns";
 import { useFriendsSidebar } from "../model/useFriendsSidebar";
-import { useFriends, type Friendship } from "@/entities/friendship";
+import {
+  useFriends,
+  useFriendStats,
+  type Friendship,
+} from "@/entities/friendship";
 import {
   X,
   Check,
@@ -197,14 +201,6 @@ export function FriendsSidebar() {
   );
 }
 
-const FRIEND_STATS = [
-  { label: "Total Settled Debts", value: "15", className: "text-primary" },
-] as const;
-
-const NET_BALANCE = -45;
-const LONGEST_OWED_AMOUNT = 45;
-const LONGEST_OWED_SINCE = new Date(Date.now() - 23 * 24 * 60 * 60 * 1000);
-
 function compactAge(date: Date): string {
   const now = new Date();
   const years = differenceInYears(now, date);
@@ -246,6 +242,8 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
 
   const [isOpen, setIsOpen] = useState(false);
   const [removeFriendDialogOpen, setRemoveFriendDialogOpen] = useState(false);
+  const { data: stats } = useFriendStats(friendship.id, isOpen);
+  const longestOwed = stats?.longestOwed;
 
   const fullName = `${friendship.friendFirstName} ${friendship.friendLastName}`;
 
@@ -293,43 +291,40 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
               <p className="text-primary/40 text-xs tracking-wide">
                 Net Balance
               </p>
-              <NetBalanceValue amount={NET_BALANCE} />
+              <NetBalanceValue amount={stats?.netBalance ?? 0} />
             </div>
-            {FRIEND_STATS.map(({ label, value, className }) => (
-              <div key={label} className="flex items-center justify-between">
-                <p className="text-primary/40 text-xs tracking-wide">{label}</p>
-                <p
-                  className={`${className} text-xs font-semibold tracking-wide tabular-nums`}
-                >
-                  {value}
-                </p>
-              </div>
-            ))}
             <div className="flex items-center justify-between">
               <p className="text-primary/40 text-xs tracking-wide">
-                Longest Owed
+                Total Settled Debts
               </p>
-              <span
-                className={cn(
-                  "flex items-center gap-1 text-xs font-semibold tabular-nums",
-                  LONGEST_OWED_AMOUNT > 0 ? "text-incoming" : "text-outgoing",
-                )}
-              >
-                {LONGEST_OWED_AMOUNT > 0 ? (
-                  <ArrowDown className="size-3 stroke-[2.5px]" />
-                ) : (
-                  <ArrowUp className="size-3 stroke-[2.5px]" />
-                )}
-                ${Math.abs(LONGEST_OWED_AMOUNT)}
-                <div
-                  className={cn(
-                    "mx-1 h-2.5 w-px shrink-0 self-center rounded-full opacity-50",
-                    LONGEST_OWED_AMOUNT > 0 ? "bg-incoming" : "bg-outgoing",
-                  )}
-                />
-                {compactAge(LONGEST_OWED_SINCE)}
-              </span>
+              <p className="text-primary text-xs font-semibold tracking-wide tabular-nums">
+                {stats?.settledDebtCount ?? 0}
+              </p>
             </div>
+            {longestOwed && (
+              <div className="flex items-center justify-between">
+                <p className="text-primary/40 text-xs tracking-wide">
+                  Oldest Open Debt
+                </p>
+                <span
+                  className={cn(
+                    "flex items-center gap-1.5 text-xs font-semibold tabular-nums",
+                    longestOwed.amount > 0 ? "text-incoming" : "text-outgoing",
+                  )}
+                >
+                  {longestOwed.amount > 0 ? (
+                    <ArrowDown className="size-3 stroke-[2.5px]" />
+                  ) : (
+                    <ArrowUp className="size-3 stroke-[2.5px]" />
+                  )}
+                  ${Math.abs(longestOwed.amount)}
+                  <div className="size-0.5 shrink-0 self-center rounded-full bg-current opacity-50" />
+                  <span className="animate-pulse">
+                    {compactAge(new Date(longestOwed.since))}
+                  </span>
+                </span>
+              </div>
+            )}
           </div>
         </PopoverContent>
       </Popover>
