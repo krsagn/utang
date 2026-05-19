@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import {
   Button,
   Tooltip,
@@ -10,7 +11,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { ChevronLeft, ChevronRight, X, Plus } from "lucide-react";
-import { cn, useUnsavedChanges } from "@/shared/lib";
+import { cn, useUnsavedChanges, parseLocalDate } from "@/shared/lib";
 import type { NewDebt } from "../model/types";
 import { AmountInput } from "@/entities/debt";
 import type { DebtType } from "@/entities/debt";
@@ -146,12 +147,14 @@ export function CreateDebtForm({
               </label>
               <DatePicker
                 value={
-                  formData.deadline ? new Date(formData.deadline) : undefined
+                  formData.deadline
+                    ? parseLocalDate(formData.deadline)
+                    : undefined
                 }
                 onChange={(date) =>
                   setFormData({
                     ...formData,
-                    deadline: date ? date.toISOString() : null,
+                    deadline: date ? format(date, "yyyy-MM-dd") : null,
                   })
                 }
               />
@@ -172,7 +175,7 @@ export function CreateDebtForm({
               </span>
               <span
                 className={cn(
-                  "transition-colors text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  "text-[11px] font-medium tracking-wider tabular-nums transition-colors duration-200",
                   formData.title.length >= 30
                     ? "text-danger"
                     : "text-primary/20",
@@ -213,7 +216,7 @@ export function CreateDebtForm({
               </span>
               <span
                 className={cn(
-                  "transition-colors text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  "text-[11px] font-medium tracking-wider tabular-nums transition-colors duration-200",
                   (formData.description?.length ?? 0) >= 100
                     ? "text-danger"
                     : "text-primary/20",

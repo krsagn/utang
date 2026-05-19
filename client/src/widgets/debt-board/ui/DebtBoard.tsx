@@ -238,6 +238,7 @@ export function DebtBoard() {
                     otherParty={otherParty}
                     type={type}
                     variation={i % VARIATIONS_COUNT}
+                    deadline={debt.deadline}
                   />
                   <DebtContextMenu
                     debt={debt}

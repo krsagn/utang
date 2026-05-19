@@ -89,7 +89,7 @@ function AlertDialogAction({
     <AlertDialogPrimitive.Action
       data-slot="alert-dialog-action"
       className={cn(
-        "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-(--color-outgoing) text-sm font-semibold tracking-wide text-white transition-colors outline-none hover:bg-(--color-outgoing-hover) active:bg-(--color-outgoing-active)",
+        "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-(--color-danger) text-sm font-semibold tracking-wide text-white transition-colors outline-none hover:bg-(--color-danger-hover) active:bg-(--color-danger-active)",
         className,
       )}
       {...props}

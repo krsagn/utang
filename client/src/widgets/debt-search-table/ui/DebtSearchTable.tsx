@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, type Transition } from "framer-motion";
 import { ArrowUp, ArrowDown, Search } from "lucide-react";
 import { format } from "date-fns";
-import { formatCurrency, cn } from "@/shared/lib";
+import { formatCurrency, cn, parseLocalDate } from "@/shared/lib";
 import { useDebts, resolveOtherParty } from "@/entities/debt";
 import type { Debt } from "@/entities/debt";
 import { useSession } from "@/entities/user";
@@ -291,7 +291,7 @@ export function DebtSearchTable() {
                     )}
                   >
                     {debt.deadline
-                      ? format(new Date(debt.deadline), "d MMM yyyy")
+                      ? format(parseLocalDate(debt.deadline), "d MMM yyyy")
                       : "—"}
                   </div>
                   <div className="text-primary/60 flex items-center">

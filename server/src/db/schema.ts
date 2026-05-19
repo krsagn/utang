@@ -3,6 +3,7 @@ import {
   text,
   decimal,
   timestamp,
+  date,
   check,
   unique,
   index,
@@ -63,7 +64,7 @@ export const debts = pgTable(
 
     // metadata
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    deadline: timestamp('deadline'),
+    deadline: date('deadline'),
     status: text('status', { enum: ['pending', 'paid', 'void'] })
       .notNull()
       .default('pending'),

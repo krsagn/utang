@@ -5,3 +5,4 @@ export { api } from "./api";
 export * from "./formatCurrency";
 export { cn } from "./utils";
 export { socket } from "./socket";
+export { parseLocalDate } from "./parseLocalDate";

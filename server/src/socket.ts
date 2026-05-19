@@ -11,7 +11,9 @@ export function initSocket(httpServer: HttpServer) {
 
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: process.env.CLIENT_URL
+        ? process.env.CLIENT_URL
+        : ['http://localhost:5173', 'http://localhost:4173'],
       credentials: true,
     },
   });
