@@ -353,7 +353,7 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                     longestOwed.amount,
                     longestOwed.currency,
                   )}
-                  <div className="size-0.5 shrink-0 self-center rounded-full bg-current px-0.5 opacity-50" />
+                  <div className="mx-0.5 size-0.5 shrink-0 self-center rounded-full bg-current opacity-50" />
                   <span className="animate-pulse">
                     {compactAge(new Date(longestOwed.since))}
                   </span>

@@ -1,7 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/playpen-sans";
+@font-face {
+  font-family: "Playpen Sans Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("@fontsource-variable/playpen-sans/files/playpen-sans-latin-wght-normal.woff2")
+    format("woff2-variations");
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -57,8 +64,8 @@
   --color-danger-hover: var(--danger-hover);
   --color-danger-active: var(--danger-active);
 
-  --font-display: "ClashDisplay", sans-serif;
-  --font-heading: "CabinetGrotesk", sans-serif;
+  --font-display: "Clash Display", sans-serif;
+  --font-heading: "Cabinet Grotesk", sans-serif;
   --font-sans: "PlusJakartaSans", sans-serif;
   --font-receipt: "VT323", monospace;
   --font-playpen: "Playpen Sans Variable", sans-serif;
@@ -67,22 +74,22 @@
 :root {
   --radius: 0.625rem;
   --background: #f2f0ef;
-  --foreground: #1a210b;
+  --foreground: #1c1a18;
   --card: #ffffff;
-  --card-foreground: #1a210b;
+  --card-foreground: #1c1a18;
   --popover: #ffffff;
-  --popover-foreground: #1a210b;
+  --popover-foreground: #1c1a18;
   --primary: #000000;
   --primary-foreground: #ffffff;
-  --secondary: #f2f4ef;
-  --secondary-foreground: #2a3514;
-  --muted: #f2f4ef;
-  --muted-foreground: #7c8b68;
-  --accent: #f2f4ef;
-  --accent-foreground: #2a3514;
+  --secondary: #e8e5e2;
+  --secondary-foreground: #1c1a18;
+  --muted: #e8e5e2;
+  --muted-foreground: #8a8680;
+  --accent: #e8e5e2;
+  --accent-foreground: #1c1a18;
   --destructive: #ef4444;
-  --border: #e4e9de;
-  --input: #e4e9de;
+  --border: #dedad6;
+  --input: #dedad6;
   --ring: #000000;
 
   /* debt type semantic colors */
@@ -173,24 +180,11 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "CabinetGrotesk";
-  src:
-    url("/fonts/CabinetGrotesk/CabinetGrotesk-Variable.woff2")
-      format("woff2-variations"),
-    url("/fonts/CabinetGrotesk/CabinetGrotesk-Variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
 
 @font-face {
-  font-family: "ClashDisplay";
-  src:
-    url("/fonts/ClashDisplay/ClashDisplay-Variable.woff2")
-      format("woff2-variations"),
-    url("/fonts/ClashDisplay/ClashDisplay-Variable.woff2") format("woff2");
-  font-weight: 200 700;
+  font-family: "VT323";
+  src: url("/fonts/VT323/VT323-Regular.woff2") format("woff2");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }

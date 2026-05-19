@@ -33,7 +33,7 @@ function ComboboxTrigger({
       {children}
       <ChevronDownIcon
         data-slot="combobox-trigger-icon"
-        className="text-primary/30 pointer-events-none size-4 stroke-[1.5px] transition duration-300 group-data-popup-open:rotate-180"
+        className="text-primary/30 group-data-popup-open:text-primary/40 pointer-events-none size-4 stroke-[1.5px] transition duration-300 group-data-popup-open:rotate-180"
       />
     </ComboboxPrimitive.Trigger>
   );

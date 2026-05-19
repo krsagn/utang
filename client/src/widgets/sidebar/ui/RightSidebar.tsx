@@ -81,6 +81,7 @@ function RightSidebarSearch() {
     <div className="flex h-8 items-center justify-end pr-2 select-none">
       <NavLink
         to="/debts/search"
+        aria-label="Search debts"
         className={({ isActive }) =>
           cn(
             "text-primary cursor-pointer transition-all duration-300",
