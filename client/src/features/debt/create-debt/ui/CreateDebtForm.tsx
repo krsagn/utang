@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import {
   Button,
   Tooltip,
@@ -10,7 +11,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { ChevronLeft, ChevronRight, X, Plus } from "lucide-react";
-import { cn, useUnsavedChanges } from "@/shared/lib";
+import { cn, useUnsavedChanges, parseLocalDate } from "@/shared/lib";
 import type { NewDebt } from "../model/types";
 import { AmountInput } from "@/entities/debt";
 import type { DebtType } from "@/entities/debt";
@@ -146,12 +147,14 @@ export function CreateDebtForm({
               </label>
               <DatePicker
                 value={
-                  formData.deadline ? new Date(formData.deadline) : undefined
+                  formData.deadline
+                    ? parseLocalDate(formData.deadline)
+                    : undefined
                 }
                 onChange={(date) =>
                   setFormData({
                     ...formData,
-                    deadline: date ? date.toISOString() : null,
+                    deadline: date ? format(date, "yyyy-MM-dd") : null,
                   })
                 }
               />

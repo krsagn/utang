@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import {
   Button,
   Tooltip,
@@ -10,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { X, Pen } from "lucide-react";
-import { cn, useUnsavedChanges } from "@/shared/lib";
+import { cn, useUnsavedChanges, parseLocalDate } from "@/shared/lib";
 import type { UpdateDebtForm } from "../model/types";
 import { AmountInput } from "@/entities/debt";
 import type { Debt, DebtType } from "@/entities/debt";
@@ -32,8 +33,8 @@ function normaliseAmount(value: string): string {
 
 function normaliseDeadline(value?: string | null): string | undefined {
   if (!value) return undefined;
-  const timestamp = new Date(value).getTime();
-  return Number.isNaN(timestamp) ? value : new Date(timestamp).toISOString();
+  const d = parseLocalDate(value);
+  return isNaN(d.getTime()) ? undefined : format(d, "yyyy-MM-dd");
 }
 
 function getComparableFormData(formData: UpdateDebtForm) {
@@ -200,11 +201,11 @@ export function EditDebtForm({
               </label>
               <DatePicker
                 value={
-                  formData.deadline ? new Date(formData.deadline) : undefined
+                  formData.deadline ? parseLocalDate(formData.deadline) : undefined
                 }
                 onChange={(date) =>
                   updateFormData({
-                    deadline: date ? date.toISOString() : null,
+                    deadline: date ? format(date, "yyyy-MM-dd") : null,
                   })
                 }
               />

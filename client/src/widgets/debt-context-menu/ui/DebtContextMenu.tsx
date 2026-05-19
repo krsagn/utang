@@ -81,7 +81,7 @@ export function DebtContextMenu({
               </ContextMenuItem>
               <ContextMenuItem
                 onSelect={() => setTimeout(() => setDeleteOpen(true), 0)}
-                className="text-outgoing hover:text-outgoing focus:text-outgoing gap-8 text-xs tracking-wide"
+                className="text-danger hover:text-danger focus:text-danger gap-8 text-xs tracking-wide"
               >
                 Delete
                 <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>

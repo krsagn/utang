@@ -83,6 +83,12 @@ export function AppLayout() {
             )}
             onClick={isOpen ? closeSidebar : undefined}
           />
+          <div
+            className={cn(
+              "from-background pointer-events-none absolute left-0 z-50 h-full w-15 -translate-x-px bg-linear-to-r to-transparent transition-opacity duration-500 select-none",
+              isOpen ? "opacity-100" : "opacity-0",
+            )}
+          />
         </motion.div>
       </div>
     </RealtimeProvider>

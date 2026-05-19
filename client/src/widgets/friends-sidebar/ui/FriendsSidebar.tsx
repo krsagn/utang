@@ -29,7 +29,14 @@ import { AddFriendModal } from "@/features/friendship/add-friend";
 import { useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/shared/ui";
 import { RemoveFriendDialog } from "@/features/friendship/delete-friend";
 import { Link } from "react-router-dom";
 
@@ -400,20 +407,40 @@ function RequestItem({ request }: { request: Friendship }) {
         </span>
       </div>
       <div className="flex items-center">
-        <button
-          onClick={() => acceptFriend(request.id)}
-          disabled={isPending}
-          className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Check className="size-4 stroke-[2.5px]" />
-        </button>
-        <button
-          onClick={() => rejectFriend(request.id)}
-          disabled={isPending}
-          className="text-primary/50 hover:text-primary flex size-6 items-center justify-center transition-all duration-300 outline-none hover:scale-90 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <X className="size-4 stroke-[2.5px]" />
-        </button>
+        <Tooltip delayDuration={2000}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => acceptFriend(request.id)}
+              disabled={isPending}
+              className="text-primary flex size-6 items-center justify-center opacity-50 transition-[scale,opacity] duration-300 outline-none hover:scale-90 hover:opacity-100 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-25"
+            >
+              <Check className="size-4 stroke-[2.5px]" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            className="pointer-events-none select-none"
+          >
+            Accept
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip delayDuration={2000}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => rejectFriend(request.id)}
+              disabled={isPending}
+              className="text-primary flex size-6 items-center justify-center opacity-50 transition-[scale,opacity] duration-300 outline-none hover:scale-90 hover:opacity-100 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-25"
+            >
+              <X className="size-4 stroke-[2.5px]" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            className="pointer-events-none select-none"
+          >
+            Decline
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { formatDistanceToNow, isPast } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 
 import {
   type Debt,
@@ -14,7 +14,7 @@ import {
 } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { useUpdateDebt } from "@/features/debt/update-debt";
-import { formatCurrency, cn } from "@/shared/lib";
+import { formatCurrency, cn, parseLocalDate } from "@/shared/lib";
 import { Spinner, Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui";
 import { DebtContextMenu } from "@/widgets/debt-context-menu";
 
@@ -269,7 +269,7 @@ export function DebtCarousel({ type }: { type: DebtType }) {
     currentUser?.id,
   );
   const deadline = selectedDebt.deadline
-    ? new Date(selectedDebt.deadline)
+    ? parseLocalDate(selectedDebt.deadline)
     : null;
 
   return (
@@ -395,15 +395,30 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                   }}
                 >
                   <span className="text-foreground/30 mr-1.5">|</span>
-                  <span
-                    className={cn(
-                      isPast(deadline) && "text-outgoing font-bold",
-                    )}
-                  >
-                    {isPast(deadline)
-                      ? `overdue by ${formatDistanceToNow(deadline)}`
-                      : `due in ${formatDistanceToNow(deadline)}`}
-                  </span>
+                  {(() => {
+                    const days = differenceInCalendarDays(deadline, new Date());
+                    const isOverdue = days < 0;
+                    const overdueDays = Math.abs(days);
+                    return (
+                      <span
+                        className={cn(isOverdue && "text-danger font-bold")}
+                      >
+                        {isOverdue ? (
+                          `overdue by ${overdueDays} day${overdueDays === 1 ? "" : "s"}`
+                        ) : days === 0 ? (
+                          <>
+                            due <span className="animate-pulse">today</span>
+                          </>
+                        ) : days === 1 ? (
+                          <>
+                            due <span className="animate-pulse">tomorrow</span>
+                          </>
+                        ) : (
+                          `due in ${days} days`
+                        )}
+                      </span>
+                    );
+                  })()}
                 </motion.span>
               )}
             </AnimatePresence>

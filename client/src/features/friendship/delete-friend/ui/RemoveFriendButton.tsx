@@ -19,7 +19,7 @@ export function RemoveFriendButton({
 
   return (
     <button
-      className="group text-outgoing hover:bg-outgoing/10 flex w-fit items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none"
+      className="group text-danger hover:bg-danger/10 flex w-fit items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none"
       onClick={handleRemove}
     >
       <span>Remove Friend</span>

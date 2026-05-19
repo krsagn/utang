@@ -103,7 +103,7 @@ export function DeleteDebtDialog({
             title="Delete this debt?"
             subtitle="Once deleted, this debt and all its history will be gone for good."
             actionLabel="Yes, delete it"
-            actionClassName="bg-outgoing hover:bg-outgoing-hover focus-visible:ring-outgoing-hover"
+            actionClassName="bg-danger hover:bg-danger-hover focus-visible:ring-danger-hover"
             actionIcon={Trash}
             handleAction={handleDelete}
             cancelLabel="Keep it"

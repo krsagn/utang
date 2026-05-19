@@ -1,6 +1,15 @@
-import { formatCompactCurrency } from "@/shared/lib";
+import { differenceInCalendarDays } from "date-fns";
+import { formatCompactCurrency, parseLocalDate } from "@/shared/lib";
 import type { DebtType } from "../model/types";
 import { ArrowUp, ArrowDown } from "lucide-react";
+
+function deadlineLabel(deadline: Date): string {
+  const days = differenceInCalendarDays(deadline, new Date());
+  if (days < 0) return "overdue!!";
+  if (days === 0) return "by today!!";
+  if (days === 1) return "tomorrow!";
+  return `in ${days} days`;
+}
 
 const VARIATIONS = [
   "/sticky-note.webp",
@@ -17,13 +26,17 @@ export function StickyNote({
   otherParty,
   type,
   variation,
+  deadline,
 }: {
   amount: string;
   currency: string;
   otherParty: string;
   type: DebtType;
   variation: number;
+  deadline?: string | null;
 }) {
+  const deadlineDate = deadline ? parseLocalDate(deadline) : null;
+
   return (
     <div className="relative size-85 shrink-0 select-none">
       <img
@@ -33,8 +46,13 @@ export function StickyNote({
         className="h-full w-auto object-fill select-none"
         draggable={false}
       />
-      <div className="font-playpen absolute top-1/2 left-1/2 flex max-w-60 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 break-all opacity-90">
-        <p className="mt-3 line-clamp-1 bg-linear-to-tr from-black to-black/70 bg-clip-text text-4xl font-bold text-transparent">
+      <div className="font-playpen absolute top-1/2 left-1/2 flex max-w-60 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 pt-3 break-all opacity-90">
+        {deadlineDate && (
+          <p className="mb-1 line-clamp-1 bg-linear-to-tr from-black/70 to-black bg-clip-text text-transparent">
+            {deadlineLabel(deadlineDate)}
+          </p>
+        )}
+        <p className="mb-1 line-clamp-1 bg-linear-to-tr from-black to-black/70 bg-clip-text text-4xl font-bold text-transparent">
           {formatCompactCurrency(amount, currency)}
         </p>
         <p className="line-clamp-1 flex items-center gap-1 bg-linear-to-tr from-black/70 to-black bg-clip-text text-transparent">

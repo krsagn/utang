@@ -125,6 +125,7 @@ export function AmountInput({
 
               return floatValue === undefined || floatValue <= 9999999.99;
             }}
+            max={9999999}
             placeholder="0.00"
             className={cn(
               "font-heading max-w-full shrink bg-transparent text-center text-6xl font-extrabold transition-colors duration-300 outline-none placeholder:transition-colors placeholder:duration-300",

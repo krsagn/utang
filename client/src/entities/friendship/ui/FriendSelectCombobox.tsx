@@ -98,7 +98,7 @@ export function FriendSelectCombobox({
       */}
       {(filteredFriends.length > 0 ||
         (inputValue && inputValue.trim().length > 0)) && (
-        <ComboboxContent anchor={anchorRef}>
+        <ComboboxContent anchor={anchorRef} className="bg-white/50">
           <ComboboxList className="no-scrollbar overflow-y-auto mask-[linear-gradient(to_bottom,transparent,black_10px,black_calc(100%-15px),transparent)]">
             {filteredFriends.length > 0 ? (
               filteredFriends.map((friend) => (
