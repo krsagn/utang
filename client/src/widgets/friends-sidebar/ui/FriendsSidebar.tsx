@@ -260,7 +260,10 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
           </span>
         </div>
         <PopoverTrigger asChild>
-          <button className="text-primary/50 hover:text-primary group flex size-6 items-center justify-center transition-all duration-300 outline-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+          <button
+            aria-label={`Options for ${fullName}`}
+            className="text-primary/50 hover:text-primary group flex size-6 items-center justify-center transition-all duration-300 outline-none enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <Ellipsis className="transition-scale size-4 stroke-[2.5px] duration-300 group-hover:scale-90" />
           </button>
         </PopoverTrigger>
@@ -280,10 +283,15 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
             </div>
             <div className="flex translate-x-0.5 -translate-y-px gap-1">
               {/* TODO: nudge feature — POST /friendships/:id/nudge, socket + email notify */}
-              <button className="group transition-scale flex size-6 items-center justify-center duration-300 outline-none hover:scale-96 enabled:cursor-pointer">
-                <Pointer className="text-primary size-4 stroke-[2.25px] opacity-40 transition-opacity duration-300 group-hover:opacity-80" />
+              <button
+                disabled
+                aria-label="Nudge (coming soon)"
+                className="group flex size-6 items-center justify-center outline-none disabled:cursor-not-allowed"
+              >
+                <Pointer className="text-primary size-4 stroke-[2.25px] opacity-20" />
               </button>
               <button
+                aria-label={`Remove ${fullName}`}
                 className="group transition-scale flex size-6 items-center justify-center duration-300 outline-none hover:scale-96 enabled:cursor-pointer"
                 onClick={() => setRemoveFriendDialogOpen(true)}
               >
