@@ -16,8 +16,12 @@ export const baseDebtSchema = z.object({
   title: z.string().min(1, 'Title is required').max(30, 'Title too long'),
   description: z.string().max(100, 'Description too long').optional(),
 
-  // Deadline is optional
-  deadline: z.coerce.date().optional(),
+  // Deadline is optional; expects "YYYY-MM-DD" string (date column, not timestamp)
+  deadline: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Deadline must be a date in YYYY-MM-DD format')
+    .optional()
+    .nullable(),
 });
 
 // Extends baseDebtSchema with type, and enforces exactly one of strangerName or otherPartyId
