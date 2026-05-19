@@ -1,3 +1,4 @@
+export { useFriendStats } from "./model/useFriendStats";
 export { FriendCard } from "./ui/FriendCard";
 export { FriendSelectCombobox } from "./ui/FriendSelectCombobox";
 export { useFriends } from "./model/useFriends";

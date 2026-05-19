@@ -5,6 +5,7 @@ import {
   acceptFriend,
   deleteFriend,
   getFriends,
+  getFriendStats,
 } from '../controllers/friendshipController.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -15,6 +16,7 @@ friendshipRouter.use(requireAuth);
 
 // Route definitions
 friendshipRouter.get('/', getFriends);
+friendshipRouter.get('/:id/stats', getFriendStats);
 friendshipRouter.post('/', addFriend);
 friendshipRouter.patch('/:id', acceptFriend);
 friendshipRouter.delete('/:id', deleteFriend);

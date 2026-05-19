@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { db } from '../db/index.js';
-import { users, friendships } from '../db/schema.js';
-import { and, eq, ne, or } from 'drizzle-orm';
+import { users, friendships, debts } from '../db/schema.js';
+import { and, eq, isNull, ne, or } from 'drizzle-orm';
 import { addFriendSchema } from '../schemas/friendshipSchema.js';
 import { z } from 'zod';
 import { isDbError } from '../lib/utils.js';
@@ -228,6 +228,104 @@ export const deleteFriend = async (req: Request, res: Response) => {
 
       return res.status(204).send();
     }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+/**
+ * GET /friendships/:friendshipId/stats
+ * Returns computed statistics for an accepted friendship.
+ *
+ * @param {string} friendshipId - The UUID of the friendship.
+ *
+ * Response:
+ * - netBalance: positive means the friend owes you, negative means you owe them.
+ * - settledDebtCount: number of paid debts between the two users.
+ * - longestOwed: the oldest pending debt (amount, currency, createdAt), or null if none.
+ *
+ * Access Control:
+ * - Only participants of the friendship can view its stats.
+ * - Only accepted friendships are valid.
+ */
+export const getFriendStats = async (req: Request, res: Response) => {
+  try {
+    const currentUser = res.locals.user!.id;
+    const { id: friendshipId } = req.params;
+
+    const friendship = await db.query.friendships.findFirst({
+      where: and(
+        eq(friendships.id, friendshipId as string),
+        eq(friendships.status, 'accepted')
+      ),
+    });
+
+    if (!friendship) {
+      return res.status(404).json({ error: 'Friendship does not exist' });
+    }
+
+    if (
+      currentUser !== friendship.userId1 &&
+      currentUser !== friendship.userId2
+    ) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const friendId =
+      currentUser === friendship.userId1
+        ? friendship.userId2
+        : friendship.userId1;
+
+    const matchingDebts = await db
+      .select()
+      .from(debts)
+      .where(
+        and(
+          isNull(debts.strangerName),
+          or(eq(debts.lenderId, currentUser), eq(debts.lendeeId, currentUser)),
+          or(eq(debts.lenderId, friendId), eq(debts.lendeeId, friendId)),
+          ne(debts.status, 'void')
+        )
+      );
+
+    const netBalance = matchingDebts
+      .filter((d) => d.status === 'pending')
+      .reduce(
+        (acc, d) =>
+          d.lendeeId === currentUser
+            ? acc - parseFloat(d.amount)
+            : acc + parseFloat(d.amount),
+        0
+      );
+
+    const settledDebtCount = matchingDebts.filter(
+      (d) => d.status === 'paid'
+    ).length;
+
+    const longestOwed = matchingDebts
+      .filter((d) => d.status === 'pending')
+      .reduce<(typeof matchingDebts)[0] | null>((oldest, d) => {
+        if (!oldest) return d;
+        return d.createdAt < oldest.createdAt ? d : oldest;
+      }, null);
+
+    const response = {
+      netBalance,
+      settledDebtCount,
+      longestOwed: longestOwed
+        ? {
+            id: longestOwed.id,
+            amount: parseFloat(longestOwed.amount),
+            currency: longestOwed.currency,
+            since: longestOwed.createdAt,
+            direction:
+              longestOwed.lendeeId === currentUser ? 'outgoing' : 'incoming',
+          }
+        : null,
+    };
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });

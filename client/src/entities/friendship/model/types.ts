@@ -8,3 +8,15 @@ export interface Friendship {
   friendLastName: string;
   friendUsername: string;
 }
+
+export interface FriendStats {
+  netBalance: number;
+  settledDebtCount: number;
+  longestOwed: {
+    id: string;
+    amount: number;
+    currency: string;
+    since: string;
+    direction: "incoming" | "outgoing";
+  } | null;
+}

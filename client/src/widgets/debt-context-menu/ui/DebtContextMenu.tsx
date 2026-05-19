@@ -38,7 +38,7 @@ export function DebtContextMenu({
             <>
               <ContextMenuItem
                 onSelect={() => navigate(`/debts/${debt.id}/edit`)}
-                className="text-xs tracking-wide"
+                className="pb-1.5 text-xs tracking-wide"
               >
                 <Pen className="mt-px mr-0.5 size-3 stroke-[2.5px]" />
                 Edit
@@ -46,14 +46,14 @@ export function DebtContextMenu({
               <ContextMenuItem
                 onSelect={handleMarkDone}
                 disabled={isPending}
-                className="text-xs tracking-wide"
+                className="py-1.5 text-xs tracking-wide"
               >
                 <Check className="mr-0.5 size-3 stroke-[2.5px]" />
                 Mark as done
               </ContextMenuItem>
               <ContextMenuItem
                 onSelect={() => setTimeout(() => setDeleteOpen(true), 0)}
-                className="text-outgoing hover:text-outgoing focus:text-outgoing text-xs tracking-wide"
+                className="text-outgoing hover:text-outgoing focus:text-outgoing pt-1.5 text-xs tracking-wide"
               >
                 <Trash className="mr-0.5 size-3 stroke-[2.5px]" />
                 Delete

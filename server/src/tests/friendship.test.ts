@@ -318,6 +318,156 @@ describe('PATCH /friendships/:id', () => {
   });
 });
 
+describe('GET /friendships/:id/stats', () => {
+  const mockFriendship = {
+    id: 'friendship-id',
+    status: 'accepted',
+    requesterId: 'friend-user-id',
+    userId1: mockUserId,
+    userId2: 'friend-user-id',
+  };
+
+  it('should return 404 if friendship not found', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(undefined);
+
+    const response = await request(app).get('/friendships/friendship-id/stats');
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('Friendship does not exist');
+  });
+
+  it('should return 403 if user is not a participant', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce({
+      ...mockFriendship,
+      userId1: 'other-user-a',
+      userId2: 'other-user-b',
+    } as any);
+
+    const response = await request(app).get('/friendships/friendship-id/stats');
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe('Unauthorized');
+  });
+
+  it('should return 200 with correct netBalance, settledDebtCount, and longestOwed', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+
+    const mockDebts = [
+      {
+        id: 'debt-oldest',
+        lenderId: mockUserId,
+        lendeeId: 'friend-user-id',
+        amount: '50.00',
+        currency: 'USD',
+        status: 'pending',
+        createdAt: new Date('2024-01-01'),
+        strangerName: null,
+      },
+      {
+        id: 'debt-newer',
+        lenderId: 'friend-user-id',
+        lendeeId: mockUserId,
+        amount: '20.00',
+        currency: 'USD',
+        status: 'pending',
+        createdAt: new Date('2024-02-01'),
+        strangerName: null,
+      },
+      {
+        id: 'debt-paid',
+        lenderId: mockUserId,
+        lendeeId: 'friend-user-id',
+        amount: '30.00',
+        currency: 'USD',
+        status: 'paid',
+        createdAt: new Date('2024-03-01'),
+        strangerName: null,
+      },
+    ];
+
+    vi.mocked(db.select).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(mockDebts),
+      }),
+    } as any);
+
+    const response = await request(app).get('/friendships/friendship-id/stats');
+
+    expect(response.status).toBe(200);
+    // friend owes 50, currentUser owes 20 → net +30
+    expect(response.body.netBalance).toBe(30);
+    expect(response.body.settledDebtCount).toBe(1);
+    expect(response.body.longestOwed).toMatchObject({
+      id: 'debt-oldest',
+      amount: 50,
+      currency: 'USD',
+      direction: 'incoming',
+    });
+  });
+
+  it('should return longestOwed direction as outgoing when currentUser is lendee', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+
+    vi.mocked(db.select).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([
+          {
+            id: 'debt-outgoing',
+            lenderId: 'friend-user-id',
+            lendeeId: mockUserId,
+            amount: '15.00',
+            currency: 'AUD',
+            status: 'pending',
+            createdAt: new Date('2024-01-01'),
+            strangerName: null,
+          },
+        ]),
+      }),
+    } as any);
+
+    const response = await request(app).get('/friendships/friendship-id/stats');
+
+    expect(response.status).toBe(200);
+    expect(response.body.longestOwed).toMatchObject({
+      direction: 'outgoing',
+      amount: 15,
+    });
+  });
+
+  it('should return null longestOwed and zero counts when no debts exist', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+
+    vi.mocked(db.select).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
+      }),
+    } as any);
+
+    const response = await request(app).get('/friendships/friendship-id/stats');
+
+    expect(response.status).toBe(200);
+    expect(response.body.netBalance).toBe(0);
+    expect(response.body.settledDebtCount).toBe(0);
+    expect(response.body.longestOwed).toBeNull();
+  });
+
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockRejectedValueOnce(
+      new Error('Unexpected')
+    );
+
+    const response = await request(app).get('/friendships/friendship-id/stats');
+
+    expect(response.status).toBe(500);
+  });
+});
+
 describe('DELETE /friendships/:id', () => {
   it('should return 404 if friend request not found or unauthorized', async () => {
     const returnSpy = vi.fn().mockReturnValue({

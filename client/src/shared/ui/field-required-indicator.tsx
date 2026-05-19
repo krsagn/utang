@@ -19,7 +19,7 @@ export function FieldRequiredIndicator({ filled }: { filled: boolean }) {
           exit={{ opacity: 0, scale: 0.5 }}
           transition={SPRING_TRANSITION}
         >
-          <Check className="text-primary/40 ml-px size-2.5 stroke-3" />
+          <Check className="text-primary ml-px size-2.5 stroke-3 opacity-40" />
         </motion.span>
       ) : (
         <motion.span
@@ -29,7 +29,7 @@ export function FieldRequiredIndicator({ filled }: { filled: boolean }) {
           exit={{ opacity: 0, scale: 0.5 }}
           transition={SPRING_TRANSITION}
         >
-          <Asterisk className="text-primary/30 size-3 stroke-[2.5px]" />
+          <Asterisk className="text-primary size-3 stroke-[2.5px] opacity-40" />
         </motion.span>
       )}
     </AnimatePresence>
