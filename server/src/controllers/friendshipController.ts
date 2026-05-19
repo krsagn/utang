@@ -6,6 +6,7 @@ import { addFriendSchema } from '../schemas/friendshipSchema.js';
 import { z } from 'zod';
 import { isDbError } from '../lib/utils.js';
 import { io } from '../socket.js';
+import { emailQueue } from '../queues/emailQueue.js';
 
 /**
  * GET /friendships
@@ -326,6 +327,59 @@ export const getFriendStats = async (req: Request, res: Response) => {
     };
 
     return res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const nudgeFriend = async (req: Request, res: Response) => {
+  try {
+    const { id: friendshipId } = req.params;
+    const currentUser = res.locals.user;
+
+    const friendship = await db.query.friendships.findFirst({
+      where: and(
+        eq(friendships.id, friendshipId as string),
+        eq(friendships.status, 'accepted'),
+        or(
+          eq(friendships.userId1, currentUser.id),
+          eq(friendships.userId2, currentUser.id)
+        )
+      ),
+    });
+
+    if (!friendship)
+      return res.status(404).json({ error: 'Friendship not found' });
+
+    const targetUser = await db.query.users.findFirst({
+      where: eq(
+        users.id,
+        friendship.userId1 === currentUser.id
+          ? friendship.userId2
+          : friendship.userId1
+      ),
+    });
+
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    const nudgeData = {
+      from: {
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        username: currentUser.username,
+      },
+    };
+
+    io.to(targetUser.id).emit('friendship:nudge', nudgeData);
+
+    emailQueue.add('nudgeEmail', {
+      to: targetUser.email,
+      name: targetUser.firstName,
+      nudgerName: `${currentUser.firstName} ${currentUser.lastName}`,
+    });
+
+    return res.status(204).send();
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });
