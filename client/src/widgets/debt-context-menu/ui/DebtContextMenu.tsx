@@ -32,7 +32,7 @@ export function DebtContextMenu({
   );
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen || !isCreator) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "e" && (e.metaKey || e.ctrlKey)) {
@@ -40,7 +40,7 @@ export function DebtContextMenu({
         e.stopPropagation();
         navigate(`/debts/${debt.id}/edit`);
       }
-      if (e.key === "m" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === "m" && (e.metaKey || e.ctrlKey) && !isPending) {
         e.preventDefault();
         handleMarkDone();
       }
@@ -52,7 +52,7 @@ export function DebtContextMenu({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [menuOpen, debt.id, handleMarkDone, navigate]);
+  }, [menuOpen, isCreator, isPending, debt.id, handleMarkDone, navigate]);
 
   return (
     <>

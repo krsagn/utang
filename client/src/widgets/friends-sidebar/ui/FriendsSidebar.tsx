@@ -412,6 +412,7 @@ function RequestItem({ request }: { request: Friendship }) {
             <button
               onClick={() => acceptFriend(request.id)}
               disabled={isPending}
+              aria-label="Accept friend request"
               className="text-primary flex size-6 items-center justify-center opacity-50 transition-[scale,opacity] duration-300 outline-none hover:scale-90 hover:opacity-100 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-25"
             >
               <Check className="size-4 stroke-[2.5px]" />
@@ -429,6 +430,7 @@ function RequestItem({ request }: { request: Friendship }) {
             <button
               onClick={() => rejectFriend(request.id)}
               disabled={isPending}
+              aria-label="Decline friend request"
               className="text-primary flex size-6 items-center justify-center opacity-50 transition-[scale,opacity] duration-300 outline-none hover:scale-90 hover:opacity-100 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-25"
             >
               <X className="size-4 stroke-[2.5px]" />
