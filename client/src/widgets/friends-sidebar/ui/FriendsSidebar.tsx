@@ -280,14 +280,14 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
             </div>
             <div className="flex translate-x-0.5 -translate-y-px gap-1">
               {/* TODO: nudge feature — POST /friendships/:id/nudge, socket + email notify */}
-              <button className="hover:text-primary flex size-6 items-center justify-center text-[#989898] transition-all duration-300 outline-none hover:scale-96 enabled:cursor-pointer">
-                <Pointer className="size-4 stroke-[2.25px]" />
+              <button className="group transition-scale flex size-6 items-center justify-center duration-300 outline-none hover:scale-96 enabled:cursor-pointer">
+                <Pointer className="text-primary size-4 stroke-[2.25px] opacity-40 transition-opacity duration-300 group-hover:opacity-80" />
               </button>
               <button
-                className="hover:text-primary flex size-6 translate-x-0.5 -translate-y-px items-center justify-center text-[#989898] transition-all duration-300 outline-none hover:scale-96 enabled:cursor-pointer"
+                className="group transition-scale flex size-6 items-center justify-center duration-300 outline-none hover:scale-96 enabled:cursor-pointer"
                 onClick={() => setRemoveFriendDialogOpen(true)}
               >
-                <UserRoundX className="size-4 stroke-[2.25px]" />
+                <UserRoundX className="text-primary size-4 stroke-[2.25px] opacity-40 transition-opacity duration-300 group-hover:opacity-80" />
               </button>
             </div>
           </div>
@@ -330,7 +330,7 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                 </Link>
                 <span
                   className={cn(
-                    "flex items-center gap-1.5 text-xs font-semibold tabular-nums",
+                    "flex items-center gap-1 text-xs font-semibold tabular-nums",
                     longestOwed.direction === "incoming"
                       ? "text-incoming"
                       : "text-outgoing",
@@ -345,7 +345,7 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                     longestOwed.amount,
                     longestOwed.currency,
                   )}
-                  <div className="size-0.5 shrink-0 self-center rounded-full bg-current opacity-50" />
+                  <div className="size-0.5 shrink-0 self-center rounded-full bg-current px-0.5 opacity-50" />
                   <span className="animate-pulse">
                     {compactAge(new Date(longestOwed.since))}
                   </span>
