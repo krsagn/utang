@@ -15,7 +15,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const emailWorker = new Worker(
   'emailQueue',
   async (job: Job) => {
-    if (job.name === `nudgeEmail`) {
+    if (job.name === 'nudgeEmail') {
       const { to, name, nudgerName } = job.data;
       const { error } = await resend.emails.send({
         from: process.env.EMAIL_FROM!,

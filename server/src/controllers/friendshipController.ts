@@ -7,6 +7,9 @@ import { z } from 'zod';
 import { isDbError } from '../lib/utils.js';
 import { io } from '../socket.js';
 import { emailQueue } from '../queues/emailQueue.js';
+import { createRedisConnection } from '../db/redis.js';
+
+const redis = createRedisConnection();
 
 /**
  * GET /friendships
@@ -336,7 +339,7 @@ export const getFriendStats = async (req: Request, res: Response) => {
 export const nudgeFriend = async (req: Request, res: Response) => {
   try {
     const { id: friendshipId } = req.params;
-    const currentUser = res.locals.user;
+    const currentUser = res.locals.user!;
 
     const friendship = await db.query.friendships.findFirst({
       where: and(
@@ -359,25 +362,40 @@ export const nudgeFriend = async (req: Request, res: Response) => {
           ? friendship.userId2
           : friendship.userId1
       ),
+      columns: { id: true, email: true, firstName: true },
     });
 
     if (!targetUser) return res.status(404).json({ error: 'User not found' });
 
+    const key = `nudge:cooldown:${targetUser.id}:${currentUser.id}`;
+    const COOLDOWN_SECONDS = 300;
+
+    try {
+      const acquired = await redis.set(key, '1', 'EX', COOLDOWN_SECONDS, 'NX');
+      if (!acquired) {
+        const ttl = await redis.ttl(key);
+        res.setHeader('Retry-After', String(ttl));
+        return res
+          .status(429)
+          .json({ error: 'Nudged too recently', retryAfter: ttl });
+      }
+    } catch (error) {
+      console.error('Redis cooldown check failed, allowing nudge:', error);
+    }
+
     const nudgeData = {
       from: {
         firstName: currentUser.firstName,
-        lastName: currentUser.lastName,
-        username: currentUser.username,
       },
     };
 
-    io.to(targetUser.id).emit('friendship:nudge', nudgeData);
-
-    emailQueue.add('nudgeEmail', {
+    await emailQueue.add('nudgeEmail', {
       to: targetUser.email,
       name: targetUser.firstName,
       nudgerName: `${currentUser.firstName} ${currentUser.lastName}`,
     });
+
+    io.to(targetUser.id).emit('friendship:nudge', nudgeData);
 
     return res.status(204).send();
   } catch (error) {

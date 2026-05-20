@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { lucia } from '../auth.js';
 import { db } from '../db/index.js';
 import { io } from '../socket.js';
+import { emailQueue } from '../queues/emailQueue.js';
 
 // Mock database
 vi.mock('../db/index.js', () => {
@@ -49,6 +50,22 @@ vi.mock('../socket.js', () => ({
     to: vi.fn().mockReturnValue({
       emit: vi.fn(),
     }),
+  },
+}));
+
+const mockRedis = {
+  set: vi.fn(),
+  ttl: vi.fn(),
+  del: vi.fn(),
+};
+
+vi.mock('../db/redis.js', () => ({
+  createRedisConnection: vi.fn(() => mockRedis),
+}));
+
+vi.mock('../queues/emailQueue.js', () => ({
+  emailQueue: {
+    add: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -514,6 +531,142 @@ describe('DELETE /friendships/:id', () => {
     } as any);
 
     const response = await request(app).delete('/friendships/12345');
+
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('POST /friendships/:id/nudge', () => {
+  const friendshipId = 'friendship-id';
+  const targetUserId = '22222222-2222-2222-2222-222222222222';
+
+  const mockFriendship = {
+    id: friendshipId,
+    status: 'accepted',
+    requesterId: targetUserId,
+    userId1: mockUserId,
+    userId2: targetUserId,
+  };
+
+  const mockTargetUser = {
+    id: targetUserId,
+    email: 'friend@example.com',
+    firstName: 'Bob',
+  };
+
+  beforeEach(() => {
+    mockRedis.set.mockResolvedValue('OK');
+    mockRedis.ttl.mockResolvedValue(240);
+  });
+
+  it('should return 404 if friendship not found', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(undefined);
+
+    const response = await request(app).post(
+      `/friendships/${friendshipId}/nudge`
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('Friendship not found');
+  });
+
+  it('should return 404 if target user not found', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce(undefined);
+
+    const response = await request(app).post(
+      `/friendships/${friendshipId}/nudge`
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('User not found');
+  });
+
+  it('should return 429 with retryAfter when cooldown is active', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce(
+      mockTargetUser as any
+    );
+    mockRedis.set.mockResolvedValueOnce(null);
+    mockRedis.ttl.mockResolvedValueOnce(180);
+
+    const response = await request(app).post(
+      `/friendships/${friendshipId}/nudge`
+    );
+
+    expect(response.status).toBe(429);
+    expect(response.body.retryAfter).toBe(180);
+    expect(response.headers['retry-after']).toBe('180');
+  });
+
+  it('should return 204 and emit socket event on success', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce(
+      mockTargetUser as any
+    );
+
+    const response = await request(app).post(
+      `/friendships/${friendshipId}/nudge`
+    );
+
+    expect(response.status).toBe(204);
+    expect(io.to).toHaveBeenCalledWith(targetUserId);
+    expect(io.to(targetUserId).emit).toHaveBeenCalledWith(
+      'friendship:nudge',
+      expect.objectContaining({ from: expect.objectContaining({ firstName: 'Alice' }) })
+    );
+  });
+
+  it('should enqueue a nudge email on success', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce(
+      mockTargetUser as any
+    );
+
+    await request(app).post(`/friendships/${friendshipId}/nudge`);
+
+    expect(emailQueue.add).toHaveBeenCalledWith(
+      'nudgeEmail',
+      expect.objectContaining({
+        to: mockTargetUser.email,
+        name: mockTargetUser.firstName,
+        nudgerName: 'Alice Smith',
+      })
+    );
+  });
+
+  it('should allow nudge through if Redis throws (fail-open)', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce(
+      mockTargetUser as any
+    );
+    mockRedis.set.mockRejectedValueOnce(new Error('Redis unavailable'));
+
+    const response = await request(app).post(
+      `/friendships/${friendshipId}/nudge`
+    );
+
+    expect(response.status).toBe(204);
+  });
+
+  it('should return 500 on unexpected error', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockRejectedValueOnce(
+      new Error('Unexpected')
+    );
+
+    const response = await request(app).post(
+      `/friendships/${friendshipId}/nudge`
+    );
 
     expect(response.status).toBe(500);
   });

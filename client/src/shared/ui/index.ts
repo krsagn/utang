@@ -19,3 +19,4 @@ export { FieldRequiredIndicator } from "./field-required-indicator";
 export { DatePicker } from "./date-picker";
 export * from "./dialog-panel";
 export * from "./dialog-backdrop";
+export { Toaster } from "./sonner";
