@@ -6,6 +6,13 @@ import { addFriendSchema } from '../schemas/friendshipSchema.js';
 import { z } from 'zod';
 import { isDbError } from '../lib/utils.js';
 import { io } from '../socket.js';
+import { emailQueue } from '../queues/emailQueue.js';
+import { createRedisConnection } from '../db/redis.js';
+
+const redis = createRedisConnection();
+
+const NUDGE_COOLDOWN_SECONDS =
+  parseInt(process.env.NUDGE_COOLDOWN_SECONDS ?? '300', 10) || 300;
 
 /**
  * GET /friendships
@@ -326,6 +333,86 @@ export const getFriendStats = async (req: Request, res: Response) => {
     };
 
     return res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const nudgeFriend = async (req: Request, res: Response) => {
+  try {
+    const { id: friendshipId } = req.params;
+    const currentUser = res.locals.user!;
+
+    const friendship = await db.query.friendships.findFirst({
+      where: and(
+        eq(friendships.id, friendshipId as string),
+        eq(friendships.status, 'accepted'),
+        or(
+          eq(friendships.userId1, currentUser.id),
+          eq(friendships.userId2, currentUser.id)
+        )
+      ),
+    });
+
+    if (!friendship)
+      return res.status(404).json({ error: 'Friendship not found' });
+
+    const targetUser = await db.query.users.findFirst({
+      where: eq(
+        users.id,
+        friendship.userId1 === currentUser.id
+          ? friendship.userId2
+          : friendship.userId1
+      ),
+      columns: { id: true, email: true, firstName: true },
+    });
+
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    const key = `nudge:cooldown:${targetUser.id}:${currentUser.id}`;
+
+    try {
+      const acquired = await redis.set(
+        key,
+        '1',
+        'EX',
+        NUDGE_COOLDOWN_SECONDS,
+        'NX'
+      );
+      if (!acquired) {
+        const ttl = await redis.ttl(key);
+        res.setHeader('Retry-After', String(ttl));
+        return res
+          .status(429)
+          .json({ error: 'Nudged too recently', retryAfter: ttl });
+      }
+    } catch (error) {
+      console.error('Redis cooldown check failed, allowing nudge:', error);
+    }
+
+    const nudgeData = {
+      from: {
+        firstName: currentUser.firstName,
+      },
+    };
+
+    try {
+      await emailQueue.add('nudgeEmail', {
+        to: targetUser.email,
+        name: targetUser.firstName,
+        nudgerName: `${currentUser.firstName} ${currentUser.lastName}`,
+      });
+
+      io.to(targetUser.id).emit('friendship:nudge', nudgeData);
+    } catch (error) {
+      // dispatch failed, clear the cooldown so the user can retry
+      await redis.del(key).catch(() => {});
+      console.error('Nudge dispatch failed, cleared cooldown:', error);
+      return res.status(500).json({ error: 'Failed to send nudge' });
+    }
+
+    return res.status(204).send();
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });

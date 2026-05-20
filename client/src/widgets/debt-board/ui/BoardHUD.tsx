@@ -22,7 +22,7 @@ export function BoardHUD({
   return (
     <div
       className={cn(
-        "squircle text-primary/70 flex gap-2 bg-white/70 px-4 py-3 text-xs tracking-wide text-nowrap shadow-xl backdrop-blur-2xl transition-opacity duration-500 select-none",
+        "squircle text-primary/70 flex gap-2 border border-white/30 bg-white/70 px-4 py-3 text-xs tracking-wide text-nowrap shadow-xl backdrop-blur-xs transition-opacity duration-500 select-none",
         panning ? "cursor-grabbing" : "cursor-default",
         idle ? "opacity-50" : "opacity-100",
         className,

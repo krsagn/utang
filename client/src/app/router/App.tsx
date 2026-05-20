@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Toaster } from "sonner";
+import { Toaster } from "@/shared/ui";
 import { TooltipProvider } from "@/shared/ui";
 import { Login } from "@/pages/auth/login";
 import { MyBoard } from "@/pages/my-board";
@@ -43,7 +43,7 @@ function App() {
       <TooltipProvider>
         <RouterProvider router={router} />
       </TooltipProvider>
-      <Toaster position="bottom-center" />
+      <Toaster position="top-center" closeButton />
     </>
   );
 }

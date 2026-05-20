@@ -21,7 +21,9 @@ import {
   ArrowUp,
   ArrowDown,
   Pointer,
+  Hourglass,
 } from "lucide-react";
+import axios from "axios";
 import { useAcceptFriend } from "@/features/friendship/accept-friend/model/useAcceptFriend";
 import { useDeleteFriend } from "@/features/friendship/delete-friend/model/useDeleteFriend";
 import { useModal, cn, formatCompactCurrency } from "@/shared/lib";
@@ -39,6 +41,8 @@ import {
 } from "@/shared/ui";
 import { RemoveFriendDialog } from "@/features/friendship/delete-friend";
 import { Link } from "react-router-dom";
+import { useNudgeFriend } from "@/features/friendship/nudge-friend";
+import { toast } from "sonner";
 
 export function FriendsSidebar() {
   const { closeSidebar, isOpen } = useFriendsSidebar();
@@ -248,12 +252,24 @@ function NetBalanceValue({ amount }: { amount: number }) {
 function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
   const { isOpen: sidebarOpen, closeSidebar } = useFriendsSidebar();
 
+  const {
+    mutate: handleNudge,
+    isPending: nudgePending,
+    isSuccess: nudgeSuccess,
+    reset: resetNudge,
+  } = useNudgeFriend();
+
   const [isOpen, setIsOpen] = useState(false);
   const [removeFriendDialogOpen, setRemoveFriendDialogOpen] = useState(false);
   const { data: stats, isPending } = useFriendStats(friendship.id, isOpen);
   const longestOwed = stats?.longestOwed;
-
   const fullName = `${friendship.friendFirstName} ${friendship.friendLastName}`;
+
+  useEffect(() => {
+    if (!nudgeSuccess) return;
+    const t = setTimeout(() => resetNudge(), 1500);
+    return () => clearTimeout(t);
+  }, [nudgeSuccess, resetNudge]);
 
   return (
     <>
@@ -288,14 +304,81 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                 @{friendship.friendUsername}
               </p>
             </div>
-            <div className="flex translate-x-0.5 -translate-y-px gap-1">
-              {/* TODO: nudge feature — POST /friendships/:id/nudge, socket + email notify */}
+            <div className="flex translate-x-0.5 -translate-y-px gap-1.5">
               <button
-                disabled
-                aria-label="Nudge (coming soon)"
-                className="group flex size-6 items-center justify-center outline-none disabled:cursor-not-allowed"
+                aria-label={
+                  nudgeSuccess ? `Nudged ${fullName}` : `Nudge ${fullName}`
+                }
+                aria-busy={nudgePending}
+                disabled={nudgePending || nudgeSuccess}
+                className={cn(
+                  "group transition-scale flex size-6 items-center justify-center duration-300 outline-none hover:scale-96 enabled:cursor-pointer disabled:cursor-not-allowed",
+                  nudgePending && "animate-pulse",
+                )}
+                onClick={() =>
+                  handleNudge(friendship.id, {
+                    onError: (error) => {
+                      if (
+                        axios.isAxiosError(error) &&
+                        error.response?.status === 429
+                      ) {
+                        const seconds = error.response.data?.retryAfter;
+                        const wait = seconds
+                          ? seconds >= 60
+                            ? `~${Math.ceil(seconds / 60)}min`
+                            : `${seconds}s`
+                          : null;
+
+                        toast.error(`Slow down on ${fullName}!`, {
+                          description: wait
+                            ? `You've nudged them recently. Try again in ${wait}.`
+                            : `You've nudged them recently. Try again later.`,
+                          icon: (
+                            <Hourglass className="size-4 animate-pulse opacity-80" />
+                          ),
+                        });
+                        return;
+                      }
+                      toast.error(`Couldn't nudge ${fullName}`, {
+                        description: "Give it another go in a moment.",
+                      });
+                    },
+                  })
+                }
               >
-                <Pointer className="text-primary size-4 stroke-[2.25px] opacity-20" />
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {nudgeSuccess ? (
+                    <motion.span
+                      key="nudge-check"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 0.2, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 35,
+                        opacity: { type: "tween", duration: 0.08 },
+                      }}
+                    >
+                      <Check className="text-primary size-4 stroke-[2.25px]" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="nudge-pointer"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 35,
+                        opacity: { type: "tween", duration: 0.08 },
+                      }}
+                    >
+                      <Pointer className="text-primary size-4 stroke-[2.25px] opacity-40 transition-opacity duration-300 group-hover:opacity-80" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </button>
               <button
                 aria-label={`Remove ${fullName}`}
