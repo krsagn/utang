@@ -11,6 +11,9 @@ import { createRedisConnection } from '../db/redis.js';
 
 const redis = createRedisConnection();
 
+const NUDGE_COOLDOWN_SECONDS =
+  parseInt(process.env.NUDGE_COOLDOWN_SECONDS ?? '300', 10) || 300;
+
 /**
  * GET /friendships
  * Retrieves a list of friendships associated with the authenticated user.
@@ -368,10 +371,15 @@ export const nudgeFriend = async (req: Request, res: Response) => {
     if (!targetUser) return res.status(404).json({ error: 'User not found' });
 
     const key = `nudge:cooldown:${targetUser.id}:${currentUser.id}`;
-    const COOLDOWN_SECONDS = 300;
 
     try {
-      const acquired = await redis.set(key, '1', 'EX', COOLDOWN_SECONDS, 'NX');
+      const acquired = await redis.set(
+        key,
+        '1',
+        'EX',
+        NUDGE_COOLDOWN_SECONDS,
+        'NX'
+      );
       if (!acquired) {
         const ttl = await redis.ttl(key);
         res.setHeader('Retry-After', String(ttl));
@@ -389,13 +397,20 @@ export const nudgeFriend = async (req: Request, res: Response) => {
       },
     };
 
-    await emailQueue.add('nudgeEmail', {
-      to: targetUser.email,
-      name: targetUser.firstName,
-      nudgerName: `${currentUser.firstName} ${currentUser.lastName}`,
-    });
+    try {
+      await emailQueue.add('nudgeEmail', {
+        to: targetUser.email,
+        name: targetUser.firstName,
+        nudgerName: `${currentUser.firstName} ${currentUser.lastName}`,
+      });
 
-    io.to(targetUser.id).emit('friendship:nudge', nudgeData);
+      io.to(targetUser.id).emit('friendship:nudge', nudgeData);
+    } catch (error) {
+      // dispatch failed, clear the cooldown so the user can retry
+      await redis.del(key).catch(() => {});
+      console.error('Nudge dispatch failed, cleared cooldown:', error);
+      return res.status(500).json({ error: 'Failed to send nudge' });
+    }
 
     return res.status(204).send();
   } catch (error) {

@@ -557,6 +557,7 @@ describe('POST /friendships/:id/nudge', () => {
   beforeEach(() => {
     mockRedis.set.mockResolvedValue('OK');
     mockRedis.ttl.mockResolvedValue(240);
+    mockRedis.del.mockResolvedValue(1);
   });
 
   it('should return 404 if friendship not found', async () => {
@@ -657,6 +658,25 @@ describe('POST /friendships/:id/nudge', () => {
     );
 
     expect(response.status).toBe(204);
+  });
+
+  it('should clear the cooldown and return 500 if dispatch fails', async () => {
+    vi.mocked(db.query.friendships.findFirst).mockResolvedValueOnce(
+      mockFriendship as any
+    );
+    vi.mocked(db.query.users.findFirst).mockResolvedValueOnce(
+      mockTargetUser as any
+    );
+    vi.mocked(emailQueue.add).mockRejectedValueOnce(new Error('Queue down'));
+
+    const response = await request(app).post(
+      `/friendships/${friendshipId}/nudge`
+    );
+
+    expect(response.status).toBe(500);
+    expect(mockRedis.del).toHaveBeenCalledWith(
+      expect.stringContaining('nudge:cooldown:')
+    );
   });
 
   it('should return 500 on unexpected error', async () => {
