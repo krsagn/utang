@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Popover, PopoverTrigger, PopoverContent, Calendar } from "@/shared/ui";
 import { cn } from "@/shared/lib";
+import { ChevronDownIcon } from "lucide-react";
 
 export function DatePicker({
   value,
@@ -23,8 +24,8 @@ export function DatePicker({
           <button
             type="button"
             className={cn(
-              "text-primary flex h-full w-full min-w-0 items-center gap-2 bg-transparent p-3 text-xs tracking-wide outline-none",
-              value ? "font-medium" : "opacity-25",
+              "text-primary relative flex h-full w-full min-w-0 items-center gap-2 bg-transparent p-3 text-xs tracking-wide outline-none",
+              value && "font-medium",
             )}
           >
             {value ? (
@@ -34,11 +35,22 @@ export function DatePicker({
                 year: "numeric",
               })
             ) : (
-              <span>Deadline (Optional)</span>
+              <span className="opacity-25">Due By?</span>
             )}
+            <ChevronDownIcon
+              data-slot="date-picker-trigger-icon"
+              className={cn(
+                "text-primary pointer-events-none absolute right-2.25 size-4 stroke-[1.5px] transition-[opacity,rotate] duration-300",
+                open ? "rotate-180 opacity-40" : "opacity-30",
+              )}
+            />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start" side="bottom">
+        <PopoverContent
+          className="squircle-dialog w-auto p-0"
+          align="start"
+          side="bottom"
+        >
           <Calendar
             mode="single"
             selected={value}
