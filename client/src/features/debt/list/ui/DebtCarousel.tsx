@@ -401,7 +401,9 @@ export function DebtCarousel({ type }: { type: DebtType }) {
                     const overdueDays = Math.abs(days);
                     return (
                       <span
-                        className={cn(isOverdue && "text-danger font-bold")}
+                        className={cn(
+                          isOverdue && "text-danger animate-pulse font-bold",
+                        )}
                       >
                         {isOverdue ? (
                           `overdue by ${overdueDays} day${overdueDays === 1 ? "" : "s"}`
@@ -470,6 +472,8 @@ export function DebtCarousel({ type }: { type: DebtType }) {
             ...mountTransition(1, hasNavigated),
             x: { ...mountSpring, delay: hasNavigated ? 0 : 2 * step },
           }}
+          whileHover={selectedIndex === 0 ? { scale: 1 } : { scale: 0.95 }}
+          whileTap={selectedIndex === 0 ? { scale: 1 } : { scale: 0.8 }}
         >
           <ChevronLeft className="size-5" />
         </motion.button>
@@ -532,6 +536,12 @@ export function DebtCarousel({ type }: { type: DebtType }) {
             ...mountTransition(1, hasNavigated),
             x: { ...mountSpring, delay: hasNavigated ? 0 : 2 * step },
           }}
+          whileHover={
+            selectedIndex === debts.length - 1 ? { scale: 1 } : { scale: 0.95 }
+          }
+          whileTap={
+            selectedIndex === debts.length - 1 ? { scale: 1 } : { scale: 0.8 }
+          }
         >
           <ChevronRight className="size-5" />
         </motion.button>

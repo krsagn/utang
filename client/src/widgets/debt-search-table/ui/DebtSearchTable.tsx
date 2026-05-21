@@ -19,7 +19,6 @@ const TWEEN_TRANSITION: Transition = {
   duration: ANIMATION_DURATION,
 };
 
-
 function matchesSearch(
   debt: Debt,
   query: string,
@@ -274,7 +273,7 @@ export function DebtSearchTable() {
                     )}
                     <span
                       className={cn(
-                        "font-bold",
+                        "font-bold tabular-nums",
                         isOutgoing ? "text-outgoing" : "text-incoming",
                       )}
                     >

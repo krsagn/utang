@@ -1,5 +1,5 @@
 import { cn } from "@/shared/lib";
-import { Search } from "lucide-react";
+import { Pen, Plus, Search, Trash } from "lucide-react";
 import {
   NavLink,
   useLocation,
@@ -79,19 +79,28 @@ export function RightSidebar() {
 function RightSidebarSearch() {
   return (
     <div className="flex h-8 items-center justify-end pr-2 select-none">
-      <NavLink
-        to="/debts/search"
-        aria-label="Search debts"
-        className={({ isActive }) =>
-          cn(
-            "text-primary cursor-pointer transition-all duration-300",
-            isActive ? "opacity-100" : "opacity-30 hover:opacity-100",
-          )
-        }
-        draggable={false}
-      >
-        <Search className="size-5" />
-      </NavLink>
+      <Tooltip delayDuration={600}>
+        <TooltipTrigger asChild>
+          <div className="-mt-2 -mr-2">
+            <NavLink
+              to="/debts/search"
+              aria-label="Search debts"
+              className={({ isActive }) =>
+                cn(
+                  "text-primary cursor-pointer rounded-xl p-2 transition-all duration-300",
+                  isActive ? "opacity-100" : "opacity-30 hover:opacity-100",
+                )
+              }
+              draggable={false}
+            >
+              <Search className="size-5" />
+            </NavLink>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left" className="tracking-wide" sideOffset={5}>
+          Search debts
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 }
@@ -113,6 +122,8 @@ function RightSidebarNav({
   const location = useLocation();
   const hasActiveDebt = !!activeDebtId;
   const canMutate = hasActiveDebt && isCreator;
+
+  const [focused, setFocused] = useState<string | null>(null);
 
   // useMatch resolves active state as a plain boolean so that NavLink's className
   // can be a string — required for Radix asChild (cloneElement can't call a function className).
@@ -136,69 +147,134 @@ function RightSidebarNav({
       : (activeDebtType ?? "pay");
 
   return (
-    <nav className="text-primary my-auto flex w-full flex-col items-end justify-center space-y-6 text-right text-xs tracking-wider whitespace-nowrap">
-      <NavLink
-        to="/debts/new"
-        draggable={false}
-        state={{ initialType: createInitialType }}
-        className={({ isActive }) =>
-          cn(
-            "focus-visible:ring-primary/30 rounded-sm pr-2 transition-all duration-300 outline-none focus-visible:ring-2",
-            isActive
-              ? "font-bold opacity-100"
-              : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
-          )
+    <nav className="text-primary my-auto flex w-full flex-col items-end justify-center text-right text-xs tracking-wider whitespace-nowrap">
+      <motion.div
+        whileHover="hover"
+        initial="rest"
+        animate={
+          focused === "create"
+            ? "hover"
+            : location.pathname === "/debts/new"
+              ? "hover"
+              : "rest"
         }
       >
-        <span>Create Debt</span>
-      </NavLink>
+        <NavLink
+          to="/debts/new"
+          onFocus={() => setFocused("create")}
+          onBlur={() => setFocused(null)}
+          draggable={false}
+          state={{ initialType: createInitialType }}
+          className={({ isActive }) =>
+            cn(
+              "focus-visible:ring-primary/30 flex w-full flex-row-reverse items-center gap-4 rounded-xl px-2 py-3 transition-all duration-300 outline-none focus-visible:ring-2",
+              isActive
+                ? "font-bold opacity-100"
+                : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
+            )
+          }
+        >
+          <span>Create Debt</span>
+          <motion.span
+            variants={{
+              rest: { x: 2, opacity: 0 },
+              hover: { x: 0, opacity: 1 },
+            }}
+            transition={{ ...TWEEN_TRANSITION, opacity: { duration: 0.2 } }}
+          >
+            <Plus className="size-3 stroke-[2.5px]" />
+          </motion.span>
+        </NavLink>
+      </motion.div>
       <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
         <TooltipTrigger asChild>
-          <NavLink
-            to={activeDebtId ? `/debts/${activeDebtId}/edit` : "/debts"}
-            draggable={false}
-            aria-disabled={!canMutate}
-            tabIndex={canMutate ? undefined : -1}
-            onClick={(e) => {
-              if (!canMutate) e.preventDefault();
-            }}
-            className={cn(
-              "focus-visible:ring-primary/30 rounded-sm pr-2 font-medium transition-all duration-300 outline-none focus-visible:ring-2",
-              !canMutate
-                ? "cursor-not-allowed opacity-20"
-                : isEditActive
-                  ? "font-bold opacity-100"
-                  : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
-            )}
+          <motion.div
+            whileHover={canMutate ? "hover" : undefined}
+            initial="rest"
+            animate={
+              focused === "edit"
+                ? "hover"
+                : location.pathname === `/debts/${activeDebtId}/edit` &&
+                    activeDebtId
+                  ? "hover"
+                  : "rest"
+            }
           >
-            <span>Edit Debt</span>
-          </NavLink>
+            <NavLink
+              to={activeDebtId ? `/debts/${activeDebtId}/edit` : "/debts"}
+              onFocus={() => setFocused("edit")}
+              onBlur={() => setFocused(null)}
+              draggable={false}
+              aria-disabled={!canMutate}
+              tabIndex={canMutate ? undefined : -1}
+              onClick={(e) => {
+                if (!canMutate) e.preventDefault();
+              }}
+              className={cn(
+                "focus-visible:ring-primary/30 flex w-full flex-row-reverse items-center gap-4 rounded-xl px-2 py-3 font-medium transition-all duration-300 outline-none focus-visible:ring-2",
+                !canMutate
+                  ? "cursor-not-allowed opacity-20"
+                  : isEditActive
+                    ? "font-bold opacity-100"
+                    : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
+              )}
+            >
+              <span>Edit Debt</span>
+              <motion.span
+                variants={{
+                  rest: { x: 2, opacity: 0 },
+                  hover: { x: 0, opacity: 1 },
+                }}
+                transition={{ ...TWEEN_TRANSITION, opacity: { duration: 0.2 } }}
+              >
+                <Pen className="size-3 stroke-[2.5px]" />
+              </motion.span>
+            </NavLink>
+          </motion.div>
         </TooltipTrigger>
-        <TooltipContent side="left" className="tracking-wide" sideOffset={5}>
+        <TooltipContent side="left" className="tracking-wide">
           Only the creator can edit this debt
         </TooltipContent>
       </Tooltip>
       <Tooltip open={hasActiveDebt && !isCreator ? undefined : false}>
         <TooltipTrigger asChild>
-          <button
-            draggable={false}
-            type="button"
-            onClick={() => {
-              if (!canMutate) return;
-              openDeleteDialog();
-            }}
-            aria-disabled={!canMutate}
-            className={cn(
-              "focus-visible:ring-primary/30 rounded-sm pr-2 font-medium transition-all duration-300 outline-none focus-visible:opacity-100 focus-visible:ring-2",
-              canMutate
-                ? "cursor-pointer opacity-50 hover:opacity-75"
-                : "cursor-not-allowed opacity-20",
-            )}
+          <motion.div
+            whileHover={canMutate ? "hover" : undefined}
+            initial="rest"
+            animate={focused === "delete" ? "hover" : "rest"}
           >
-            <span>Delete Debt</span>
-          </button>
+            <button
+              draggable={false}
+              type="button"
+              onFocus={() => setFocused("delete")}
+              onBlur={() => setFocused(null)}
+              onClick={() => {
+                if (!canMutate) return;
+                openDeleteDialog();
+              }}
+              aria-disabled={!canMutate}
+              tabIndex={canMutate ? undefined : -1}
+              className={cn(
+                "focus-visible:ring-primary/30 flex w-full flex-row-reverse items-center gap-4 rounded-xl px-2 py-3 font-medium transition-all duration-300 outline-none focus-visible:opacity-100 focus-visible:ring-2",
+                canMutate
+                  ? "cursor-pointer opacity-50 hover:opacity-75"
+                  : "cursor-not-allowed opacity-20",
+              )}
+            >
+              <span>Delete Debt</span>
+              <motion.span
+                variants={{
+                  rest: { x: 2, opacity: 0 },
+                  hover: { x: 0, opacity: 1 },
+                }}
+                transition={{ ...TWEEN_TRANSITION, opacity: { duration: 0.2 } }}
+              >
+                <Trash className="size-3 stroke-[2.5px]" />
+              </motion.span>
+            </button>
+          </motion.div>
         </TooltipTrigger>
-        <TooltipContent side="left" className="tracking-wide" sideOffset={5}>
+        <TooltipContent side="left" className="tracking-wide">
           Only the creator can delete this debt
         </TooltipContent>
       </Tooltip>
@@ -215,7 +291,7 @@ function RightSidebarSettings() {
         draggable={false}
         className={({ isActive }) =>
           cn(
-            "text-primary block cursor-pointer px-2 text-xs font-medium tracking-wider whitespace-nowrap transition-all duration-300",
+            "text-primary -mb-3 block cursor-pointer rounded-xl px-2 py-3 text-xs font-medium tracking-wider whitespace-nowrap transition-all duration-300",
             isActive
               ? "font-extrabold opacity-100"
               : "opacity-50 hover:opacity-75",

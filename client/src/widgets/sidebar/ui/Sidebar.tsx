@@ -65,7 +65,7 @@ function SidebarLogo({
       aria-expanded={!collapsed}
       animate={{ x: collapsed ? 96 : 0 }}
       transition={TWEEN_TRANSITION}
-      className="group focus-visible:ring-primary/30 flex h-8 cursor-pointer items-center gap-5 rounded-sm pl-2 outline-none select-none focus-visible:ring-2"
+      className="group focus-visible:ring-primary/30 -mt-2 flex cursor-pointer items-center gap-5 rounded-xl py-2 pl-2 outline-none select-none focus-visible:ring-2"
       onClick={() => setCollapsed(!collapsed)}
     >
       <span className="font-display text-2xl font-semibold">u!</span>
@@ -97,7 +97,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
       animate={{ opacity: collapsed ? 0 : 1 }}
       transition={FADE_TRANSITION}
       style={{ pointerEvents: collapsed ? "none" : "auto" }}
-      className="text-primary my-auto flex w-full flex-col justify-center space-y-6 text-xs tracking-wider whitespace-nowrap"
+      className="text-primary my-auto flex w-full flex-col justify-center text-xs tracking-wider whitespace-nowrap"
     >
       {SIDEBAR_LINKS.map((link) => (
         <SidebarNavItem
@@ -130,7 +130,7 @@ function SidebarNavItem({
         onClick={toggleSidebar}
         tabIndex={collapsed ? -1 : 0}
         className={cn(
-          "focus-visible:ring-primary/30 w-full cursor-pointer rounded-sm pl-2 text-left transition-all duration-300 outline-none focus-visible:ring-2",
+          "focus-visible:ring-primary/30 w-full cursor-pointer rounded-xl py-3 pl-2 text-left transition-all duration-300 outline-none focus-visible:ring-2",
           link.badge !== undefined &&
             "group flex items-center justify-between pr-1",
           isOpen
@@ -164,7 +164,7 @@ function SidebarNavItem({
       draggable={false}
       className={({ isActive }) =>
         cn(
-          "focus-visible:ring-primary/30 rounded-sm pl-2 transition-all duration-300 outline-none focus-visible:ring-2",
+          "focus-visible:ring-primary/30 rounded-xl py-3 pl-2 transition-all duration-300 outline-none focus-visible:ring-2",
           link.badge !== undefined &&
             "group flex items-center justify-between pr-1",
           isActive
@@ -206,7 +206,7 @@ function SidebarLogout({ collapsed }: { collapsed: boolean }) {
           draggable={false}
           onClick={() => setIsLogoutDialogOpen(true)}
           tabIndex={collapsed ? -1 : 0}
-          className="text-primary focus-visible:ring-primary/30 w-full cursor-pointer rounded-sm pl-2 text-left text-xs font-medium tracking-wider whitespace-nowrap opacity-50 transition-all duration-300 outline-none hover:opacity-75 focus-visible:opacity-100 focus-visible:ring-2"
+          className="text-primary focus-visible:ring-primary/30 -mb-3 w-full cursor-pointer rounded-xl py-3 pl-2 text-left text-xs font-medium tracking-wider whitespace-nowrap opacity-50 transition-all duration-300 outline-none hover:opacity-75 focus-visible:opacity-100 focus-visible:ring-2"
         >
           Logout
         </button>
