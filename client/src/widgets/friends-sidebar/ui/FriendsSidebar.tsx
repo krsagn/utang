@@ -46,6 +46,72 @@ import { Link } from "react-router-dom";
 import { useNudgeFriend } from "@/features/friendship/nudge-friend";
 import { toast } from "sonner";
 
+const ease = [0.22, 1, 0.36, 1] as const;
+const accordionTransition = (open: boolean) => ({
+  duration: 0.5,
+  ease,
+  opacity: { duration: open ? 1 : 0.5, ease },
+});
+
+function SectionHeader({
+  label,
+  count,
+  open,
+  onToggle,
+}: {
+  label: string;
+  count: number;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <motion.h3
+      layout="position"
+      className="text-primary/30 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide"
+      onClick={onToggle}
+    >
+      {label}
+      <span className="text-primary/20 select-none">|</span>
+      {count}
+      <ChevronDownIcon
+        className={cn(
+          "text-primary/30 ml-1 size-3 stroke-[2.25px] transition-[rotate] duration-500",
+          open && "rotate-180",
+        )}
+      />
+    </motion.h3>
+  );
+}
+
+const NUDGE_TRANSITION = {
+  type: "spring",
+  stiffness: 500,
+  damping: 35,
+  opacity: { type: "tween", duration: 0.08 },
+} as const;
+
+function AccordionContent({
+  open,
+  onUpdate,
+  children,
+}: {
+  open: boolean;
+  onUpdate: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+      transition={accordionTransition(open)}
+      onUpdate={onUpdate}
+      style={{ overflow: "hidden" }}
+      className="flex flex-col gap-6 md:pr-6"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function FriendsSidebar() {
   const { closeSidebar, isOpen } = useFriendsSidebar();
 
@@ -59,13 +125,6 @@ export function FriendsSidebar() {
 
   const [requestsOpen, setRequestsOpen] = useState(true);
   const [friendsOpen, setFriendsOpen] = useState(true);
-
-  const ease = [0.22, 1, 0.36, 1] as const;
-  const accordionTransition = (open: boolean) => ({
-    duration: 0.5,
-    ease,
-    opacity: { duration: open ? 1 : 0.5, ease },
-  });
 
   const updateGradientVisibility = useCallback(() => {
     const el = scrollContainerRef.current;
@@ -115,7 +174,7 @@ export function FriendsSidebar() {
             ease: [0.42, 0, 0.58, 1],
             duration: 0.6,
           }}
-          className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col justify-between gap-15 p-7"
+          className="text-primary absolute top-0 left-0 z-50 flex h-full w-full shrink-0 flex-col justify-between gap-15 p-7 md:w-80"
         >
           {/* Top Action */}
           <div
@@ -144,30 +203,15 @@ export function FriendsSidebar() {
                       transition={{ type: "tween", duration: 0.2 }}
                       className="flex flex-col gap-5"
                     >
-                      <motion.h3
-                        layout="position"
-                        className="text-primary/30 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide"
-                        onClick={() => setRequestsOpen(!requestsOpen)}
-                      >
-                        Requests
-                        <span className="text-primary/20 select-none">|</span>
-                        {pendingRequests.length}
-                        <ChevronDownIcon
-                          className={cn(
-                            "text-primary/30 ml-1 size-3 stroke-[2.25px] transition-[rotate] duration-300",
-                            requestsOpen && "rotate-180",
-                          )}
-                        />
-                      </motion.h3>
-                      <motion.div
-                        animate={{
-                          height: requestsOpen ? "auto" : 0,
-                          opacity: requestsOpen ? 1 : 0,
-                        }}
-                        transition={accordionTransition(requestsOpen)}
+                      <SectionHeader
+                        label="Requests"
+                        count={pendingRequests.length}
+                        open={requestsOpen}
+                        onToggle={() => setRequestsOpen(!requestsOpen)}
+                      />
+                      <AccordionContent
+                        open={requestsOpen}
                         onUpdate={updateGradientVisibility}
-                        style={{ overflow: "hidden" }}
-                        className="flex flex-col gap-6 pr-6"
                       >
                         {pendingRequests.map((f) => (
                           <motion.div
@@ -180,49 +224,59 @@ export function FriendsSidebar() {
                             <RequestItem request={f} />
                           </motion.div>
                         ))}
-                      </motion.div>
+                      </AccordionContent>
                     </motion.div>
                   ) : null}
 
                   {/* Friends Section */}
-                  <motion.div layout="position" className="flex flex-col gap-5">
-                    <h3
-                      className="text-primary/30 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide"
-                      onClick={() => setFriendsOpen(!friendsOpen)}
-                    >
-                      Friends
-                      <span className="text-primary/20 select-none">|</span>
-                      {acceptedFriends?.length || 0}
-                      <ChevronDownIcon
-                        className={cn(
-                          "text-primary/30 ml-1 size-3 stroke-[2.25px] transition-[rotate] duration-500",
-                          friendsOpen && "rotate-180",
-                        )}
-                      />
-                    </h3>
+                  {acceptedFriends && acceptedFriends.length > 0 ? (
                     <motion.div
-                      animate={{
-                        height: friendsOpen ? "auto" : 0,
-                        opacity: friendsOpen ? 1 : 0,
-                      }}
-                      transition={accordionTransition(friendsOpen)}
-                      onUpdate={updateGradientVisibility}
-                      style={{ overflow: "hidden" }}
-                      className="flex flex-col gap-6 pr-6"
+                      key="friends-section"
+                      layout="position"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: "tween", duration: 0.2 }}
+                      className="flex flex-col gap-5"
                     >
-                      {acceptedFriends?.map((f) => (
-                        <motion.div
-                          key={f.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="flex justify-between"
-                        >
-                          <AcceptedFriendItem friendship={f} />
-                        </motion.div>
-                      ))}
+                      <SectionHeader
+                        label="Friends"
+                        count={acceptedFriends.length}
+                        open={friendsOpen}
+                        onToggle={() => setFriendsOpen(!friendsOpen)}
+                      />
+                      <AccordionContent
+                        open={friendsOpen}
+                        onUpdate={updateGradientVisibility}
+                      >
+                        {acceptedFriends.map((f) => (
+                          <motion.div
+                            key={f.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="flex justify-between"
+                          >
+                            <AcceptedFriendItem friendship={f} />
+                          </motion.div>
+                        ))}
+                      </AccordionContent>
                     </motion.div>
-                  </motion.div>
+                  ) : null}
+
+                  {/* Empty state: shown when both lists are empty */}
+                  {!pendingRequests?.length && !acceptedFriends?.length && (
+                    <motion.p
+                      key="empty-state"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: "tween", duration: 0.2 }}
+                      className="text-primary/30 text-xs tracking-wide"
+                    >
+                      No friends yet. Add one above.
+                    </motion.p>
+                  )}
                 </AnimatePresence>
               </div>
             </div>
@@ -404,12 +458,7 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 0.2, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 35,
-                        opacity: { type: "tween", duration: 0.08 },
-                      }}
+                      transition={NUDGE_TRANSITION}
                     >
                       <Check className="text-primary size-4 stroke-[2.25px]" />
                     </motion.span>
@@ -419,12 +468,7 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 35,
-                        opacity: { type: "tween", duration: 0.08 },
-                      }}
+                      transition={NUDGE_TRANSITION}
                     >
                       <Pointer className="text-primary size-4 stroke-[2.25px] opacity-40 transition-opacity duration-300 group-hover:opacity-80" />
                     </motion.span>

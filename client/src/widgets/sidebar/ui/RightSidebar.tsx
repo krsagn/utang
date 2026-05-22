@@ -1,5 +1,5 @@
-import { cn } from "@/shared/lib";
-import { Pen, Plus, Search, Trash } from "lucide-react";
+import { cn, useBreakpoint } from "@/shared/lib";
+import { Bolt, Pen, Plus, Search, Trash } from "lucide-react";
 import {
   NavLink,
   useLocation,
@@ -51,7 +51,7 @@ export function RightSidebar() {
       initial={{ x: "110%" }}
       animate={{ x: 0 }}
       transition={TWEEN_TRANSITION}
-      className="relative z-30 flex w-48 shrink-0 flex-col justify-between bg-transparent px-6 py-7 text-[#333]"
+      className="relative z-30 flex shrink-0 flex-col justify-between bg-transparent px-6 py-7 text-[#333] md:w-48"
     >
       <RightSidebarSearch />
       <RightSidebarNav
@@ -105,6 +105,14 @@ function RightSidebarSearch() {
   );
 }
 
+const NAV_VARIANTS = {
+  rest: { x: 2, opacity: 0 },
+  hover: { x: 0, opacity: 1 },
+  persistent: { x: 0, opacity: 1 },
+};
+
+const NAV_ICON_TRANSITION = { ...TWEEN_TRANSITION, opacity: { duration: 0.2 } };
+
 // middle section: full list of action routes aligned to the right edge
 function RightSidebarNav({
   activeDebtId,
@@ -123,6 +131,7 @@ function RightSidebarNav({
   const hasActiveDebt = !!activeDebtId;
   const canMutate = hasActiveDebt && isCreator;
 
+  const isMd = useBreakpoint(768);
   const [focused, setFocused] = useState<string | null>(null);
 
   // useMatch resolves active state as a plain boolean so that NavLink's className
@@ -152,11 +161,13 @@ function RightSidebarNav({
         whileHover="hover"
         initial="rest"
         animate={
-          focused === "create"
-            ? "hover"
-            : location.pathname === "/debts/new"
+          isMd
+            ? focused === "create"
               ? "hover"
-              : "rest"
+              : location.pathname === "/debts/new"
+                ? "hover"
+                : "rest"
+            : "persistent"
         }
       >
         <NavLink
@@ -174,15 +185,9 @@ function RightSidebarNav({
             )
           }
         >
-          <span>Create Debt</span>
-          <motion.span
-            variants={{
-              rest: { x: 2, opacity: 0 },
-              hover: { x: 0, opacity: 1 },
-            }}
-            transition={{ ...TWEEN_TRANSITION, opacity: { duration: 0.2 } }}
-          >
-            <Plus className="size-3 stroke-[2.5px]" />
+          <span className="hidden md:flex">Create Debt</span>
+          <motion.span variants={NAV_VARIANTS} transition={NAV_ICON_TRANSITION}>
+            <Plus className="size-4 stroke-2 md:size-3 md:stroke-[2.5px]" />
           </motion.span>
         </NavLink>
       </motion.div>
@@ -192,12 +197,14 @@ function RightSidebarNav({
             whileHover={canMutate ? "hover" : undefined}
             initial="rest"
             animate={
-              focused === "edit"
-                ? "hover"
-                : location.pathname === `/debts/${activeDebtId}/edit` &&
-                    activeDebtId
+              isMd
+                ? focused === "edit"
                   ? "hover"
-                  : "rest"
+                  : location.pathname === `/debts/${activeDebtId}/edit` &&
+                      activeDebtId
+                    ? "hover"
+                    : "rest"
+                : "persistent"
             }
           >
             <NavLink
@@ -219,15 +226,12 @@ function RightSidebarNav({
                     : "font-medium opacity-50 hover:opacity-75 focus-visible:opacity-100",
               )}
             >
-              <span>Edit Debt</span>
+              <span className="hidden md:flex">Edit Debt</span>
               <motion.span
-                variants={{
-                  rest: { x: 2, opacity: 0 },
-                  hover: { x: 0, opacity: 1 },
-                }}
-                transition={{ ...TWEEN_TRANSITION, opacity: { duration: 0.2 } }}
+                variants={NAV_VARIANTS}
+                transition={NAV_ICON_TRANSITION}
               >
-                <Pen className="size-3 stroke-[2.5px]" />
+                <Pen className="size-4 stroke-2 md:size-3 md:stroke-[2.5px]" />
               </motion.span>
             </NavLink>
           </motion.div>
@@ -241,7 +245,9 @@ function RightSidebarNav({
           <motion.div
             whileHover={canMutate ? "hover" : undefined}
             initial="rest"
-            animate={focused === "delete" ? "hover" : "rest"}
+            animate={
+              isMd ? (focused === "delete" ? "hover" : "rest") : "persistent"
+            }
           >
             <button
               draggable={false}
@@ -261,15 +267,12 @@ function RightSidebarNav({
                   : "cursor-not-allowed opacity-20",
               )}
             >
-              <span>Delete Debt</span>
+              <span className="hidden md:flex">Delete Debt</span>
               <motion.span
-                variants={{
-                  rest: { x: 2, opacity: 0 },
-                  hover: { x: 0, opacity: 1 },
-                }}
-                transition={{ ...TWEEN_TRANSITION, opacity: { duration: 0.2 } }}
+                variants={NAV_VARIANTS}
+                transition={NAV_ICON_TRANSITION}
               >
-                <Trash className="size-3 stroke-[2.5px]" />
+                <Trash className="size-4 stroke-2 md:size-3 md:stroke-[2.5px]" />
               </motion.span>
             </button>
           </motion.div>
@@ -284,6 +287,8 @@ function RightSidebarNav({
 
 // bottom section: right-aligned settings button
 function RightSidebarSettings() {
+  const isMd = useBreakpoint(768);
+
   return (
     <div className="text-right">
       <NavLink
@@ -291,14 +296,18 @@ function RightSidebarSettings() {
         draggable={false}
         className={({ isActive }) =>
           cn(
-            "text-primary -mb-3 block cursor-pointer rounded-xl px-2 py-3 text-xs font-medium tracking-wider whitespace-nowrap transition-all duration-300",
+            "text-primary -mb-3 flex cursor-pointer flex-row-reverse rounded-xl px-2 py-3 text-xs font-medium tracking-wider whitespace-nowrap transition-all duration-300",
             isActive
               ? "font-extrabold opacity-100"
               : "opacity-50 hover:opacity-75",
           )
         }
       >
-        Settings
+        {isMd ? (
+          <span>Settings</span>
+        ) : (
+          <Bolt className="size-4 stroke-2 md:size-3 md:stroke-[2.5px]" />
+        )}
       </NavLink>
     </div>
   );

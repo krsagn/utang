@@ -3,13 +3,14 @@ import { Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { FriendsSidebar, useFriendsSidebar } from "@/widgets/friends-sidebar";
-import { cn } from "@/shared/lib";
+import { cn, useBreakpoint } from "@/shared/lib";
 import { RealtimeProvider } from "@/app/providers/RealtimeProvider";
 
 export function AppLayout() {
   const { pathname } = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isOpen, closeSidebar } = useFriendsSidebar();
+  const isMd = useBreakpoint(768);
 
   // reset scroll position on route change
   useEffect(() => {
@@ -30,7 +31,7 @@ export function AppLayout() {
         <motion.div
           initial={false}
           animate={{
-            x: isOpen ? 320 : 0,
+            x: isOpen ? (isMd ? 320 : "100%") : 0,
           }}
           transition={{
             type: "tween",
