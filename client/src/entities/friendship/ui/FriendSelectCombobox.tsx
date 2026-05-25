@@ -115,7 +115,7 @@ export function FriendSelectCombobox({
                   </span>
                   <span className="text-primary/40">
                     @
-                    <span className="underline decoration-transparent underline-offset-2 transition-[text-decoration-color] duration-300 group-hover:decoration-current/50">
+                    <span className="underline decoration-transparent underline-offset-2 transition-[text-decoration-color] duration-300 group-data-highlighted:decoration-current/50">
                       {friend.friendUsername}
                     </span>
                   </span>

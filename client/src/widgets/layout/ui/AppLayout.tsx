@@ -8,9 +8,11 @@ import { RealtimeProvider } from "@/app/providers/RealtimeProvider";
 
 export function AppLayout() {
   const { pathname } = useLocation();
+
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { isOpen, closeSidebar } = useFriendsSidebar();
   const isMd = useBreakpoint(768);
+
+  const { isOpen, closeSidebar } = useFriendsSidebar();
 
   // reset scroll position on route change
   useEffect(() => {
@@ -60,7 +62,11 @@ export function AppLayout() {
                 opacity: 0,
                 scale: 0.9,
               }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
+              animate={{
+                y: 0,
+                opacity: 1,
+                scale: 1,
+              }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="z-10 flex flex-1 items-center justify-center"
             >

@@ -28,7 +28,7 @@ import axios from "axios";
 import { useAcceptFriend } from "@/features/friendship/accept-friend/model/useAcceptFriend";
 import { useDeleteFriend } from "@/features/friendship/delete-friend/model/useDeleteFriend";
 import { useModal, cn, formatCompactCurrency } from "@/shared/lib";
-import { AddFriendModal } from "@/features/friendship/add-friend";
+import { AddFriendSearch } from "@/features/friendship/add-friend";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -310,7 +310,7 @@ export function FriendsSidebar() {
 
           {/* AnimatePresence here lets Modal's exit animations run before unmounting */}
           <AnimatePresence>
-            {modal.hasActiveModal && <AddFriendModal onClose={modal.close} />}
+            {modal.hasActiveModal && <AddFriendSearch onClose={modal.close} />}
           </AnimatePresence>
         </motion.div>
       )}

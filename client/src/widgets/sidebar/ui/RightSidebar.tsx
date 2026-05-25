@@ -13,6 +13,7 @@ import { DeleteDebtDialog } from "@/features/debt/delete-debt";
 import { useDebt, type Debt } from "@/entities/debt";
 import { useSession } from "@/entities/user";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui";
+import { useSidebarCollapsed } from "../model/useSidebarCollapsed";
 
 // shared transition preset to stay visually synced with the left sidebar
 const TWEEN_TRANSITION: Transition = {
@@ -21,25 +22,28 @@ const TWEEN_TRANSITION: Transition = {
   duration: 0.7,
 };
 
-// static right sidebar; no collapsed state
 export function RightSidebar() {
+  // routing
   const [searchParams] = useSearchParams();
   const editMatch = useMatch("/debts/:debtId/edit");
-  // On the edit page the debtId lives in the path, not the search params.
   const activeDebtId =
     searchParams.get("debtId") ?? editMatch?.params.debtId ?? undefined;
   const navigate = useNavigate();
 
+  // store & data
+  const { collapsed } = useSidebarCollapsed();
   const { data: currentUser } = useSession();
   const { data: activeDebt } = useDebt(activeDebtId ?? "");
+
+  // local state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  // derived
   const isCreator = activeDebt
-    ? activeDebt?.createdBy === currentUser?.id
+    ? activeDebt.createdBy === currentUser?.id
     : false;
 
   const handleDeleted = () => {
-    // Only intercept and explicitly navigate if they were on the edit page
     if (editMatch && currentUser && activeDebt) {
       const type = currentUser.id === activeDebt.lendeeId ? "pay" : "receive";
       navigate(type === "receive" ? "/debts/incoming" : "/debts/outgoing");
@@ -49,7 +53,7 @@ export function RightSidebar() {
   return (
     <motion.aside
       initial={{ x: "110%" }}
-      animate={{ x: 0 }}
+      animate={{ x: 0, marginRight: collapsed ? -96 : 0 }}
       transition={TWEEN_TRANSITION}
       className="relative z-30 flex shrink-0 flex-col justify-between bg-transparent px-6 py-7 text-[#333] md:w-48"
     >
@@ -127,26 +131,27 @@ function RightSidebarNav({
   isCreator: boolean;
   openDeleteDialog: () => void;
 }) {
+  // routing & layout
   const location = useLocation();
-  const hasActiveDebt = !!activeDebtId;
-  const canMutate = hasActiveDebt && isCreator;
-
   const isMd = useBreakpoint(768);
-  const [focused, setFocused] = useState<string | null>(null);
+  const { collapsed } = useSidebarCollapsed();
 
-  // useMatch resolves active state as a plain boolean so that NavLink's className
-  // can be a string — required for Radix asChild (cloneElement can't call a function className).
+  // local state
+  const [focused, setFocused] = useState<string | null>(null);
+  // string className required for Radix asChild, can't use a function here
   const isEditActive = !!useMatch(
     activeDebtId ? `/debts/${activeDebtId}/edit` : "__never__",
   );
 
+  // derived
+  const hasActiveDebt = !!activeDebtId;
+  const canMutate = hasActiveDebt && isCreator;
   const activeDebtType =
     activeDebt && currentUser?.id
       ? currentUser.id === activeDebt.lendeeId
         ? "pay"
         : "receive"
       : undefined;
-
   const isOnOutgoingPage = location.pathname.startsWith("/debts/outgoing");
   const isOnIncomingPage = location.pathname.startsWith("/debts/incoming");
   const createInitialType = isOnIncomingPage
@@ -156,7 +161,10 @@ function RightSidebarNav({
       : (activeDebtType ?? "pay");
 
   return (
-    <nav className="text-primary my-auto flex w-full flex-col items-end justify-center text-right text-xs tracking-wider whitespace-nowrap">
+    <motion.nav
+      animate={{ opacity: collapsed ? 0 : 1 }}
+      className="text-primary my-auto flex w-full flex-col items-end justify-center text-right text-xs tracking-wider whitespace-nowrap"
+    >
       <motion.div
         whileHover="hover"
         initial="rest"
@@ -281,16 +289,17 @@ function RightSidebarNav({
           Only the creator can delete this debt
         </TooltipContent>
       </Tooltip>
-    </nav>
+    </motion.nav>
   );
 }
 
 // bottom section: right-aligned settings button
 function RightSidebarSettings() {
+  const { collapsed } = useSidebarCollapsed();
   const isMd = useBreakpoint(768);
 
   return (
-    <div className="text-right">
+    <motion.div animate={{ opacity: collapsed ? 0 : 1 }} className="text-right">
       <NavLink
         to="/settings"
         draggable={false}
@@ -309,6 +318,6 @@ function RightSidebarSettings() {
           <Bolt className="size-4 stroke-2 md:size-3 md:stroke-[2.5px]" />
         )}
       </NavLink>
-    </div>
+    </motion.div>
   );
 }
