@@ -47,11 +47,16 @@ import { useNudgeFriend } from "@/features/friendship/nudge-friend";
 import { toast } from "sonner";
 
 const ease = [0.22, 1, 0.36, 1] as const;
-const accordionTransition = (open: boolean) => ({
+const accordionTransitionOpen = {
   duration: 0.5,
   ease,
-  opacity: { duration: open ? 1 : 0.5, ease },
-});
+  opacity: { duration: 1, ease },
+};
+const accordionTransitionClosed = {
+  duration: 0.5,
+  ease,
+  opacity: { duration: 0.5, ease },
+};
 
 function SectionHeader({
   label,
@@ -102,7 +107,7 @@ function AccordionContent({
   return (
     <motion.div
       animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
-      transition={accordionTransition(open)}
+      transition={open ? accordionTransitionOpen : accordionTransitionClosed}
       onUpdate={onUpdate}
       style={{ overflow: "hidden" }}
       className="flex flex-col gap-6 md:pr-6"

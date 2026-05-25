@@ -55,6 +55,7 @@ export function RightSidebar() {
       initial={{ x: "110%" }}
       animate={{ x: 0, marginRight: collapsed ? -96 : 0 }}
       transition={TWEEN_TRANSITION}
+      inert={collapsed}
       className="relative z-30 flex shrink-0 flex-col justify-between bg-transparent px-6 py-7 text-[#333] md:w-48"
     >
       <RightSidebarSearch />

@@ -43,6 +43,8 @@ export function AddFriendSearch({ onClose }: { onClose: () => void }) {
         >
           <input
             type="text"
+            aria-label="Username"
+            autoFocus
             placeholder="Enter a username..."
             value={search}
             spellCheck={false}
