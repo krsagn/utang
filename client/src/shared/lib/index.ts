@@ -6,3 +6,4 @@ export * from "./formatCurrency";
 export { cn } from "./utils";
 export { socket } from "./socket";
 export { parseLocalDate } from "./parseLocalDate";
+export { useBreakpoint } from "./useBreakpoint";

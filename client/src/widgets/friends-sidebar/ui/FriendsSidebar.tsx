@@ -22,15 +22,17 @@ import {
   ArrowDown,
   Pointer,
   Hourglass,
+  ChevronDownIcon,
 } from "lucide-react";
 import axios from "axios";
 import { useAcceptFriend } from "@/features/friendship/accept-friend/model/useAcceptFriend";
 import { useDeleteFriend } from "@/features/friendship/delete-friend/model/useDeleteFriend";
 import { useModal, cn, formatCompactCurrency } from "@/shared/lib";
-import { AddFriendModal } from "@/features/friendship/add-friend";
-import { useEffect, useRef, useState } from "react";
+import { AddFriendSearch } from "@/features/friendship/add-friend";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
+
 import {
   Popover,
   PopoverContent,
@@ -44,6 +46,77 @@ import { Link } from "react-router-dom";
 import { useNudgeFriend } from "@/features/friendship/nudge-friend";
 import { toast } from "sonner";
 
+const ease = [0.22, 1, 0.36, 1] as const;
+const accordionTransitionOpen = {
+  duration: 0.5,
+  ease,
+  opacity: { duration: 1, ease },
+};
+const accordionTransitionClosed = {
+  duration: 0.5,
+  ease,
+  opacity: { duration: 0.5, ease },
+};
+
+function SectionHeader({
+  label,
+  count,
+  open,
+  onToggle,
+}: {
+  label: string;
+  count: number;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <motion.h3
+      layout="position"
+      className="text-primary/30 flex cursor-pointer items-center gap-2 text-xs font-medium tracking-wide"
+      onClick={onToggle}
+    >
+      {label}
+      <span className="text-primary/20 select-none">|</span>
+      {count}
+      <ChevronDownIcon
+        className={cn(
+          "text-primary/30 ml-1 size-3 stroke-[2.25px] transition-[rotate] duration-500",
+          open && "rotate-180",
+        )}
+      />
+    </motion.h3>
+  );
+}
+
+const NUDGE_TRANSITION = {
+  type: "spring",
+  stiffness: 500,
+  damping: 35,
+  opacity: { type: "tween", duration: 0.08 },
+} as const;
+
+function AccordionContent({
+  open,
+  onUpdate,
+  children,
+}: {
+  open: boolean;
+  onUpdate: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+      transition={open ? accordionTransitionOpen : accordionTransitionClosed}
+      onUpdate={onUpdate}
+      style={{ overflow: "hidden" }}
+      className="flex flex-col gap-6 md:pr-6"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function FriendsSidebar() {
   const { closeSidebar, isOpen } = useFriendsSidebar();
 
@@ -55,36 +128,44 @@ export function FriendsSidebar() {
   const [showTopGradient, setShowTopGradient] = useState(false);
   const [showBottomGradient, setShowBottomGradient] = useState(false);
 
+  const [requestsOpen, setRequestsOpen] = useState(true);
+  const [friendsOpen, setFriendsOpen] = useState(true);
+
+  const updateGradientVisibility = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const hasOverflow = scrollHeight - clientHeight > 1;
+    if (!hasOverflow) {
+      setShowTopGradient(false);
+      setShowBottomGradient(false);
+      return;
+    }
+    const epsilon = 1;
+    setShowTopGradient(scrollTop > epsilon);
+    setShowBottomGradient(scrollTop + clientHeight < scrollHeight - epsilon);
+  }, []);
+
   useEffect(() => {
     if (!isOpen) return;
-
     const el = scrollContainerRef.current;
     if (!el) return;
 
-    const updateGradientVisibility = () => {
-      const { scrollTop, scrollHeight, clientHeight } = el;
-      const hasOverflow = scrollHeight - clientHeight > 1;
-
-      if (!hasOverflow) {
-        setShowTopGradient(false);
-        setShowBottomGradient(false);
-        return;
-      }
-
-      const epsilon = 1;
-      setShowTopGradient(scrollTop > epsilon);
-      setShowBottomGradient(scrollTop + clientHeight < scrollHeight - epsilon);
-    };
-
-    updateGradientVisibility();
+    const raf = requestAnimationFrame(updateGradientVisibility);
     el.addEventListener("scroll", updateGradientVisibility, { passive: true });
     window.addEventListener("resize", updateGradientVisibility);
 
     return () => {
+      cancelAnimationFrame(raf);
       el.removeEventListener("scroll", updateGradientVisibility);
       window.removeEventListener("resize", updateGradientVisibility);
     };
-  }, [isOpen, acceptedFriends?.length, pendingRequests?.length]);
+  }, [
+    isOpen,
+    acceptedFriends?.length,
+    pendingRequests?.length,
+    updateGradientVisibility,
+  ]);
 
   return (
     <AnimatePresence>
@@ -98,7 +179,7 @@ export function FriendsSidebar() {
             ease: [0.42, 0, 0.58, 1],
             duration: 0.6,
           }}
-          className="text-primary absolute top-0 left-0 z-50 flex h-full w-80 shrink-0 flex-col justify-between gap-15 p-7"
+          className="text-primary absolute top-0 left-0 z-50 flex h-full w-full shrink-0 flex-col justify-between gap-15 p-7 md:w-80"
         >
           {/* Top Action */}
           <div
@@ -127,15 +208,16 @@ export function FriendsSidebar() {
                       transition={{ type: "tween", duration: 0.2 }}
                       className="flex flex-col gap-5"
                     >
-                      <motion.h3
-                        layout="position"
-                        className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wide"
+                      <SectionHeader
+                        label="Requests"
+                        count={pendingRequests.length}
+                        open={requestsOpen}
+                        onToggle={() => setRequestsOpen(!requestsOpen)}
+                      />
+                      <AccordionContent
+                        open={requestsOpen}
+                        onUpdate={updateGradientVisibility}
                       >
-                        Requests{" "}
-                        <span className="text-primary/20 select-none">|</span>{" "}
-                        {pendingRequests.length}
-                      </motion.h3>
-                      <div className="flex flex-col gap-6 pr-6">
                         {pendingRequests.map((f) => (
                           <motion.div
                             layout="position"
@@ -147,31 +229,59 @@ export function FriendsSidebar() {
                             <RequestItem request={f} />
                           </motion.div>
                         ))}
-                      </div>
+                      </AccordionContent>
                     </motion.div>
                   ) : null}
 
                   {/* Friends Section */}
-                  <motion.div layout="position" className="flex flex-col gap-5">
-                    <h3 className="text-primary/30 flex items-center gap-2 text-xs font-medium tracking-wide">
-                      Friends{" "}
-                      <span className="text-primary/20 select-none">|</span>{" "}
-                      {acceptedFriends?.length || 0}
-                    </h3>
-                    <div className="flex flex-col gap-6 pr-6">
-                      {acceptedFriends?.map((f) => (
-                        <motion.div
-                          key={f.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="flex justify-between"
-                        >
-                          <AcceptedFriendItem friendship={f} />
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
+                  {acceptedFriends && acceptedFriends.length > 0 ? (
+                    <motion.div
+                      key="friends-section"
+                      layout="position"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: "tween", duration: 0.2 }}
+                      className="flex flex-col gap-5"
+                    >
+                      <SectionHeader
+                        label="Friends"
+                        count={acceptedFriends.length}
+                        open={friendsOpen}
+                        onToggle={() => setFriendsOpen(!friendsOpen)}
+                      />
+                      <AccordionContent
+                        open={friendsOpen}
+                        onUpdate={updateGradientVisibility}
+                      >
+                        {acceptedFriends.map((f) => (
+                          <motion.div
+                            key={f.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="flex justify-between"
+                          >
+                            <AcceptedFriendItem friendship={f} />
+                          </motion.div>
+                        ))}
+                      </AccordionContent>
+                    </motion.div>
+                  ) : null}
+
+                  {/* Empty state: shown when both lists are empty */}
+                  {!pendingRequests?.length && !acceptedFriends?.length && (
+                    <motion.p
+                      key="empty-state"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: "tween", duration: 0.2 }}
+                      className="text-primary/30 text-xs tracking-wide"
+                    >
+                      No friends yet. Add one above.
+                    </motion.p>
+                  )}
                 </AnimatePresence>
               </div>
             </div>
@@ -205,7 +315,7 @@ export function FriendsSidebar() {
 
           {/* AnimatePresence here lets Modal's exit animations run before unmounting */}
           <AnimatePresence>
-            {modal.hasActiveModal && <AddFriendModal onClose={modal.close} />}
+            {modal.hasActiveModal && <AddFriendSearch onClose={modal.close} />}
           </AnimatePresence>
         </motion.div>
       )}
@@ -353,12 +463,7 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 0.2, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 35,
-                        opacity: { type: "tween", duration: 0.08 },
-                      }}
+                      transition={NUDGE_TRANSITION}
                     >
                       <Check className="text-primary size-4 stroke-[2.25px]" />
                     </motion.span>
@@ -368,12 +473,7 @@ function AcceptedFriendItem({ friendship }: { friendship: Friendship }) {
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 35,
-                        opacity: { type: "tween", duration: 0.08 },
-                      }}
+                      transition={NUDGE_TRANSITION}
                     >
                       <Pointer className="text-primary size-4 stroke-[2.25px] opacity-40 transition-opacity duration-300 group-hover:opacity-80" />
                     </motion.span>

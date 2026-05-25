@@ -98,7 +98,10 @@ export function FriendSelectCombobox({
       */}
       {(filteredFriends.length > 0 ||
         (inputValue && inputValue.trim().length > 0)) && (
-        <ComboboxContent anchor={anchorRef} className="bg-white/50">
+        <ComboboxContent
+          anchor={anchorRef}
+          className="squircle-dialog bg-white/50"
+        >
           <ComboboxList className="no-scrollbar overflow-y-auto mask-[linear-gradient(to_bottom,transparent,black_10px,black_calc(100%-15px),transparent)]">
             {filteredFriends.length > 0 ? (
               filteredFriends.map((friend) => (
@@ -111,7 +114,10 @@ export function FriendSelectCombobox({
                     {friend.friendFirstName} {friend.friendLastName}
                   </span>
                   <span className="text-primary/40">
-                    @{friend.friendUsername}
+                    @
+                    <span className="underline decoration-transparent underline-offset-2 transition-[text-decoration-color] duration-300 group-data-highlighted:decoration-current/50">
+                      {friend.friendUsername}
+                    </span>
                   </span>
                 </ComboboxItem>
               ))

@@ -314,7 +314,7 @@ function TypeToggle({
         type="button"
         aria-label="Previous type"
         onClick={toggle}
-        className="text-foreground/30 hover:text-foreground/60 cursor-pointer transition-colors"
+        className="text-foreground/30 hover:text-foreground/60 cursor-pointer transition duration-200 hover:scale-95 active:scale-80"
       >
         <ChevronLeft className="size-4" />
       </button>
@@ -353,7 +353,7 @@ function TypeToggle({
         type="button"
         aria-label="Next type"
         onClick={toggle}
-        className="text-foreground/30 hover:text-foreground/60 cursor-pointer transition-colors"
+        className="text-foreground/30 hover:text-foreground/60 cursor-pointer transition duration-200 hover:scale-95 active:scale-80"
       >
         <ChevronRight className="size-4" />
       </button>

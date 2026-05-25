@@ -201,7 +201,9 @@ export function EditDebtForm({
               </label>
               <DatePicker
                 value={
-                  formData.deadline ? parseLocalDate(formData.deadline) : undefined
+                  formData.deadline
+                    ? parseLocalDate(formData.deadline)
+                    : undefined
                 }
                 onChange={(date) =>
                   updateFormData({
@@ -226,7 +228,7 @@ export function EditDebtForm({
               </span>
               <span
                 className={cn(
-                  "transition-colors text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  "text-[11px] font-medium tracking-wider tabular-nums transition-colors duration-200",
                   formData.title.length >= 30
                     ? "text-danger"
                     : "text-primary/20",
@@ -266,7 +268,7 @@ export function EditDebtForm({
               </span>
               <span
                 className={cn(
-                  "transition-colors text-[11px] font-medium tracking-wider tabular-nums duration-200",
+                  "text-[11px] font-medium tracking-wider tabular-nums transition-colors duration-200",
                   (formData.description?.length ?? 0) >= 100
                     ? "text-danger"
                     : "text-primary/20",

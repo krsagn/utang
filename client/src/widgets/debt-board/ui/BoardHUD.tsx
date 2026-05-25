@@ -22,7 +22,7 @@ export function BoardHUD({
   return (
     <div
       className={cn(
-        "squircle text-primary/70 flex gap-2 border border-white/30 bg-white/70 px-4 py-3 text-xs tracking-wide text-nowrap shadow-xl backdrop-blur-xs transition-opacity duration-500 select-none",
+        "squircle text-primary/70 flex gap-2 border border-white/50 bg-white/70 px-4 py-3 text-xs tracking-wide text-nowrap shadow-xl backdrop-blur-xs transition-opacity duration-500 select-none",
         panning ? "cursor-grabbing" : "cursor-default",
         idle ? "opacity-50" : "opacity-100",
         className,
@@ -36,7 +36,7 @@ export function BoardHUD({
       <motion.div layout className="flex gap-2">
         <p className="text-primary/30 font-light">|</p>
         <button
-          onClick={() => resetTransform(undefined, "easeOutQuad")}
+          onClick={() => resetTransform(500, "easeOutQuint")}
           className={cn(
             "hover:text-primary underline underline-offset-4 transition duration-300 hover:scale-99",
             panning ? "cursor-grabbing" : "cursor-pointer",

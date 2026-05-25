@@ -236,7 +236,7 @@ export function DebtHistoryTable() {
                     )}
                     <span
                       className={cn(
-                        "font-bold",
+                        "font-bold tabular-nums",
                         isOutgoing ? "text-outgoing" : "text-incoming",
                       )}
                     >

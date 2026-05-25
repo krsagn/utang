@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import type { Debt } from "../model/types";
+import { formatCurrency } from "@/shared/lib";
 
 type ReceiptCardProps = Pick<
   Debt,
@@ -74,7 +75,7 @@ export function ReceiptCard({
         {/* plain toFixed(2), no symbol — intentional receipt aesthetic */}
         <div className="flex justify-between">
           <span>Total:</span>
-          <span>{(parseFloat(amount) || 0).toFixed(2)}</span>
+          <span>{formatCurrency(amount, currency)}</span>
         </div>
 
         <hr className="my-5 border-t-2 border-dashed border-neutral-500" />
